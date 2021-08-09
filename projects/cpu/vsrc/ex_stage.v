@@ -48,7 +48,7 @@ module ex_stage(
     .rst(rst),
   .op1(exe_op1),
   .op2(exe_op2),
-  .op_info(op_info),
+  //.op_info(op_info),
   .alu_info(alu_info),
   .is_word_opt(is_word_opt),
 
