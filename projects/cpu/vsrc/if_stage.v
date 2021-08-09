@@ -10,7 +10,6 @@ module if_stage(
   
   // pipeline control
   input wire id_allowin,
-  output wire if_ready_go,
   output wire if_id_valid,
 
   input wire bj_ena,
@@ -25,7 +24,7 @@ module if_stage(
   
   // pipeline control
   wire if_valid = 1'b1;
-  assign if_ready_go = 1'b1;
+  wire if_ready_go = 1'b1;
   assign if_id_valid = if_valid && if_ready_go;
 
   // fetch an instruction

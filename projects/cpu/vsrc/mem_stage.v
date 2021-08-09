@@ -7,7 +7,7 @@ module mem_stage(
   // pipeline control
   input wire wb_allowin,
   output wire mem_allowin,
-  output wire mem_ready_go,
+  input wire ex_mem_valid,
   output wire mem_wb_valid,
 
   input [`REG_BUS] r_data2,
@@ -23,10 +23,18 @@ module mem_stage(
   );
   
   // pipeline control
-  wire mem_valid = 1'b1;
-  assign mem_ready_go = 1'b1;
+  reg mem_valid;
+  wire mem_ready_go = 1'b1;
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_wb_valid = mem_valid && mem_ready_go;
+  always @(posedge clk) begin
+    if (rst) begin
+      mem_valid <= 1'b0;
+    end
+    else if (mem_allowin) begin
+      mem_valid <= ex_mem_valid;
+    end
+  end
 
   wire addr_0 = (mem_addr[2 : 0] == 3'h0);
   wire addr_1 = (mem_addr[2 : 0] == 3'h1);

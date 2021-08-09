@@ -12,7 +12,7 @@ module id_stage(
   // pipeline control
   input wire ex_allowin,
   output wire id_allowin,
-  output wire id_ready_go,
+  input wire if_id_valid,
   output wire id_ex_valid,
 
   // data from if_stage
@@ -59,19 +59,28 @@ module id_stage(
   // to excp_handler
   output wire [`EXCP_BUS] id_excp,
   output wire excp_exit
-);
+  );
 
 
-// pipeline control
-wire id_valid = 1'b1;
-assign id_ready_go = 1'b1;
-assign id_allowin = !id_valid || id_ready_go && ex_allowin;
-assign id_ex_valid = id_valid && id_ready_go;
-
-wire [6  : 0] opcode = inst[6 : 0];
-wire [2  : 0] func3 = inst[14 : 12];
-wire [5  : 0] func6 = inst[31 : 26];
-wire [6  : 0] func7 = inst[31 : 25];
+  // pipeline control
+  reg id_valid;
+  wire id_ready_go = 1'b1;
+  assign id_allowin = !id_valid || id_ready_go && ex_allowin;
+  assign id_ex_valid = id_valid && id_ready_go;
+  
+  always @(posedge clk) begin
+    if (rst) begin
+      id_valid <= 1'b0;
+    end
+    else if (id_allowin) begin
+      id_valid <= if_id_valid;
+    end
+  end
+  
+  wire [6  : 0] opcode = inst[6 : 0];
+  wire [2  : 0] func3 = inst[14 : 12];
+  wire [5  : 0] func6 = inst[31 : 26];
+  wire [6  : 0] func7 = inst[31 : 25];
 
 wire [4  : 0] rd = inst[11 :  7];
 wire [4  : 0] rs1 = inst[19 : 15];

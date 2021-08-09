@@ -50,7 +50,6 @@ module SimTop(
   // if -> exception
   wire [`EXCP_BUS] if_excp;
   // pipeline control
-  wire if_ready_go;
   wire if_id_valid;
   // instruction jump & exception jump
   wire bj_ena;
@@ -63,7 +62,6 @@ module SimTop(
     .rst(reset),
     
     .id_allowin(id_allowin),
-    .if_ready_go(if_ready_go),
     .if_id_valid(if_id_valid),
     
     .bj_ena(bj_ena),
@@ -79,7 +77,6 @@ module SimTop(
   // ID_STAGE
   // pipeline control
   wire id_allowin;
-  wire id_ready_go;
   wire id_ex_valid;
   // decode result
   wire [`OP_BUS] op_info;
@@ -100,7 +97,7 @@ module SimTop(
     
     .ex_allowin(ex_allowin),
     .id_allowin(id_allowin),
-    .id_ready_go(id_ready_go),
+    .if_id_valid(if_id_valid),
     .id_ex_valid(id_ex_valid),
     
     .inst(inst),
@@ -145,7 +142,6 @@ module SimTop(
   // EX_STAGE
   // pipeline control
   wire ex_allowin;
-  wire ex_ready_go;
   wire ex_mem_valid;
   // operand
   wire [`REG_BUS] exe_op1;
@@ -157,7 +153,7 @@ module SimTop(
   
     .mem_allowin(mem_allowin),
     .ex_allowin(ex_allowin),
-    .ex_ready_go(ex_ready_go),
+    .id_ex_valid(id_ex_valid),
     .ex_mem_valid(ex_mem_valid),
   
     .exe_op1(exe_op1),
@@ -177,7 +173,6 @@ module SimTop(
   // MEM_STAGE
   // pipeline control
   wire mem_allowin;
-  wire mem_ready_go;
   wire mem_wb_valid;
   // mem_stage -> excp_handler
   wire [`EXCP_BUS] mem_excp;
@@ -190,7 +185,7 @@ module SimTop(
   
     .wb_allowin(wb_allowin),
     .mem_allowin(mem_allowin),
-    .mem_ready_go(mem_ready_go),
+    .ex_mem_valid(ex_mem_valid),
     .mem_wb_valid(mem_wb_valid),
   
     .r_data2(r_data2),
