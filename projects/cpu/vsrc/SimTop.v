@@ -7,8 +7,8 @@
 `include "defines.v"
 
 module SimTop(
-  input wire            clock,
-  input wire            reset,
+  input wire    clock,
+  input wire    reset,
   
   input  [63:0] io_logCtrl_log_begin,
   input  [63:0] io_logCtrl_log_end,
@@ -22,30 +22,9 @@ module SimTop(
   input  [7:0]  io_uart_in_ch
   );
 
-  // Access memory
-  // mem_stage <-> mem_helper
-  wire [`REG_BUS] mem_addr = exe_data;
-  wire [7 : 0] byte_enable; // write mask
-  wire [`REG_BUS] mem_wr_data;
-  wire [`REG_BUS] mem_rd_data;
-  RAM_1W2R RAM_1W2R(
-    .clk(clock),
-    
-    .inst_addr(pc),
-    .inst_ena(1),
-    .inst(inst),
-    
-    .mem_wr_ena(mem_wr_ena),
-    .mem_rd_ena(mem_rd_ena),
-    .byte_enable(byte_enable),
-    .mem_addr(mem_addr),
-    .mem_wr_data(mem_wr_data),
-    .mem_rd_data(mem_rd_data)
-  );
-
   // IF_STAGE
-  wire [31 : 0]  inst;
-  wire [63 : 0]  pc; 
+  wire [31  :  0] if_id_inst;
+  wire [`REG_BUS] if_id_pc;
   wire           inst_ena;
   // if -> exception
   wire [`EXCP_BUS] if_excp;
@@ -65,12 +44,12 @@ module SimTop(
     .if_id_valid(if_id_valid),
     
     .bj_ena(bj_ena),
-    .new_pc(new_pc),
+    .new_pc(if_id_pc),
     
     .excp_jmp_ena(excp_jmp_ena),
     .excp_pc(excp_pc),
     
-    .pc(pc),
+    .pc(if_id_pc),
     .if_excp(if_excp)
   );
 
@@ -78,19 +57,28 @@ module SimTop(
   // pipeline control
   wire id_allowin;
   wire id_ex_valid;
-  // decode result
-  wire [`OP_BUS] op_info;
-  wire [`ALU_BUS] alu_info;
-  wire [`BJ_BUS]  bj_info;
-  wire [`LOAD_BUS] load_info;
-  wire [`SAVE_BUS] save_info;
+  // -> ex_stage
+  wire [`REG_BUS] id_ex_pc;
+  wire [31  :  0] id_ex_inst;
+  wire [`ALU_BUS] id_ex_alu_info;
+  wire [`BJ_BUS]  id_ex_bj_info;
   wire is_word_opt;
   wire [`REG_BUS] jmp_imm;
-  // id -> exception
+  // -> exception
   wire [`EXCP_BUS] id_excp;
-  // id stage -> wb stage
-  wire [`REG_CTRL_BUS] reg_wr_ctrl;
-  
+  // -> mem_stage
+  wire [`REG_BUS] id_ex_mem_wr_src;
+  wire [`LOAD_BUS] id_ex_load_info;
+  wire [`SAVE_BUS] id_ex_save_info;
+  wire id_ex_mem_wr_ena;
+  wire id_ex_mem_rd_ena;
+  // -> wb_stage
+  wire [`REG_CTRL_BUS] id_ex_reg_wr_ctrl;
+  wire id_ex_csr_wr_ena;
+  wire [11 : 0] id_ex_csr_wr_addr;
+  wire id_ex_rd_w_ena;
+  wire [4 : 0] id_ex_rd_w_addr;
+
   id_stage Id_stage(
     .rst(reset),
     .clk(clock),
@@ -100,8 +88,10 @@ module SimTop(
     .if_id_valid(if_id_valid),
     .id_ex_valid(id_ex_valid),
     
-    .inst(inst),
-    .inst_addr(pc),
+    .pc_in(if_id_pc),
+    .inst_in(if_id_inst),
+    .pc_out(id_ex_pc),
+    .inst_out(id_ex_inst),
     
     .r_data1(r_data1),
     .r_data2(r_data2),
@@ -114,23 +104,23 @@ module SimTop(
     .csr_rd_ena(csr_rd_ena),
     .csr_rd_addr(csr_rd_addr),
     
-    .mem_rd_ena(mem_rd_ena),
-    .mem_wr_ena(mem_wr_ena),
-    
-    .exe_op1(exe_op1),
-    .exe_op2(exe_op2),
+    .ex_op1(ex_op1),
+    .ex_op2(ex_op2),
     .is_word_opt(is_word_opt),
-    .op_info(op_info),
-    .alu_info(alu_info),
-    .bj_info(bj_info),
-    .load_info(load_info),
-    .save_info(save_info),
-    
-    .reg_wr_ctrl(reg_wr_ctrl),
-    .csr_wr_ena(csr_wr_ena),
-    .csr_wr_addr(csr_wr_addr),
-    .rd_w_ena(rd_w_ena),
-    .rd_w_addr(rd_w_addr),
+    .alu_info(id_ex_alu_info),
+    .bj_info(id_ex_bj_info),
+
+    .rs2_data(id_ex_mem_wr_src),
+    .load_info(id_ex_load_info),
+    .save_info(id_ex_save_info),
+    .mem_rd_ena(id_ex_mem_rd_ena),
+    .mem_wr_ena(id_ex_mem_wr_ena),
+
+    .reg_wr_ctrl(id_ex_reg_wr_ctrl),
+    .csr_wr_ena(id_ex_csr_wr_ena),
+    .csr_wr_addr(id_ex_csr_wr_addr),
+    .rd_w_ena(id_ex_rd_w_ena),
+    .rd_w_addr(id_ex_rd_w_addr),
     
     .jmp_imm(jmp_imm),
     
@@ -144,9 +134,22 @@ module SimTop(
   wire ex_allowin;
   wire ex_mem_valid;
   // operand
-  wire [`REG_BUS] exe_op1;
-  wire [`REG_BUS] exe_op2;
-
+  wire [`REG_BUS] ex_op1;
+  wire [`REG_BUS] ex_op2;
+  // -> mem_stage
+  wire [`REG_BUS] ex_mem_pc;
+  wire [31  :  0] ex_mem_inst;
+  wire [`LOAD_BUS] ex_mem_load_info;
+  wire [`SAVE_BUS] ex_mem_save_info; 
+  wire ex_mem_wr_ena;
+  wire ex_mem_rd_ena;
+  wire [`REG_BUS] ex_mem_mem_wr_src;
+  // -> wb_stage
+  wire [`REG_CTRL_BUS] ex_mem_reg_wr_ctrl;
+  wire ex_mem_csr_wr_ena;
+  wire [11 : 0] ex_mem_csr_wr_addr;
+  wire ex_mem_rd_w_ena;
+  wire [4 : 0] ex_mem_rd_w_addr;
   ex_stage Ex_stage(
     .clk(clock),
     .rst(reset),
@@ -155,17 +158,44 @@ module SimTop(
     .ex_allowin(ex_allowin),
     .id_ex_valid(id_ex_valid),
     .ex_mem_valid(ex_mem_valid),
-  
-    .exe_op1(exe_op1),
-    .exe_op2(exe_op2),
+    
+    .pc_in(id_ex_pc),
+    .inst_in(id_ex_inst),
+    .pc_out(ex_mem_pc),
+    .inst_out(ex_mem_inst),
+    
+    .exe_op1(ex_op1),
+    .exe_op2(ex_op2),
     .is_word_opt(is_word_opt),
-    .op_info(op_info),
-    .alu_info(alu_info),
-    .bj_info(bj_info),
+    .alu_info_in(id_ex_alu_info),
+    .bj_info_in(id_ex_bj_info),
     .jmp_imm(jmp_imm),
-    .now_pc(pc),
+    
+    // pass to mem_stage
+    .load_info_in(id_ex_load_info),
+    .save_info_in(id_ex_save_info),
+    .mem_rd_ena_in(id_ex_mem_rd_ena),
+    .mem_wr_ena_in(id_ex_mem_wr_ena),
+    .mem_wr_src_in(id_ex_mem_wr_src),
+    .load_info_out(ex_mem_load_info),
+    .save_info_out(ex_mem_save_info),
+    .mem_wr_ena_out(ex_mem_mem_wr_ena),
+    .mem_rd_ena_out(ex_mem_mem_rd_ena),
+    .mem_wr_src_out(ex_mem_mem_wr_src),
+    
+    // pass to wb_stage
+    .reg_wr_ctrl_in(id_ex_reg_wr_ctrl),
+    .csr_wr_ena_in(id_ex_csr_wr_ena),
+    .csr_wr_addr_in(id_ex_csr_wr_addr),
+    .rd_w_ena_in(id_ex_rd_w_ena),
+    .rd_w_addr_in(id_ex_rd_w_addr),
+    .reg_wr_ctrl_out(ex_mem_reg_wr_ctrl),
+    .csr_wr_ena_out(ex_mem_csr_wr_ena),
+    .csr_wr_addr_out(ex_mem_csr_wr_addr),
+    .rd_w_ena_out(ex_mem_rd_w_ena),
+    .rd_w_addr_out(ex_mem_rd_w_addr),
 
-    .rd_data(exe_data),
+    .ex_data(ex_data),
     .new_pc(new_pc),
     .bj_ena(bj_ena)
   );
@@ -174,49 +204,109 @@ module SimTop(
   // pipeline control
   wire mem_allowin;
   wire mem_wb_valid;
+  wire [`REG_BUS] mem_wb_pc;
+  wire [31  :  0] mem_wb_inst;
   // mem_stage -> excp_handler
   wire [`EXCP_BUS] mem_excp;
   // mem control
-  wire mem_wr_ena, mem_rd_ena;
-  
+  wire ex_mem_mem_wr_ena;
+  wire ex_mem_mem_rd_ena;
+  // -> wb_stage
+  wire [`REG_CTRL_BUS] mem_wb_reg_wr_ctrl;
+  wire mem_wb_csr_wr_ena;
+  wire [11 : 0] mem_wb_csr_wr_addr;
+  wire mem_wb_rd_w_ena;
+  wire [4 : 0] mem_wb_rd_w_addr;
   mem_stage Mem_stage(
     .clk(clock),
     .rst(reset),
-  
+    
     .wb_allowin(wb_allowin),
     .mem_allowin(mem_allowin),
     .ex_mem_valid(ex_mem_valid),
     .mem_wb_valid(mem_wb_valid),
-  
-    .r_data2(r_data2),
-    .load_info(load_info),
-    .save_info(save_info),
-    .mem_addr(mem_addr),
-    .mem_rd_data(mem_rd_data),
-  
-    .mem_data(mem_data),
-    .mem_wr_data(mem_wr_data),
+    
+    .pc_in(ex_mem_pc),
+    .inst_in(ex_mem_inst),
+    .pc_out(mem_wb_pc),
+    .inst_out(mem_wb_inst),
+    
+    .reg_src(r_data2),
+    .load_info(ex_mem_load_info),
+    .save_info(ex_mem_save_info),
+    .mem_rd_ena(ex_mem_mem_rd_ena),
+    .mem_wr_ena(ex_mem_mem_wr_ena),
+    .mem_addr(ex_data),
+    
+    .memhpr_wr_data(mem_wr_data),
+    .memhpr_rd_data(mem_rd_data),
     .byte_enable(byte_enable),
+    
+    // -> wb_stage
+    .mem_data(mem_data),
+    .reg_wr_ctrl_in(ex_mem_reg_wr_ctrl),
+    .csr_wr_ena_in(ex_mem_csr_wr_ena),
+    .csr_wr_addr_in(ex_mem_csr_wr_addr),
+    .rd_w_ena_in(ex_mem_rd_w_ena),
+    .rd_w_addr_in(ex_mem_rd_w_addr),
+    .reg_wr_ctrl_out(mem_wb_reg_wr_ctrl),
+    .csr_wr_ena_out(mem_wb_csr_wr_ena),
+    .csr_wr_addr_out(mem_wb_csr_wr_addr),
+    .rd_w_ena_out(mem_wb_rd_w_ena),
+    .rd_w_addr_out(mem_wb_rd_w_addr),
+    
+    // mem_stage -> exception handler
     .mem_excp(mem_excp)
   );
   
+  // Access memory
+  // mem_stage <-> mem_helper
+  wire [`REG_BUS] mem_addr = ex_data;
+  wire [7 : 0] byte_enable; // write mask
+  wire [`REG_BUS] mem_wr_data;
+  wire [`REG_BUS] mem_rd_data;
+  RAM_1W2R RAM_1W2R(
+    .clk(clock),
+    
+    .inst_addr(if_id_pc),
+    .inst_ena(1),
+    .inst(if_id_inst),
+    
+    .mem_wr_ena(ex_mem_mem_wr_ena),
+    .mem_rd_ena(ex_mem_mem_rd_ena),
+    .byte_enable(byte_enable),
+    .mem_addr(mem_addr),
+    .mem_wr_data(mem_wr_data),
+    .mem_rd_data(mem_rd_data)
+  );
   
   // WB_STAGE
   // pipeline control
   wire wb_allowin;
   // datapath
-  wire [`REG_BUS] exe_data;
+  wire [`REG_BUS] ex_data;
   wire [`REG_BUS] mem_data;
+  // wb_stage -> difftest
+  wire [`REG_BUS] diff_pc;
+  wire [31  :  0] diff_inst;
+  wire wb_valid;
+
   wb_stage Wb_stage(
     .clk(clock),
     .rst(reset),
     
+    .mem_wb_valid(mem_wb_valid),
     .wb_allowin(wb_allowin),
+    .wb_valid(wb_valid),
     
-    .reg_wr_ctrl(reg_wr_ctrl),
-    .exe_data(exe_data),
+    .pc_in(mem_wb_pc),
+    .inst_in(mem_wb_inst),
+    .pc_out(diff_pc),
+    .inst_out(diff_inst),
+
+    .reg_wr_ctrl(mem_wb_reg_wr_ctrl),
+    .exe_data(ex_data),
     .mem_data(mem_data),
-    .pc_data(pc),
     .csr_data(csr_rd_data),
     
     .w_data(rd_data)
@@ -243,7 +333,7 @@ module SimTop(
     .rst(reset),
     .w_addr(rd_w_addr),
     .w_data(rd_data),
-    .w_ena(rd_w_ena),
+    .w_ena(mem_wb_rd_w_ena),
   
     .r_addr1(rs1_r_addr),
     .r_data1(r_data1),
@@ -263,8 +353,8 @@ module SimTop(
     .id_excp(id_excp),
     .mem_excp(mem_excp),
     .itrp_info(0),
-    .now_pc(pc),
-    .now_inst(inst),
+    .now_pc(mem_wb_pc),
+    .now_inst(mem_wb_inst),
     .mem_acc_addr(0),
     .excp_exit(excp_exit),
 
@@ -312,7 +402,7 @@ module SimTop(
   .csr_rd_addr(csr_rd_addr),
   .csr_wr_ena(csr_wr_ena),
   .csr_wr_addr(csr_wr_addr),
-  .csr_wr_data(exe_data),
+  .csr_wr_data(ex_data),
   .csr_rd_data(csr_rd_data),
   
   .excp_enter(excp_enter),
@@ -350,14 +440,14 @@ always @(posedge clock) begin
     cmt_wen <= rd_w_ena;
     cmt_wdest <= {3'd0, rd_w_addr};
     cmt_wdata <= rd_data;
-    cmt_pc <= pc;
-    cmt_inst <= inst;
+    cmt_pc <= mem_wb_pc;
+    cmt_inst <= mem_wb_inst;
     vaild <= 1'd1;
 
     // Skip comparison of the first instruction
     // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
     // Maybe you can avoid it in pipeline
-    skip <= (pc == `PC_START) | (op_info[`INST_PUTCH]);
+    skip <= (!wb_valid || mem_wb_pc == `PC_START);
     
     cycleCnt <= cycleCnt + 1;
     instrCnt <= instrCnt + 1;
@@ -419,7 +509,7 @@ DifftestArchIntRegState DifftestArchIntRegState (
 DifftestTrapEvent DifftestTrapEvent(
   .clock              (clock),
   .coreid             (0),
-  .valid              (inst[6:0] == 7'h6b),
+  .valid              (mem_wb_inst[6:0] == 7'h6b),
   .code               (regs[10][7:0]),
   .pc                 (cmt_pc),
   .cycleCnt           (cycleCnt),

@@ -7,7 +7,6 @@ module ex_stage_alu(
   input wire rst,
   input wire [`REG_BUS] op1,
   input wire [`REG_BUS] op2,
-  //input wire [`OP_BUS] op_info,
   input wire [`ALU_BUS] alu_info,
   input wire is_word_opt,
 
