@@ -82,6 +82,7 @@ module mem_stage(
       csr_wr_addr_out <= csr_wr_addr_in;
       rd_w_ena_out <= rd_w_ena_in;
       rd_w_addr_out <= rd_w_addr_in;
+      ex_data_out <= ex_data_in;
     end
   end
 
