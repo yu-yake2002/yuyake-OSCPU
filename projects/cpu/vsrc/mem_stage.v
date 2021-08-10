@@ -37,11 +37,13 @@ module mem_stage(
   input wire [11 : 0] csr_wr_addr_in,
   input wire rd_w_ena_in,
   input wire [4 : 0] rd_w_addr_in,
+  input wire [`REG_BUS] ex_data_in,
   output reg [`REG_CTRL_BUS] reg_wr_ctrl_out,
   output reg csr_wr_ena_out,
   output reg [11 : 0] csr_wr_addr_out,
   output reg rd_w_ena_out,
   output reg [4 : 0] rd_w_addr_out,
+  output reg [`REG_BUS] ex_data_out,
 
   // mem_stage -> exception handler
   output wire [`EXCP_BUS] mem_excp

@@ -51,7 +51,7 @@ module ex_stage(
   output reg rd_w_ena_out,
   output reg [4 : 0] rd_w_addr_out,
 
-  output wire [`REG_BUS] ex_data,
+  output reg [`REG_BUS] ex_data,
   output wire [`REG_BUS] new_pc,
   output wire bj_ena
   );
@@ -71,6 +71,8 @@ module ex_stage(
     end
   end
 
+  wire [`REG_BUS] alu_output;
+
   always @(posedge clk) begin
     if (id_ex_valid && ex_allowin) begin
       reg_wr_ctrl_out <= reg_wr_ctrl_in;
@@ -78,6 +80,8 @@ module ex_stage(
       csr_wr_addr_out <= csr_wr_addr_in;
       rd_w_ena_out <= rd_w_ena_in;
       rd_w_addr_out <= rd_w_addr_in;
+
+      ex_data <= alu_output;
     end
   end
   // alu -> bj
@@ -90,7 +94,7 @@ module ex_stage(
     .alu_info(alu_info_in),
     .is_word_opt(is_word_opt),
     
-    .alu_output(ex_data),
+    .alu_output(alu_output),
     .bj_data(bj_data)
   );
   

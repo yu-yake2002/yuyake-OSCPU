@@ -23,7 +23,7 @@ module if_stage(
   );
   
   // pipeline control
-  wire if_valid = 1'b1;
+  wire if_valid = pc != `PC_START - 4;
   wire if_ready_go = 1'b1;
   assign if_id_valid = if_valid && if_ready_go;
 

@@ -150,6 +150,7 @@ module SimTop(
   wire [11 : 0] ex_mem_csr_wr_addr;
   wire ex_mem_rd_w_ena;
   wire [4 : 0] ex_mem_rd_w_addr;
+  wire [`REG_BUS] ex_mem_ex_data;
   ex_stage Ex_stage(
     .clk(clock),
     .rst(reset),
@@ -195,7 +196,7 @@ module SimTop(
     .rd_w_ena_out(ex_mem_rd_w_ena),
     .rd_w_addr_out(ex_mem_rd_w_addr),
 
-    .ex_data(ex_data),
+    .ex_data(ex_mem_ex_data),
     .new_pc(new_pc),
     .bj_ena(bj_ena)
   );
@@ -217,6 +218,7 @@ module SimTop(
   wire [11 : 0] mem_wb_csr_wr_addr;
   wire mem_wb_rd_w_ena;
   wire [4 : 0] mem_wb_rd_w_addr;
+  wire [`REG_BUS] mem_wb_ex_data;
   mem_stage Mem_stage(
     .clk(clock),
     .rst(reset),
@@ -249,12 +251,15 @@ module SimTop(
     .csr_wr_addr_in(ex_mem_csr_wr_addr),
     .rd_w_ena_in(ex_mem_rd_w_ena),
     .rd_w_addr_in(ex_mem_rd_w_addr),
+    .ex_data_in(ex_mem_ex_data),
+
     .reg_wr_ctrl_out(mem_wb_reg_wr_ctrl),
     .csr_wr_ena_out(mem_wb_csr_wr_ena),
     .csr_wr_addr_out(mem_wb_csr_wr_addr),
     .rd_w_ena_out(mem_wb_rd_w_ena),
     .rd_w_addr_out(mem_wb_rd_w_addr),
-    
+    .ex_data_out(mem_wb_ex_data),
+
     // mem_stage -> exception handler
     .mem_excp(mem_excp)
   );
@@ -305,7 +310,7 @@ module SimTop(
     .inst_out(diff_inst),
 
     .reg_wr_ctrl(mem_wb_reg_wr_ctrl),
-    .exe_data(ex_data),
+    .exe_data(mem_wb_ex_data),
     .mem_data(mem_data),
     .csr_data(csr_rd_data),
     
