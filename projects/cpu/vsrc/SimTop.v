@@ -327,7 +327,6 @@ module SimTop(
   wire [`REG_BUS] r_data2;
   // wb_stage <-> regfile
   wire rd_w_ena;
-  wire [4 : 0]rd_w_addr;
   wire [`REG_BUS] rd_data;
   
   // difftest
@@ -336,7 +335,7 @@ module SimTop(
   regfile Regfile(
     .clk(clock),
     .rst(reset),
-    .w_addr(rd_w_addr),
+    .w_addr(mem_wb_rd_w_addr),
     .w_data(rd_data),
     .w_ena(mem_wb_rd_w_ena),
   
@@ -443,7 +442,7 @@ always @(posedge clock) begin
   end
   else begin
     cmt_wen <= rd_w_ena;
-    cmt_wdest <= {3'd0, rd_w_addr};
+    cmt_wdest <= {3'd0, mem_wb_rd_w_addr};
     cmt_wdata <= rd_data;
     cmt_pc <= mem_wb_pc;
     cmt_inst <= mem_wb_inst;
