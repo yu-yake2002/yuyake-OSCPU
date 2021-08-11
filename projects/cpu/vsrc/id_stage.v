@@ -280,8 +280,13 @@ module id_stage(
     | inst_i_arith_word | inst_r_dword | inst_u_lui
     | inst_r_word | inst_i_jalr | inst_j
   );
+
+  wire reg_rd_wr_ena = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword
+                            | inst_u_auipc | inst_i_arith_word | inst_r_dword
+                            | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
+                            | inst_i_csr_imm | inst_i_csr_reg);
   
-  assign rd_addr = rd_ena ? rd : 0;
+  
 
   always @(posedge clk) begin
     if (if_id_valid && id_allowin) begin
@@ -375,10 +380,8 @@ module id_stage(
       
       // id -> wb_stage
       reg_wr_ctrl <= {csr_to_reg, mem_to_reg, exe_to_reg};
-      rd_ena    <= ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword
-                            | inst_u_auipc | inst_i_arith_word | inst_r_dword
-                            | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
-                            | inst_i_csr_imm | inst_i_csr_reg);
+      rd_ena      <= reg_rd_wr_ena;
+      rd_addr     <= reg_rd_wr_ena ? rd : 0;
       
       csr_wr_addr <= immI;
       csr_wr_ena  <= ~rst & (inst_i_csr_imm | inst_i_csr_reg);
