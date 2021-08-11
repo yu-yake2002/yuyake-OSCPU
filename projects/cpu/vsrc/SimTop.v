@@ -54,6 +54,16 @@ module SimTop(
   );
 
   // ID_STAGE
+  wire id_stall;
+  // Hazard detection
+  hazard Hazard(
+    .id_ex_reg_wr_ctrl(id_ex_reg_wr_ctrl),
+    .id_ex_rd_addr(id_ex_rd_addr),
+    .rs1_addr(rs1_r_addr),
+    .rs2_addr(rs2_r_addr),
+
+    .id_stall(id_stall)
+  );
   // pipeline control
   wire id_allowin;
   wire id_ex_valid;
@@ -85,11 +95,13 @@ module SimTop(
     .rst(reset),
     .clk(clock),
     
+    // pipeline control
     .ex_allowin(ex_allowin),
     .id_allowin(id_allowin),
     .if_id_valid(if_id_valid),
     .id_ex_valid(id_ex_valid),
-    
+    .stall(id_stall),
+
     .pc_in(if_id_pc),
     .inst_in(if_id_inst),
     .pc_out(id_ex_pc),

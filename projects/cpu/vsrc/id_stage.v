@@ -14,7 +14,8 @@ module id_stage(
   output wire id_allowin,
   input wire if_id_valid,
   output wire id_ex_valid,
-
+  input wire stall,
+  
   // data from if_stage
   input wire [`REG_BUS] pc_in,
   input wire [31  :  0] inst_in,
@@ -69,7 +70,7 @@ module id_stage(
 
   // pipeline control
   reg id_valid;
-  wire id_ready_go = 1'b1;
+  wire id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_ex_valid = id_valid && id_ready_go;
   
@@ -285,8 +286,6 @@ module id_stage(
                             | inst_u_auipc | inst_i_arith_word | inst_r_dword
                             | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
                             | inst_i_csr_imm | inst_i_csr_reg);
-  
-  
 
   always @(posedge clk) begin
     if (if_id_valid && id_allowin) begin
