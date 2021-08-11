@@ -17,17 +17,20 @@ module ex_stage(
   input wire [31  :  0] inst_in,
   output reg [`REG_BUS] pc_out,
   output reg [31  :  0] inst_out,
-
-  input wire [`REG_BUS] exe_op1,
-  input wire [`REG_BUS] exe_op2,
+  
+  // forward control
+  input wire [`REG_BUS] op1_src,
+  input wire [`REG_BUS] op2_src,
+  
+  // ALU control
   input wire is_word_opt,
   input wire [`ALU_BUS] alu_info_in,
-  input wire [`BJ_BUS] bj_info_in,
   
+  // branch & jump control
+  input wire [`BJ_BUS] bj_info_in,
   input wire [`REG_BUS] jmp_imm,
 
   // pass to mem_stage
-  
   input wire [`LOAD_BUS] load_info_in,
   input wire [`SAVE_BUS] save_info_in,
   input wire mem_wr_ena_in,
@@ -72,25 +75,12 @@ module ex_stage(
   end
 
   wire [`REG_BUS] alu_output;
-
-  always @(posedge clk) begin
-    if (id_ex_valid && ex_allowin) begin
-      reg_wr_ctrl_out <= reg_wr_ctrl_in;
-      csr_wr_ena_out <= csr_wr_ena_in;
-      csr_wr_addr_out <= csr_wr_addr_in;
-      rd_ena_out <= rd_ena_in;
-      rd_addr_out <= rd_addr_in;
-
-      ex_data <= alu_output;
-    end
-  end
-  // alu -> bj
   wire [`BJ_BUS] bj_data;
-  
+
   ex_stage_alu Exe_stage_alu(
     .rst(rst),
-    .op1(exe_op1),
-    .op2(exe_op2),
+    .op1(op1_src),
+    .op2(op2_src),
     .alu_info(alu_info_in),
     .is_word_opt(is_word_opt),
     
@@ -103,7 +93,7 @@ module ex_stage(
     .bj_info(bj_info_in),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),
-    .exe_op1(exe_op1),
+    .exe_op1(op1_src),
     .now_pc(pc_in),
     
     .bj_ena(bj_ena),
@@ -118,6 +108,14 @@ module ex_stage(
       save_info_out <= save_info_in;
       mem_wr_ena_out <= mem_wr_ena_in;
       mem_rd_ena_out <= mem_rd_ena_in;
+
+      reg_wr_ctrl_out <= reg_wr_ctrl_in;
+      csr_wr_ena_out <= csr_wr_ena_in;
+      csr_wr_addr_out <= csr_wr_addr_in;
+      rd_ena_out <= rd_ena_in;
+      rd_addr_out <= rd_addr_in;
+
+      ex_data <= alu_output;
     end
   end
 endmodule

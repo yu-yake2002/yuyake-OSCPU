@@ -35,6 +35,8 @@ module id_stage(
   output wire [11 : 0] csr_rd_addr,
 
   // to ex_stage
+  output reg [4 : 0] rs1_addr_out,
+  output reg [4 : 0] rs2_addr_out,
   output reg [`REG_BUS] ex_op1,
   output reg [`REG_BUS] ex_op2,
   output reg is_word_opt,
@@ -285,6 +287,9 @@ module id_stage(
       // id_stage -> exe_stage
       pc_out   <= pc_in;
       inst_out <= inst_in;
+      
+      rs1_addr_out <= rs1_addr;
+      rs2_addr_out <= rs2_addr;
 
       is_word_opt <= inst_r_word | inst_i_arith_word;
 

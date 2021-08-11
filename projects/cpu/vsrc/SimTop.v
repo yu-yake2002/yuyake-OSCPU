@@ -63,6 +63,8 @@ module SimTop(
   wire [`ALU_BUS] id_ex_alu_info;
   wire [`BJ_BUS]  id_ex_bj_info;
   wire is_word_opt;
+  wire [4 : 0] id_ex_rs1_addr;
+  wire [4 : 0] id_ex_rs2_addr;
   wire [`REG_BUS] jmp_imm;
   // -> exception
   wire [`EXCP_BUS] id_excp;
@@ -93,10 +95,12 @@ module SimTop(
     .pc_out(id_ex_pc),
     .inst_out(id_ex_inst),
     
+    // <- reg & csr
     .r_data1(r_data1),
     .r_data2(r_data2),
     .csr_data(csr_rd_data),
     
+    // -> reg & csr
     .rs1_ena(rs1_r_ena),
     .rs1_addr(rs1_r_addr),
     .rs2_ena(rs2_r_ena),
@@ -104,8 +108,11 @@ module SimTop(
     .csr_rd_ena(csr_rd_ena),
     .csr_rd_addr(csr_rd_addr),
     
-    .ex_op1(ex_op1),
-    .ex_op2(ex_op2),
+    // -> ex_stage
+    .rs1_addr_out(id_ex_rs1_addr),
+    .rs2_addr_out(id_ex_rs2_addr),
+    .ex_op1(id_ex_op1),
+    .ex_op2(id_ex_op2),
     .is_word_opt(is_word_opt),
     .alu_info(id_ex_alu_info),
     .bj_info(id_ex_bj_info),
@@ -130,12 +137,32 @@ module SimTop(
     
     
   // EX_STAGE
+  wire [`REG_BUS] op1_src, op2_src;
+  forward Forward(
+    .rs1_addr(id_ex_rs1_addr),
+    .rs2_addr(id_ex_rs2_addr),
+    .ex_mem_rd_addr(ex_mem_rd_addr),
+    .ex_mem_rd_ena(ex_mem_rd_ena),
+    .mem_wb_rd_addr(mem_wb_rd_addr),
+    .mem_wb_rd_ena(mem_wb_rd_ena),
+    .ex_mem_ex_data(ex_mem_ex_data),
+    .mem_wb_ex_data(mem_wb_ex_data),
+    .mem_wb_mem_data(mem_wb_mem_data),
+    .ex_mem_reg_wr_ctrl(ex_mem_reg_wr_ctrl),
+    .mem_wb_reg_wr_ctrl(mem_wb_reg_wr_ctrl),
+    .id_op1(id_ex_op1),
+    .id_op2(id_ex_op2),
+
+    .op1_src(op1_src),
+    .op2_src(op2_src)
+  );
+
   // pipeline control
   wire ex_allowin;
   wire ex_mem_valid;
   // operand
-  wire [`REG_BUS] ex_op1;
-  wire [`REG_BUS] ex_op2;
+  wire [`REG_BUS] id_ex_op1;
+  wire [`REG_BUS] id_ex_op2;
   // -> mem_stage
   wire [`REG_BUS] ex_mem_pc;
   wire [31  :  0] ex_mem_inst;
@@ -154,7 +181,7 @@ module SimTop(
   ex_stage Ex_stage(
     .clk(clock),
     .rst(reset),
-  
+    // pipeline control
     .mem_allowin(mem_allowin),
     .ex_allowin(ex_allowin),
     .id_ex_valid(id_ex_valid),
@@ -164,11 +191,16 @@ module SimTop(
     .inst_in(id_ex_inst),
     .pc_out(ex_mem_pc),
     .inst_out(ex_mem_inst),
-    
-    .exe_op1(ex_op1),
-    .exe_op2(ex_op2),
+
+    // forward control
+    .op1_src(op1_src),
+    .op2_src(op2_src),
+
+    // ALU control
     .is_word_opt(is_word_opt),
     .alu_info_in(id_ex_alu_info),
+
+    // branch & jump control
     .bj_info_in(id_ex_bj_info),
     .jmp_imm(jmp_imm),
     
@@ -219,6 +251,7 @@ module SimTop(
   wire mem_wb_rd_ena;
   wire [4 : 0] mem_wb_rd_addr;
   wire [`REG_BUS] mem_wb_ex_data;
+  wire [`REG_BUS] mem_wb_mem_data;
   mem_stage Mem_stage(
     .clk(clock),
     .rst(reset),
@@ -238,7 +271,7 @@ module SimTop(
     .save_info(ex_mem_save_info),
     .mem_rd_ena(ex_mem_mem_rd_ena),
     .mem_wr_ena(ex_mem_mem_wr_ena),
-    .mem_addr(ex_data),
+    .mem_addr(ex_mem_ex_data),
     
     .memhpr_wr_data(mem_wr_data),
     .memhpr_rd_data(mem_rd_data),
@@ -266,7 +299,7 @@ module SimTop(
   
   // Access memory
   // mem_stage <-> mem_helper
-  wire [`REG_BUS] mem_addr = ex_data;
+  wire [`REG_BUS] mem_addr = ex_mem_ex_data;
   wire [7 : 0] byte_enable; // write mask
   wire [`REG_BUS] mem_wr_data;
   wire [`REG_BUS] mem_rd_data;
@@ -289,7 +322,6 @@ module SimTop(
   // pipeline control
   wire wb_allowin;
   // datapath
-  wire [`REG_BUS] ex_data;
   wire [`REG_BUS] mem_data;
   // wb_stage -> difftest
   wire [`REG_BUS] diff_pc;
@@ -405,7 +437,7 @@ module SimTop(
   .csr_rd_addr(csr_rd_addr),
   .csr_wr_ena(csr_wr_ena),
   .csr_wr_addr(csr_wr_addr),
-  .csr_wr_data(ex_data),
+  .csr_wr_data(mem_wb_ex_data),
   .csr_rd_data(csr_rd_data),
   
   .excp_enter(excp_enter),
