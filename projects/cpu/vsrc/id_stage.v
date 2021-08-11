@@ -27,10 +27,10 @@ module id_stage(
   input wire [`REG_BUS] csr_data,
   
   // read reg & csr
-  output wire rs1_r_ena,
-  output wire [4 : 0] rs1_r_addr,
-  output wire rs2_r_ena,
-  output wire [4 : 0] rs2_r_addr,
+  output wire rs1_ena,
+  output wire [4 : 0] rs1_addr,
+  output wire rs2_ena,
+  output wire [4 : 0] rs2_addr,
   output wire csr_rd_ena,
   output wire [11 : 0] csr_rd_addr,
 
@@ -53,8 +53,8 @@ module id_stage(
   output reg [`REG_CTRL_BUS] reg_wr_ctrl,
   output reg csr_wr_ena,
   output reg [11 : 0] csr_wr_addr,
-  output reg rd_w_ena,
-  output reg [4 : 0] rd_w_addr,
+  output reg rd_ena,
+  output reg [4 : 0] rd_addr,
   
   // to if_stage
   output reg [`REG_BUS] jmp_imm,
@@ -260,13 +260,13 @@ module id_stage(
                     | csr_vld;
   
   // get operands from registers
-  assign rs1_r_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
-                            | inst_i_arith_word | inst_s | inst_r_dword 
-                            | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
-                            | inst_putch);
-  assign rs1_r_addr = (rs1_r_ena == 1'b1) ? rs1 : 0;
-  assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
-  assign rs2_r_addr = (rs2_r_ena == 1'b1) ? rs2 : 0;
+  assign rs1_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
+                          | inst_i_arith_word | inst_s | inst_r_dword 
+                          | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
+                          | inst_putch);
+  assign rs1_addr = rs1_ena ? rs1 : 0;
+  assign rs2_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
+  assign rs2_addr = rs2_ena ? rs2 : 0;
   // get operands from CSRs
   assign csr_rd_ena = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   assign csr_rd_addr = immI;
@@ -369,11 +369,11 @@ module id_stage(
       
       // id -> wb_stage
       reg_wr_ctrl <= {csr_to_reg, mem_to_reg, exe_to_reg};
-      rd_w_ena    <= ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword
+      rd_ena    <= ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword
                             | inst_u_auipc | inst_i_arith_word | inst_r_dword
                             | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
                             | inst_i_csr_imm | inst_i_csr_reg);
-      rd_w_addr   <= (rd_w_ena == 1'b1) ? rd : 0;
+      rd_addr   <= rd_ena ? rd : 0;
       csr_wr_addr <= immI;
       csr_wr_ena  <= ~rst & (inst_i_csr_imm | inst_i_csr_reg);
     end

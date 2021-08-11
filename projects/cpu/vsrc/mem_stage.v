@@ -35,14 +35,14 @@ module mem_stage(
   input wire [`REG_CTRL_BUS] reg_wr_ctrl_in,
   input wire csr_wr_ena_in,
   input wire [11 : 0] csr_wr_addr_in,
-  input wire rd_w_ena_in,
-  input wire [4 : 0] rd_w_addr_in,
+  input wire rd_ena_in,
+  input wire [4 : 0] rd_addr_in,
   input wire [`REG_BUS] ex_data_in,
   output reg [`REG_CTRL_BUS] reg_wr_ctrl_out,
   output reg csr_wr_ena_out,
   output reg [11 : 0] csr_wr_addr_out,
-  output reg rd_w_ena_out,
-  output reg [4 : 0] rd_w_addr_out,
+  output reg rd_ena_out,
+  output reg [4 : 0] rd_addr_out,
   output reg [`REG_BUS] ex_data_out,
 
   // mem_stage -> exception handler
@@ -80,8 +80,8 @@ module mem_stage(
       reg_wr_ctrl_out <= reg_wr_ctrl_in;
       csr_wr_ena_out <= csr_wr_ena_in;
       csr_wr_addr_out <= csr_wr_addr_in;
-      rd_w_ena_out <= rd_w_ena_in;
-      rd_w_addr_out <= rd_w_addr_in;
+      rd_ena_out <= rd_ena_in;
+      rd_addr_out <= rd_addr_in;
       ex_data_out <= ex_data_in;
     end
   end
