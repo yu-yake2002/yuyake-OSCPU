@@ -76,7 +76,7 @@ module id_stage(
   assign id_ex_valid = id_valid && id_ready_go;
   
   always @(posedge clk) begin
-    if (rst || flush) begin
+    if (rst) begin
       id_valid <= 1'b0;
     end
     else if (id_allowin) begin
