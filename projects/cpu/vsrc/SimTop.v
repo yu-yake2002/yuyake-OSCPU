@@ -475,14 +475,14 @@ reg [7:0]cmt_wdest;
 reg [`REG_BUS] cmt_wdata;
 reg [`REG_BUS] cmt_pc;
 reg [31:0]cmt_inst;
-reg vaild;
+reg valid;
 reg skip;
 reg [63:0] cycleCnt;
 reg [63:0] instrCnt;
 
 always @(posedge clock) begin
   if (reset) begin
-    {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, vaild, cycleCnt, instrCnt} <= 0;
+    {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, valid, cycleCnt, instrCnt} <= 0;
   end
   else begin
     cmt_wen <= mem_wb_rd_ena;
@@ -490,8 +490,8 @@ always @(posedge clock) begin
     cmt_wdata <= rd_data;
     cmt_pc <= mem_wb_pc;
     cmt_inst <= mem_wb_inst;
-    vaild <= 1'd1;
-
+    //vaild <= 1'd1;
+    valid <= wb_valid;
     // Skip comparison of the first instruction
     // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
     // Maybe you can avoid it in pipeline
@@ -506,7 +506,7 @@ DifftestInstrCommit DifftestInstrCommit(
   .clock              (clock),
   .coreid             (0),
   .index              (0),
-  .valid              (vaild),
+  .valid              (valid),
   .pc                 (cmt_pc),
   .instr              (cmt_inst),
   .skip               (skip),
