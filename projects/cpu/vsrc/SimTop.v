@@ -57,7 +57,7 @@ module SimTop(
   wire id_stall;
   // Hazard detection
   hazard Hazard(
-    .id_ex_reg_wr_ctrl(id_ex_reg_wr_ctrl),
+    .id_ex_mem_rd_ena(id_ex_mem_rd_ena),
     .id_ex_rd_addr(id_ex_rd_addr),
     .rs1_addr(rs1_r_addr),
     .rs2_addr(rs2_r_addr),
