@@ -495,10 +495,10 @@ always @(posedge clock) begin
     // Skip comparison of the first instruction
     // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
     // Maybe you can avoid it in pipeline
-    skip <= (!wb_valid/* || mem_wb_pc == `PC_START*/);
+    skip <= (!wb_valid);
     
     cycleCnt <= cycleCnt + 1;
-    instrCnt <= instrCnt + 1;
+    instrCnt <= instrCnt + (wb_valid ? 1 : 0);
   end
 end
 
