@@ -61,7 +61,7 @@ module SimTop(
     .id_ex_rd_addr(id_ex_rd_addr),
     .rs1_addr(rs1_r_addr),
     .rs2_addr(rs2_r_addr),
-
+    
     .id_stall(id_stall)
   );
   // pipeline control
@@ -101,6 +101,7 @@ module SimTop(
     .if_id_valid(if_id_valid),
     .id_ex_valid(id_ex_valid),
     .stall(id_stall),
+    .flush(bj_ena),
 
     .pc_in(if_id_pc),
     .inst_in(if_id_inst),

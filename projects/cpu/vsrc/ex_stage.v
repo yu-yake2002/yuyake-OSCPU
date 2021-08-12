@@ -66,7 +66,7 @@ module ex_stage(
   assign ex_mem_valid = ex_valid && ex_ready_go;
   
   always @(posedge clk) begin
-    if (rst) begin
+    if (rst || bj_ena) begin
       ex_valid <= 1'b0;
     end
     else if (ex_allowin) begin
@@ -90,6 +90,7 @@ module ex_stage(
   
   ex_stage_bj Exe_stage_bj(
     .rst(rst),
+    .ex_valid(ex_valid),
     .bj_info(bj_info_in),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),

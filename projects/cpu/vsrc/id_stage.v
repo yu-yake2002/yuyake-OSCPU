@@ -15,6 +15,7 @@ module id_stage(
   input wire if_id_valid,
   output wire id_ex_valid,
   input wire stall,
+  input wire flush,
   
   // data from if_stage
   input wire [`REG_BUS] pc_in,
@@ -75,7 +76,7 @@ module id_stage(
   assign id_ex_valid = id_valid && id_ready_go;
   
   always @(posedge clk) begin
-    if (rst) begin
+    if (rst || flush) begin
       id_valid <= 1'b0;
     end
     else if (id_allowin) begin
@@ -263,26 +264,26 @@ module id_stage(
                     | csr_vld;
   
   // get operands from registers
-  assign rs1_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
+  assign rs1_ena  = ~rst & id_valid & (inst_i_load | inst_i_fence | inst_i_arith_dword 
                           | inst_i_arith_word | inst_s | inst_r_dword 
                           | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
                           | inst_putch);
   assign rs1_addr = rs1_ena ? rs1 : 0;
-  assign rs2_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
+  assign rs2_ena  = ~rst & id_valid & (inst_r_dword | inst_r_word | inst_s | inst_b);
   assign rs2_addr = rs2_ena ? rs2 : 0;
   // get operands from CSRs
-  assign csr_rd_ena = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
+  assign csr_rd_ena = ~rst & id_valid & (inst_i_csr_imm | inst_i_csr_reg);
   assign csr_rd_addr = immI;
 
-  wire csr_to_reg = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
-  wire mem_to_reg = ~rst & inst_i_load;
-  wire exe_to_reg = ~rst & (
+  wire csr_to_reg = ~rst & id_valid & (inst_i_csr_imm | inst_i_csr_reg);
+  wire mem_to_reg = ~rst & id_valid & inst_i_load;
+  wire exe_to_reg = ~rst & id_valid & (
       inst_i_fence | inst_i_arith_dword | inst_u_auipc 
     | inst_i_arith_word | inst_r_dword | inst_u_lui
     | inst_r_word | inst_i_jalr | inst_j
   );
 
-  wire reg_rd_wr_ena = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword
+  wire reg_rd_wr_ena = ~rst & id_valid & (inst_i_load | inst_i_fence | inst_i_arith_dword
                             | inst_u_auipc | inst_i_arith_word | inst_r_dword
                             | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
                             | inst_i_csr_imm | inst_i_csr_reg);
@@ -361,8 +362,8 @@ module id_stage(
                 | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
 
       // id -> mem_stage
-      mem_rd_ena <= ~rst & inst_i_load;
-      mem_wr_ena <= ~rst & inst_s;
+      mem_rd_ena <= ~rst & id_valid & inst_i_load;
+      mem_wr_ena <= ~rst & id_valid & inst_s;
 
       load_info[`LOAD_LB]  <= inst_lb;
       load_info[`LOAD_LH]  <= inst_lh;
@@ -383,7 +384,7 @@ module id_stage(
       rd_addr     <= reg_rd_wr_ena ? rd : 0;
       
       csr_wr_addr <= immI;
-      csr_wr_ena  <= ~rst & (inst_i_csr_imm | inst_i_csr_reg);
+      csr_wr_ena  <= ~rst & id_valid & (inst_i_csr_imm | inst_i_csr_reg);
     end
   end
   /*
