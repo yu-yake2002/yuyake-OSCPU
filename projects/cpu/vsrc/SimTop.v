@@ -65,6 +65,7 @@ module SimTop(
     .id_stall(id_stall)
   );
   // pipeline control
+  wire id_valid;
   wire id_allowin;
   wire id_ex_valid;
   // -> ex_stage
@@ -96,6 +97,7 @@ module SimTop(
     .clk(clock),
     
     // pipeline control
+    .id_valid(id_valid),
     .ex_allowin(ex_allowin),
     .id_allowin(id_allowin),
     .if_id_valid(if_id_valid),
@@ -195,6 +197,8 @@ module SimTop(
     .clk(clock),
     .rst(reset),
     // pipeline control
+    .id_valid(id_valid),
+
     .mem_allowin(mem_allowin),
     .ex_allowin(ex_allowin),
     .id_ex_valid(id_ex_valid),

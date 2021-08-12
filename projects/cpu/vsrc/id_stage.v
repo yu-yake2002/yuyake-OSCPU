@@ -10,6 +10,7 @@ module id_stage(
   input wire clk,
   
   // pipeline control
+  output reg id_valid,
   input wire ex_allowin,
   output wire id_allowin,
   input wire if_id_valid,
@@ -70,13 +71,12 @@ module id_stage(
 
 
   // pipeline control
-  reg id_valid;
   wire id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_ex_valid = id_valid && id_ready_go;
   
   always @(posedge clk) begin
-    if (rst || flush) begin
+    if (rst/* || flush*/) begin
       id_valid <= 1'b0;
     end
     else if (id_allowin) begin

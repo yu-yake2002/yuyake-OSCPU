@@ -8,6 +8,8 @@ module ex_stage(
   input wire rst,
   
   // pipeline control
+  input wire id_valid,
+
   input wire mem_allowin,
   output wire ex_allowin,
   input wire id_ex_valid,
@@ -90,7 +92,7 @@ module ex_stage(
   
   ex_stage_bj Exe_stage_bj(
     .rst(rst),
-    .ex_valid(ex_valid),
+    .id_valid(id_valid),
     .bj_info(bj_info_in),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),
