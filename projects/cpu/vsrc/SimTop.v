@@ -44,7 +44,7 @@ module SimTop(
     .if_id_valid(if_id_valid),
     
     .bj_ena(bj_ena),
-    .new_pc(if_id_pc),
+    .new_pc(new_pc),
     
     .excp_jmp_ena(excp_jmp_ena),
     .excp_pc(excp_pc),
