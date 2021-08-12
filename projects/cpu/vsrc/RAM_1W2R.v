@@ -24,7 +24,7 @@ module RAM_1W2R(
   assign inst = inst_addr[2] ? inst_2[63:32] : inst_2[31:0];
 
   // DATA PORT 
-    
+  wire debug_rd = (mem_addr-`PC_START)>>3;
   assign mem_rd_data = ram_read_helper(mem_rd_ena, {3'b000,(mem_addr-`PC_START)>>3});
 
   // 掩码转换
