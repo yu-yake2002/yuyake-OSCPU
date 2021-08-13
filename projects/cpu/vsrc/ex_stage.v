@@ -6,6 +6,7 @@
 module ex_stage(
   input wire rst,
 
+  input wire ex_valid,
   input wire [`REG_BUS] ex_op1,
   input wire [`REG_BUS] ex_op2,
   input wire is_word_opt,
@@ -35,6 +36,7 @@ module ex_stage(
   
   ex_stage_bj Exe_stage_bj(
     .rst(rst),
+    .ex_valid(ex_valid),
     .bj_info(bj_info),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),

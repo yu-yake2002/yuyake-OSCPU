@@ -260,6 +260,7 @@ module SimTop(
   ex_stage Ex_stage(
     .rst(reset),
     
+    .ex_valid(ex_valid),
     .ex_op1(op1_src),
     .ex_op2(op2_src),
     .is_word_opt(ex_is_word_opt),
