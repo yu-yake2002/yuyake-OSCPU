@@ -23,8 +23,8 @@ module ex_stage(
   // alu -> bj
   wire [`BJ_BUS] bj_data;
   
-  wire op1 = {{32{~is_word_opt}} & ex_op1[63 : 32], ex_op1[31 : 0]};
-  wire op2 = {{32{~is_word_opt}} & ex_op2[63 : 32], ex_op2[31 : 0]};
+  wire [`REG_BUS] op1 = {{32{~is_word_opt}} & ex_op1[63 : 32], ex_op1[31 : 0]};
+  wire [`REG_BUS] op2 = {{32{~is_word_opt}} & ex_op2[63 : 32], ex_op2[31 : 0]};
   ex_stage_alu Exe_stage_alu(
     .rst(rst),
     .op1(op1),
