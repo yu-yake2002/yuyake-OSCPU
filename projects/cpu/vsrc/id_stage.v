@@ -314,7 +314,7 @@ assign id_op2 = {64{~rst}} & (
 
 assign jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
               | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
-              | ({64{inst_i_jalr}}  & r_data1 + {{52{immI[11]}}, immI} - pc_id);
+              | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI} - pc_id);
 //              | ({64{inst_t}}       & 64'b0);
   
   // data to wb_stage
