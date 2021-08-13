@@ -363,8 +363,18 @@ module SimTop(
   reg wb_csr_wr_ena;
 
   // pipeline control
+  reg wb_valid;
   wire wb_allowin = 1'b1;
   
+  always @(posedge clock) begin
+    if (reset) begin
+      wb_valid <= 1'b0;
+    end
+    else if (wb_allowin) begin
+      wb_valid <= mem_to_wb_valid;
+    end
+  end
+
   always @(posedge clock) begin
     if (mem_to_wb_valid && wb_allowin) begin
       wb_pc <= mem_pc;
@@ -521,7 +531,7 @@ always @(posedge clock) begin
     cmt_wdata <= wb_reg_wr_data;
     cmt_pc <= wb_pc;
     cmt_inst <= wb_inst;
-    vaild <= 1'd1;
+    vaild <= wb_valid;
 
     // Skip comparison of the first instruction
     // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
@@ -529,7 +539,7 @@ always @(posedge clock) begin
     skip <= (if_pc == `PC_START);
     
     cycleCnt <= cycleCnt + 1;
-    instrCnt <= instrCnt + 1;
+    instrCnt <= instrCnt + (wb_valid ? 1 : 0);
   end
 end
 
