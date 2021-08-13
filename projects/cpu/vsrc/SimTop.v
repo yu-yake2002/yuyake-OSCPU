@@ -232,18 +232,18 @@ module SimTop(
       ex_rs2_addr <= rs2_r_addr;
       
       // -> mem
-      ex_ram_wr_ena <= id_ram_wr_ena;
-      ex_ram_rd_ena <= id_ram_rd_ena;
+      ex_ram_wr_ena <= id_ram_wr_ena & id_valid;
+      ex_ram_rd_ena <= id_ram_rd_ena & id_valid;
       ex_load_info <= id_load_info;
       ex_save_info <= id_save_info;
 
       // -> wb
       ex_csr_data <= id_csr_data;
-      ex_reg_wr_ctrl <= id_reg_wr_ctrl;
+      ex_reg_wr_ctrl <= id_reg_wr_ctrl & {3{id_valid}};
       ex_reg_wr_addr <= id_reg_wr_addr;
-      ex_reg_wr_ena <= id_reg_wr_ena;
+      ex_reg_wr_ena <= id_reg_wr_ena & id_valid;
       ex_csr_wr_addr <= id_csr_wr_addr;
-      ex_csr_wr_ena <= id_csr_wr_ena;
+      ex_csr_wr_ena <= id_csr_wr_ena & id_valid;
     end
   end
 
@@ -340,14 +340,14 @@ module SimTop(
       mem_ram_wr_src <= rs2_forward;
       mem_ex_data <= ex_data;
       mem_csr_data <= ex_csr_data;
-      mem_ram_wr_ena <= ex_ram_wr_ena;
-      mem_ram_rd_ena <= ex_ram_rd_ena;
+      mem_ram_wr_ena <= ex_ram_wr_ena & ex_valid;
+      mem_ram_rd_ena <= ex_ram_rd_ena & ex_valid;
 
       // -> wb
-      mem_reg_wr_ctrl <= ex_reg_wr_ctrl;
+      mem_reg_wr_ctrl <= ex_reg_wr_ctrl & {3{ex_valid}};
       mem_reg_wr_addr <= ex_reg_wr_addr;
-      mem_reg_wr_ena <= ex_reg_wr_ena;
-      mem_csr_wr_ena <= ex_csr_wr_ena;
+      mem_reg_wr_ena <= ex_reg_wr_ena & ex_valid;
+      mem_csr_wr_ena <= ex_csr_wr_ena & ex_valid;
     end
   end
 
@@ -400,14 +400,14 @@ module SimTop(
     if (mem_to_wb_valid && wb_allowin) begin
       wb_pc <= mem_pc;
       wb_inst <= mem_inst;
-      wb_reg_wr_ctrl <= mem_reg_wr_ctrl;
+      wb_reg_wr_ctrl <= mem_reg_wr_ctrl & {3{mem_valid}};
       wb_ex_data <= mem_ex_data;
       wb_ram_data <= mem_ram_data;
       wb_csr_data <= mem_csr_data;
       wb_reg_wr_addr <= mem_reg_wr_addr;
-      wb_reg_wr_ena <= mem_reg_wr_ena;
+      wb_reg_wr_ena <= mem_reg_wr_ena & mem_valid;
       wb_csr_wr_addr <= mem_csr_wr_addr;
-      wb_csr_wr_ena <= mem_csr_wr_ena;
+      wb_csr_wr_ena <= mem_csr_wr_ena & mem_valid;
     end
   end
   
