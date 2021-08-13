@@ -8,7 +8,7 @@ module if_stage(
   input wire clk,
   input wire rst,
   
-  input wire pc_now,
+  input wire [`REG_BUS] pc_now,
   input wire bj_ena,
   input wire [`REG_BUS] bj_pc,
   input wire excp_jmp_ena,
