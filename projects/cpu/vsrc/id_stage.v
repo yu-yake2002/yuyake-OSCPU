@@ -281,7 +281,7 @@ assign id_op1 = {64{~rst}} & (
                 ({64{inst_i_load}}        & r_data1)
               | ({64{inst_i_fence}}       & r_data1)
               | ({64{inst_i_arith_dword}} & r_data1)
-              | ({64{inst_u_auipc}}       & pc_id)
+              | ({64{inst_u_auipc}}       & (pc_id - 4))
               | ({64{inst_i_arith_word}}  & r_data1 & 64'hffffffff)
               | ({64{inst_s}}             & r_data1)
               | ({64{inst_r_dword}}       & r_data1)
