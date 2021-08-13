@@ -11,7 +11,7 @@ module hazard (
   output wire stall
 );
   assign stall = ex_ram_rd_ena && (
-       (ex_reg_wr_addr == rs1_addr && rs1_addr != 5'b0) 
-    || (ex_reg_wr_addr == rs2_addr && rs2_addr != 5'b0)
+       (ex_reg_wr_addr == rs1_addr && (|rs1_addr)) 
+    || (ex_reg_wr_addr == rs2_addr && (|rs2_addr))
   );
 endmodule
