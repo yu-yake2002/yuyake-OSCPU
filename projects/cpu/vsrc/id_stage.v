@@ -61,7 +61,7 @@ assign rs1_addr = {5{rs1_r_ena}} & inst[19 : 15];
 assign rs2_addr = {5{rs2_r_ena}} & inst[24 : 20];
 wire [11 : 0] csr_addr = inst[31 : 20];
 assign csr_rd_addr = csr_addr;
-wire rd_addr = inst[11 : 7];
+wire [4  : 0] rd_addr = inst[11 : 7];
 
 wire [4  : 0] zimm = rs1_addr;
 wire [11 : 0] immI = csr_addr;
