@@ -130,6 +130,8 @@ module SimTop(
     .id_op2(id_op2),
     .use_rs1(id_use_rs1),
     .use_rs2(id_use_rs2),
+    .id_rs1_data(id_rs1_data),
+    .id_rs2_data(id_rs2_data),
     
     .is_word_opt(id_is_word_opt),
     .alu_info(id_alu_info),
@@ -157,6 +159,7 @@ module SimTop(
   wire [`REG_BUS] id_jmp_imm;
   wire [`REG_BUS] id_op1, id_op2;
   wire id_use_rs1, id_use_rs2;
+  wire [`REG_BUS] id_rs1_data, id_rs2_data;
   wire [`REG_BUS] id_csr_data;
 
   wire id_ram_wr_ena, id_ram_rd_ena;
@@ -176,6 +179,7 @@ module SimTop(
   reg [`REG_BUS] ex_jmp_imm;
   reg [`REG_BUS] ex_now_op1, ex_now_op2;
   reg ex_use_rs1, ex_use_rs2;
+  reg [`REG_BUS] ex_rs1_data, ex_rs2_data;
   reg [4 : 0] ex_rs1_addr, ex_rs2_addr;
   reg [`REG_BUS] ex_csr_data;
 
@@ -222,6 +226,8 @@ module SimTop(
       ex_now_op2 <= id_op2;
       ex_use_rs1 <= id_use_rs1;
       ex_use_rs2 <= id_use_rs2;
+      ex_rs1_data <= id_rs1_data;
+      ex_rs2_data <= id_rs2_data;
       ex_rs1_addr <= rs1_r_addr;
       ex_rs2_addr <= rs2_r_addr;
       
@@ -253,8 +259,8 @@ module SimTop(
     .wb_mem_data(wb_ram_data),
     .mem_reg_wr_ctrl(mem_reg_wr_ctrl),
     .wb_reg_wr_ctrl(wb_reg_wr_ctrl),
-    .now_op1(ex_now_op1),
-    .now_op2(ex_now_op2),
+    .rs1_now(ex_rs1_data),
+    .rs2_now(ex_rs2_data),
 
     .rs1_forward(rs1_forward),
     .rs2_forward(rs2_forward)

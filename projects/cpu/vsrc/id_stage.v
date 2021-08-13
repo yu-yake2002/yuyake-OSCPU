@@ -33,7 +33,8 @@ module id_stage(
   output wire [`REG_BUS] id_op2,
   output wire use_rs1,
   output wire use_rs2,
-  
+  output wire [`REG_BUS] id_rs1_data,
+  output wire [`REG_BUS] id_rs2_data,
   output wire is_word_opt,
   output wire [`ALU_BUS] alu_info,
   output wire [`BJ_BUS]  bj_info,
@@ -298,6 +299,7 @@ assign id_op1 = {64{~rst}} & (
 assign use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                 | inst_i_arith_word | inst_s | inst_r_dword
                 | inst_r_word | inst_b | inst_i_csr_reg;
+assign id_rs1_data = r_data1;
 
 assign id_op2 = {64{~rst}} & (
                 ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
@@ -316,6 +318,7 @@ assign id_op2 = {64{~rst}} & (
               | ({64{inst_i_csr_reg}}     & csr_data)
              );
 assign use_rs2 = inst_r_dword | inst_r_word | inst_b;
+assign id_rs2_data = r_data2;
 
 assign jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
               | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})

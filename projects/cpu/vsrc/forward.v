@@ -16,8 +16,8 @@ module forward (
   input wire [`REG_BUS] wb_mem_data,
   input wire [`REG_CTRL_BUS] mem_reg_wr_ctrl,
   input wire [`REG_CTRL_BUS] wb_reg_wr_ctrl,
-  input wire [`REG_BUS] now_op1,
-  input wire [`REG_BUS] now_op2,
+  input wire [`REG_BUS] rs1_now,
+  input wire [`REG_BUS] rs2_now,
 
   output wire [`REG_BUS] rs1_forward,
   output wire [`REG_BUS] rs2_forward
@@ -42,7 +42,7 @@ module forward (
   assign rs1_forward = (mem_op1_src_ex) ? mem_ex_data :
                        (wb_op1_src_ex)  ? wb_ex_data  :
                        (wb_op1_src_mem) ? wb_mem_data :
-                       now_op1;
+                       rs1_now;
 
   wire mem_op2_src_ex = (rs2_addr == mem_reg_wr_addr) 
                         && mem_reg_wr_ena 
@@ -63,6 +63,6 @@ module forward (
   assign rs2_forward = (mem_op2_src_ex) ? mem_ex_data :
                        (wb_op2_src_ex)  ? wb_ex_data  :
                        (wb_op2_src_mem) ? wb_mem_data :
-                       now_op2;
+                       rs2_now;
   
 endmodule
