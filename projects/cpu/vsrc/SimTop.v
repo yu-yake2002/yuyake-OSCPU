@@ -232,8 +232,8 @@ module SimTop(
       ex_rs2_addr <= rs2_r_addr;
       
       // -> mem
-      ex_ram_wr_ena <= id_ram_wr_ena & id_valid;
-      ex_ram_rd_ena <= id_ram_rd_ena & id_valid;
+      ex_ram_wr_ena <= id_ram_wr_ena & id_valid & ~bj_ena;
+      ex_ram_rd_ena <= id_ram_rd_ena & id_valid & ~bj_ena;
       ex_load_info <= id_load_info;
       ex_save_info <= id_save_info;
 
