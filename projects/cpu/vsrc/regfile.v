@@ -12,11 +12,11 @@ module regfile(
   input  wire w_ena,
 	
 	input  wire [4  : 0] r_addr1,
-	output reg  [`REG_BUS] r_data1,
+	output wire [`REG_BUS] r_data1,
 	input  wire r_ena1,
 	
 	input  wire [4  : 0] r_addr2,
-	output reg  [`REG_BUS] r_data2,
+	output wire [`REG_BUS] r_data2,
 	input  wire r_ena2,
 
 	output wire [`REG_BUS] regs_o[0:31]
@@ -104,23 +104,11 @@ module regfile(
 		end
 	end
 	
-	always @(*) begin
-		if (rst == 1'b1)
-			r_data1 = `ZERO_WORD;
-		else if (r_ena1 == 1'b1)
-			r_data1 = regs[r_addr1];
-		else
-			r_data1 = `ZERO_WORD;
-	end
-	
-	always @(*) begin
-		if (rst == 1'b1)
-			r_data2 = `ZERO_WORD;
-		else if (r_ena2 == 1'b1)
-			r_data2 = regs[r_addr2];
-		else
-			r_data2 = `ZERO_WORD;
-	end
-  
+	assign r_data1 = {64{~rst & r_ena1}} & (
+    (r_addr1 == w_addr) ? w_data : regs[r_addr1]
+	);
+	assign r_data2 = {64{~rst & r_ena2}} & (
+    (r_addr2 == w_addr) ? w_data : regs[r_addr2]
+	);
   assign regs_o = regs;
 endmodule
