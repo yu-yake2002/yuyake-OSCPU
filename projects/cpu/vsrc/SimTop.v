@@ -275,6 +275,8 @@ module SimTop(
     .ex_valid(ex_valid),
     .ex_op1(true_op1),
     .ex_op2(true_op2),
+    .rs1_forward(rs1_forward),
+    .rs2_forward(rs2_forward),
     .is_word_opt(ex_is_word_opt),
     .alu_info(ex_alu_info),
     .bj_info(ex_bj_info),

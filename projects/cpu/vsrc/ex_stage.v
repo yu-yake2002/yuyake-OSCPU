@@ -9,6 +9,8 @@ module ex_stage(
   input wire ex_valid,
   input wire [`REG_BUS] ex_op1,
   input wire [`REG_BUS] ex_op2,
+  input wire [`REG_BUS] rs1_forward,
+  input wire [`REG_BUS] rs2_forward,
   input wire is_word_opt,
   input wire [`ALU_BUS] alu_info,
   input wire [`BJ_BUS] bj_info,
@@ -42,7 +44,7 @@ module ex_stage(
     .bj_info(bj_info),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),
-    .ex_op1(ex_op1),
+    .ex_op1(rs1_forward),
     .now_pc(now_pc),
     
     .bj_ena(bj_ena),
