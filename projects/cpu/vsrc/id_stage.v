@@ -57,8 +57,8 @@ wire [2  : 0] func3 = inst[14 : 12];
 wire [5  : 0] func6 = inst[31 : 26];
 wire [6  : 0] func7 = inst[31 : 25];
 
-assign rs1_addr = inst[19 : 15];
-assign rs2_addr = inst[24 : 20];
+assign rs1_addr = {5{rs1_r_ena}} & inst[19 : 15];
+assign rs2_addr = {5{rs2_r_ena}} & inst[24 : 20];
 wire [11 : 0] csr_addr = inst[31 : 20];
 assign csr_rd_addr = csr_addr;
 wire rd_addr = inst[11 : 7];
