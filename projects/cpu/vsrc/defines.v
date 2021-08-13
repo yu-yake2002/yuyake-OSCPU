@@ -67,7 +67,7 @@
 
 `define CSR_MISA       0
 `define CSR_MCYCLE     1
-`define CSR_MVENDORID   2
+`define CSR_MVENDORID  2
 `define CSR_MARCHID    3
 `define CSR_MIMPID     4
 `define CSR_MHARTID    5

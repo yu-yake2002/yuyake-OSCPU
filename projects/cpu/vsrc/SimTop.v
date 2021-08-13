@@ -7,8 +7,8 @@
 `include "defines.v"
 
 module SimTop(
-  input wire    clock,
-  input wire    reset,
+  input wire            clock,
+  input wire            reset,
   
   input  [63:0] io_logCtrl_log_begin,
   input  [63:0] io_logCtrl_log_end,
@@ -20,350 +20,376 @@ module SimTop(
   output [7:0]  io_uart_out_ch,
   output        io_uart_in_valid,
   input  [7:0]  io_uart_in_ch
-  );
+);
 
-  // IF_STAGE
-  wire [31  :  0] if_id_inst;
-  wire [`REG_BUS] if_id_pc;
-  wire           inst_ena;
-  // if -> exception
-  wire [`EXCP_BUS] if_excp;
-  // pipeline control
-  wire if_id_valid;
-  // instruction jump & exception jump
-  wire bj_ena;
-  wire [`REG_BUS] new_pc;
-  wire excp_jmp_ena;
-  wire [`REG_BUS] excp_pc;
+  // wb_stage -> regfile
+  wire [`REG_BUS] rd_data;
   
+  // MEMHelper: Access memory
+  wire [7 : 0] byte_enable;
+  wire [`REG_BUS] ram_wr_data, ram_rd_data;
+  RAM_1W2R RAM_1W2R(
+    .clk(clock),
+    
+    .inst_addr(id_pc),
+    .inst_ena(1),
+    .inst(id_inst),
+  
+    .mem_wr_ena(mem_ram_wr_ena),
+    .mem_rd_ena(mem_ram_rd_ena),
+    .byte_enable(byte_enable),
+    .mem_addr(mem_ex_data),
+    .mem_wr_data(ram_wr_data),
+    .mem_rd_data(ram_rd_data)
+  );
+  
+  // IF stage
+  wire [`EXCP_BUS] if_excp;
+  wire [`REG_BUS] bj_pc, excp_pc, if_pc;
+  wire bj_ena;
   if_stage If_stage(
     .clk(clock),
     .rst(reset),
     
-    .id_allowin(id_allowin),
-    .if_id_valid(if_id_valid),
-    
+    .pc_now(id_pc),
     .bj_ena(bj_ena),
-    .new_pc(new_pc),
-    
+    .bj_pc(bj_pc),
     .excp_jmp_ena(excp_jmp_ena),
     .excp_pc(excp_pc),
     
-    .pc(if_id_pc),
-    .if_excp(if_excp)
+    .pc(if_pc)
   );
+  
+  // IF/ID reg
+  reg [`REG_BUS] id_pc;
+  wire [31  :  0] id_inst;
+  
+  // pipeline control
+  reg id_valid;
+  wire id_allowin;
+  wire id_ready_go;
+  wire id_to_ex_valid;
+  
+  assign id_ready_go = 1'b1;
+  assign id_allowin = !id_valid || id_ready_go && ex_allowin;
+  assign id_to_ex_valid = id_valid && id_ready_go;
+  always @(posedge clock) begin
+    if (reset) begin
+      id_valid <= 1'b0;
+    end
+    else if (id_allowin) begin
+      id_valid <= 1'b1;
+    end
+    
+    if (reset) begin
+      id_pc <= `PC_START - 4;
+    end
+    else if (id_allowin) begin
+      id_pc <= if_pc;
+    end
+  end
 
-  // ID_STAGE
-  wire id_stall;
-  // Hazard detection
   hazard Hazard(
-    .id_ex_mem_rd_ena(id_ex_mem_rd_ena),
-    .id_ex_rd_addr(id_ex_rd_addr),
+    .ex_ram_rd_ena(ex_ram_rd_ena),
+    .ex_reg_wr_addr(ex_reg_wr_addr),
     .rs1_addr(rs1_r_addr),
     .rs2_addr(rs2_r_addr),
-    
-    .id_stall(id_stall)
+
+    .id_stall(stall)
   );
-  // pipeline control
-  wire id_valid;
-  wire id_allowin;
-  wire id_ex_valid;
-  // -> ex_stage
-  wire [`REG_BUS] id_ex_pc;
-  wire [31  :  0] id_ex_inst;
-  wire [`ALU_BUS] id_ex_alu_info;
-  wire [`BJ_BUS]  id_ex_bj_info;
-  wire is_word_opt;
-  wire [4 : 0] id_ex_rs1_addr;
-  wire [4 : 0] id_ex_rs2_addr;
-  wire [`REG_BUS] jmp_imm;
-  // -> exception
+  wire stall;
+  
+  // exception
   wire [`EXCP_BUS] id_excp;
-  // -> mem_stage
-  wire [`REG_BUS] id_ex_mem_wr_src;
-  wire [`LOAD_BUS] id_ex_load_info;
-  wire [`SAVE_BUS] id_ex_save_info;
-  wire id_ex_mem_wr_ena;
-  wire id_ex_mem_rd_ena;
-  // -> wb_stage
-  wire [`REG_CTRL_BUS] id_ex_reg_wr_ctrl;
-  wire id_ex_csr_wr_ena;
-  wire [11 : 0] id_ex_csr_wr_addr;
-  wire id_ex_rd_ena;
-  wire [4 : 0] id_ex_rd_addr;
 
+  // ID stage
   id_stage Id_stage(
-    .rst(reset),
     .clk(clock),
-    
-    // pipeline control
-    .id_valid(id_valid),
-    .ex_allowin(ex_allowin),
-    .id_allowin(id_allowin),
-    .if_id_valid(if_id_valid),
-    .id_ex_valid(id_ex_valid),
-    .stall(id_stall),
-    .flush(bj_ena),
+    .rst(reset),
 
-    .pc_in(if_id_pc),
-    .inst_in(if_id_inst),
-    .pc_out(id_ex_pc),
-    .inst_out(id_ex_inst),
-    
-    // <- reg & csr
+    .inst(id_inst),
+    .pc_id(id_pc),
+  
+    // data from regfile and CSRs
     .r_data1(r_data1),
     .r_data2(r_data2),
-    .csr_data(csr_rd_data),
+    .csr_data(id_csr_data),
     
-    // -> reg & csr
-    .rs1_ena(rs1_r_ena),
+    // control reg
+    .rs1_r_ena(rs1_r_ena),
     .rs1_addr(rs1_r_addr),
-    .rs2_ena(rs2_r_ena),
+    .rs2_r_ena(rs2_r_ena),
     .rs2_addr(rs2_r_addr),
+    
+    // control csr
     .csr_rd_ena(csr_rd_ena),
     .csr_rd_addr(csr_rd_addr),
     
-    // -> ex_stage
-    .rs1_addr_out(id_ex_rs1_addr),
-    .rs2_addr_out(id_ex_rs2_addr),
-    .ex_op1(id_ex_op1),
-    .ex_op2(id_ex_op2),
-    .is_word_opt(is_word_opt),
-    .alu_info(id_ex_alu_info),
-    .bj_info(id_ex_bj_info),
-
-    .rs2_data(id_ex_mem_wr_src),
-    .load_info(id_ex_load_info),
-    .save_info(id_ex_save_info),
-    .mem_rd_ena(id_ex_mem_rd_ena),
-    .mem_wr_ena(id_ex_mem_wr_ena),
-
-    .reg_wr_ctrl(id_ex_reg_wr_ctrl),
-    .csr_wr_ena(id_ex_csr_wr_ena),
-    .csr_wr_addr(id_ex_csr_wr_addr),
-    .rd_ena(id_ex_rd_ena),
-    .rd_addr(id_ex_rd_addr),
+    // -> ex
+    .id_op1(id_op1),
+    .id_op2(id_op2),
     
-    .jmp_imm(jmp_imm),
+    .is_word_opt(id_is_word_opt),
+    .alu_info(id_alu_info),
+    .bj_info(id_bj_info),
+    .load_info(id_load_info),
+    .save_info(id_save_info),
+    .jmp_imm(id_jmp_imm),
     
-    .id_excp(id_excp),
-    .excp_exit(excp_exit)
+    // -> mem
+    .mem_rd_ena(id_ram_rd_ena),
+    .mem_wr_ena(id_ram_wr_ena),
+    
+    // -> wb
+    .reg_wr_ctrl(id_reg_wr_ctrl),
+    .reg_wr_addr(id_reg_wr_addr),
+    .reg_wr_ena(id_reg_wr_ena),
+    .csr_wr_ena(id_csr_wr_ena),
+    .csr_wr_addr(id_csr_wr_addr)
   );
-    
-    
-  // EX_STAGE
-  wire [`REG_BUS] op1_src, op2_src;
+  wire id_is_word_opt;
+  wire [`ALU_BUS] id_alu_info;
+  wire [`BJ_BUS] id_bj_info;
+  wire [`LOAD_BUS] id_load_info;
+  wire [`SAVE_BUS] id_save_info;
+  wire [`REG_BUS] id_jmp_imm;
+  wire [`REG_BUS] id_op1, id_op2;
+  wire [`REG_BUS] id_csr_data;
+
+  wire id_ram_wr_ena, id_ram_rd_ena;
+  
+  wire [`REG_CTRL_BUS] id_reg_wr_ctrl;
+  wire [4 : 0] id_reg_wr_addr;
+  wire id_reg_wr_ena;
+  wire [11: 0] id_csr_wr_addr;
+  wire id_csr_wr_ena;
+
+  // ID/EX reg
+  reg [`REG_BUS] ex_pc;
+  reg [31  :  0] ex_inst;
+  reg ex_is_word_opt;
+  reg [`ALU_BUS] ex_alu_info;
+  reg [`BJ_BUS] ex_bj_info;
+  reg [`REG_BUS] ex_jmp_imm;
+  reg [`REG_BUS] ex_now_op1, ex_now_op2;
+  reg [4 : 0] ex_rs1_addr, ex_rs2_addr;
+  reg [`REG_BUS] ex_csr_data;
+
+  // -> mem
+  reg ex_ram_wr_ena, ex_ram_rd_ena;
+  reg [`LOAD_BUS] ex_load_info;
+  reg [`SAVE_BUS] ex_save_info;
+
+  // -> wb
+  reg [`REG_CTRL_BUS] ex_reg_wr_ctrl;
+  reg [4 : 0] ex_reg_wr_addr;
+  reg ex_reg_wr_ena;
+  reg [11 : 0] ex_csr_wr_addr;
+  reg ex_csr_wr_ena;
+  
+  // pipeline control
+  reg ex_valid;
+  wire ex_allowin;
+  wire ex_ready_go;
+  wire ex_to_mem_valid;
+  
+  assign ex_ready_go = 1'b1;
+  assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
+  assign ex_to_mem_valid = ex_valid && ex_ready_go;
+  
+  always @(posedge clock) begin
+    if (reset) begin
+      ex_valid <= 1'b0;
+    end
+    else if (ex_allowin) begin
+      ex_valid <= id_to_ex_valid;
+    end
+  end
+
+  always @(posedge clock) begin
+    if (id_to_ex_valid && ex_allowin) begin
+      ex_pc <= id_pc;
+      ex_inst <= id_inst;
+      ex_is_word_opt <= id_is_word_opt;
+      ex_alu_info <= id_alu_info;
+      ex_bj_info <= id_bj_info;
+      ex_jmp_imm <= id_jmp_imm;
+      ex_now_op1 <= id_op1;
+      ex_now_op2 <= id_op2;
+      ex_rs1_addr <= rs1_r_addr;
+      ex_rs2_addr <= rs2_r_addr;
+      
+      // -> mem
+      ex_ram_wr_ena <= id_ram_wr_ena;
+      ex_ram_rd_ena <= id_ram_rd_ena;
+      ex_load_info <= id_load_info;
+      ex_save_info <= id_save_info;
+
+      // -> wb
+      ex_csr_data <= id_csr_data;
+      ex_reg_wr_ctrl <= id_reg_wr_ctrl;
+      ex_reg_wr_addr <= id_reg_wr_addr;
+      ex_reg_wr_ena <= id_reg_wr_ena;
+      ex_csr_wr_addr <= id_csr_wr_addr;
+      ex_csr_wr_ena <= id_csr_wr_ena;
+    end
+  end
+
   forward Forward(
-    .rs1_addr(id_ex_rs1_addr),
-    .rs2_addr(id_ex_rs2_addr),
-    .ex_mem_rd_addr(ex_mem_rd_addr),
-    .ex_mem_rd_ena(ex_mem_rd_ena),
-    .mem_wb_rd_addr(mem_wb_rd_addr),
-    .mem_wb_rd_ena(mem_wb_rd_ena),
-    .ex_mem_ex_data(ex_mem_ex_data),
-    .mem_wb_ex_data(mem_wb_ex_data),
-    .mem_wb_mem_data(mem_wb_mem_data),
-    .ex_mem_reg_wr_ctrl(ex_mem_reg_wr_ctrl),
-    .mem_wb_reg_wr_ctrl(mem_wb_reg_wr_ctrl),
-    .id_op1(id_ex_op1),
-    .id_op2(id_ex_op2),
+    .rs1_addr(ex_rs1_addr),
+    .rs2_addr(ex_rs2_addr),
+    .mem_reg_wr_addr(mem_reg_wr_addr),
+    .mem_reg_wr_ena(mem_reg_wr_ena),
+    .wb_reg_wr_addr(wb_reg_wr_addr),
+    .wb_reg_wr_ena(wb_reg_wr_ena),
+    .mem_ex_data(mem_ex_data),
+    .wb_ex_data(wb_ex_data),
+    .wb_mem_data(wb_ram_data),
+    .mem_reg_wr_ctrl(mem_reg_wr_ctrl),
+    .wb_reg_wr_ctrl(wb_reg_wr_ctrl),
+    .now_op1(ex_now_op1),
+    .now_op2(ex_now_op2),
 
     .op1_src(op1_src),
     .op2_src(op2_src)
   );
-
-  // pipeline control
-  wire ex_allowin;
-  wire ex_mem_valid;
-  // operand
-  wire [`REG_BUS] id_ex_op1;
-  wire [`REG_BUS] id_ex_op2;
-  // -> mem_stage
-  wire [`REG_BUS] ex_mem_pc;
-  wire [31  :  0] ex_mem_inst;
-  wire [`LOAD_BUS] ex_mem_load_info;
-  wire [`SAVE_BUS] ex_mem_save_info; 
-  wire ex_mem_wr_ena;
-  wire ex_mem_rd_ena;
-  wire [`REG_BUS] ex_mem_mem_wr_src;
-  // -> wb_stage
-  wire [`REG_CTRL_BUS] ex_mem_reg_wr_ctrl;
-  wire ex_mem_csr_wr_ena;
-  wire [11 : 0] ex_mem_csr_wr_addr;
-  wire ex_mem_rd_ena;
-  wire [4 : 0] ex_mem_rd_addr;
-  wire [`REG_BUS] ex_mem_ex_data;
+  
+  // True operands, considering "forwards"
+  wire [`REG_BUS] op1_src, op2_src;
+  
   ex_stage Ex_stage(
-    .clk(clock),
     .rst(reset),
-    // pipeline control
-    .id_valid(id_valid),
-
-    .mem_allowin(mem_allowin),
-    .ex_allowin(ex_allowin),
-    .id_ex_valid(id_ex_valid),
-    .ex_mem_valid(ex_mem_valid),
     
-    .pc_in(id_ex_pc),
-    .inst_in(id_ex_inst),
-    .pc_out(ex_mem_pc),
-    .inst_out(ex_mem_inst),
+    .ex_op1(op1_src),
+    .ex_op2(op2_src),
+    .is_word_opt(ex_is_word_opt),
+    .alu_info(ex_alu_info),
+    .bj_info(ex_bj_info),
+    .jmp_imm(ex_jmp_imm),
+    .now_pc(ex_pc),
 
-    // forward control
-    .op1_src(op1_src),
-    .op2_src(op2_src),
-
-    // ALU control
-    .is_word_opt(is_word_opt),
-    .alu_info_in(id_ex_alu_info),
-
-    // branch & jump control
-    .bj_info_in(id_ex_bj_info),
-    .jmp_imm(jmp_imm),
-    
-    // pass to mem_stage
-    .load_info_in(id_ex_load_info),
-    .save_info_in(id_ex_save_info),
-    .mem_rd_ena_in(id_ex_mem_rd_ena),
-    .mem_wr_ena_in(id_ex_mem_wr_ena),
-    .mem_wr_src_in(id_ex_mem_wr_src),
-    .load_info_out(ex_mem_load_info),
-    .save_info_out(ex_mem_save_info),
-    .mem_wr_ena_out(ex_mem_mem_wr_ena),
-    .mem_rd_ena_out(ex_mem_mem_rd_ena),
-    .mem_wr_src_out(ex_mem_mem_wr_src),
-    
-    // pass to wb_stage
-    .reg_wr_ctrl_in(id_ex_reg_wr_ctrl),
-    .csr_wr_ena_in(id_ex_csr_wr_ena),
-    .csr_wr_addr_in(id_ex_csr_wr_addr),
-    .rd_ena_in(id_ex_rd_ena),
-    .rd_addr_in(id_ex_rd_addr),
-    .reg_wr_ctrl_out(ex_mem_reg_wr_ctrl),
-    .csr_wr_ena_out(ex_mem_csr_wr_ena),
-    .csr_wr_addr_out(ex_mem_csr_wr_addr),
-    .rd_ena_out(ex_mem_rd_ena),
-    .rd_addr_out(ex_mem_rd_addr),
-
-    .ex_data(ex_mem_ex_data),
-    .new_pc(new_pc),
+    .rd_data(ex_data),
+    .bj_pc(bj_pc),
     .bj_ena(bj_ena)
   );
-
-  // MEM_STAGE
+  
+  wire [`REG_BUS] ex_data;
+  
+  
+  // EX_MEM reg
+  reg [`REG_BUS] mem_pc;
+  reg [31  :  0] mem_inst;
+  reg [`LOAD_BUS] mem_load_info;
+  reg [`SAVE_BUS] mem_save_info;
+  reg [`REG_BUS] mem_ram_wr_src;
+  reg [`REG_BUS] mem_ex_data, mem_csr_data;
+  reg mem_ram_wr_ena, mem_ram_rd_ena;
+  
+  reg [`REG_CTRL_BUS] mem_reg_wr_ctrl;
+  reg [4 : 0] mem_reg_wr_addr;
+  reg mem_reg_wr_ena;
+  reg [11: 0] mem_csr_wr_addr;
+  reg mem_csr_wr_ena;
+  
   // pipeline control
+  reg mem_valid;
   wire mem_allowin;
-  wire mem_wb_valid;
-  wire [`REG_BUS] mem_wb_pc;
-  wire [31  :  0] mem_wb_inst;
+  wire mem_ready_go;
+  wire mem_to_wb_valid;
+  
+  assign mem_ready_go = 1'b1;
+  assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
+  assign mem_to_wb_valid = mem_valid && mem_ready_go;
+  
+  always @(posedge clock) begin
+    if (reset) begin
+      mem_valid <= 1'b0;
+    end
+    else if (mem_allowin) begin
+      mem_valid <= ex_to_mem_valid;
+    end
+  end
+
+  always @(posedge clock) begin
+    if (ex_to_mem_valid && mem_allowin) begin
+      mem_pc <= ex_pc;
+      mem_inst <= ex_inst;
+      mem_load_info <= ex_load_info;
+      mem_save_info <= ex_save_info;
+      mem_ram_wr_src <= op2_src;
+      mem_ex_data <= ex_data;
+      mem_csr_data <= ex_csr_data;
+      mem_ram_wr_ena <= ex_ram_wr_ena;
+      mem_ram_rd_ena <= ex_ram_rd_ena;
+
+      // -> wb
+      mem_reg_wr_ctrl <= ex_reg_wr_ctrl;
+      mem_reg_wr_addr <= ex_reg_wr_addr;
+      mem_reg_wr_ena <= ex_reg_wr_ena;
+      mem_csr_wr_ena <= ex_csr_wr_ena;
+    end
+  end
+
   // mem_stage -> excp_handler
   wire [`EXCP_BUS] mem_excp;
-  // mem control
-  wire ex_mem_mem_wr_ena;
-  wire ex_mem_mem_rd_ena;
-  // -> wb_stage
-  wire [`REG_CTRL_BUS] mem_wb_reg_wr_ctrl;
-  wire mem_wb_csr_wr_ena;
-  wire [11 : 0] mem_wb_csr_wr_addr;
-  wire mem_wb_rd_ena;
-  wire [4 : 0] mem_wb_rd_addr;
-  wire [`REG_BUS] mem_wb_ex_data;
-  wire [`REG_BUS] mem_wb_mem_data;
+  
+  // MEM_STAGE
   mem_stage Mem_stage(
     .clk(clock),
     .rst(reset),
-    
-    .wb_allowin(wb_allowin),
-    .mem_allowin(mem_allowin),
-    .ex_mem_valid(ex_mem_valid),
-    .mem_wb_valid(mem_wb_valid),
-    
-    .pc_in(ex_mem_pc),
-    .inst_in(ex_mem_inst),
-    .pc_out(mem_wb_pc),
-    .inst_out(mem_wb_inst),
-    
-    .reg_src(r_data2),
-    .load_info(ex_mem_load_info),
-    .save_info(ex_mem_save_info),
-    .mem_rd_ena(ex_mem_mem_rd_ena),
-    .mem_wr_ena(ex_mem_mem_wr_ena),
-    .mem_addr(ex_mem_ex_data),
-    
-    .memhpr_wr_data(mem_wr_data),
-    .memhpr_rd_data(mem_rd_data),
+  
+    .r_data2(mem_ram_wr_src),
+    .load_info(mem_load_info),
+    .save_info(mem_save_info),
+    .mem_addr(mem_ex_data),
+    .ram_rd_data(ram_rd_data),  // memhelper -> mem_stage
+  
+    .mem_data(mem_ram_data),  // mem_stage -> wb_stage
+    .ram_wr_data(ram_wr_data),
     .byte_enable(byte_enable),
-    
-    // -> wb_stage
-    .mem_data(mem_data),
-    .reg_wr_ctrl_in(ex_mem_reg_wr_ctrl),
-    .csr_wr_ena_in(ex_mem_csr_wr_ena),
-    .csr_wr_addr_in(ex_mem_csr_wr_addr),
-    .rd_ena_in(ex_mem_rd_ena),
-    .rd_addr_in(ex_mem_rd_addr),
-    .ex_data_in(ex_mem_ex_data),
-
-    .reg_wr_ctrl_out(mem_wb_reg_wr_ctrl),
-    .csr_wr_ena_out(mem_wb_csr_wr_ena),
-    .csr_wr_addr_out(mem_wb_csr_wr_addr),
-    .rd_ena_out(mem_wb_rd_ena),
-    .rd_addr_out(mem_wb_rd_addr),
-    .ex_data_out(mem_wb_ex_data),
-
-    // mem_stage -> exception handler
     .mem_excp(mem_excp)
   );
+
+  wire [`REG_BUS] mem_ram_data;
+
+  // MEM/WB reg
+  reg [`REG_BUS] wb_pc;
+  reg [31  :  0] wb_inst;
+  reg [`REG_CTRL_BUS] wb_reg_wr_ctrl;
+  reg [`REG_BUS] wb_ex_data, wb_ram_data, wb_csr_data;
+  reg [4 : 0] wb_reg_wr_addr;
+  reg wb_reg_wr_ena;
+  reg [11: 0] wb_csr_wr_addr;
+  reg wb_csr_wr_ena;
+
+  // pipeline control
+  wire wb_allowin = 1'b1;
   
-  // Access memory
-  // mem_stage <-> mem_helper
-  wire [`REG_BUS] mem_addr = ex_mem_ex_data;
-  wire [7 : 0] byte_enable; // write mask
-  wire [`REG_BUS] mem_wr_data;
-  wire [`REG_BUS] mem_rd_data;
-  RAM_1W2R RAM_1W2R(
-    .clk(clock),
-    
-    .inst_addr(if_id_pc),
-    .inst_ena(1),
-    .inst(if_id_inst),
-    
-    .mem_wr_ena(ex_mem_mem_wr_ena),
-    .mem_rd_ena(ex_mem_mem_rd_ena),
-    .byte_enable(byte_enable),
-    .mem_addr(mem_addr),
-    .mem_wr_data(mem_wr_data),
-    .mem_rd_data(mem_rd_data)
-  );
+  always @(posedge clock) begin
+    if (mem_to_wb_valid && wb_allowin) begin
+      wb_pc <= mem_pc;
+      wb_inst <= mem_inst;
+      wb_reg_wr_ctrl <= mem_reg_wr_ctrl;
+      wb_ex_data <= mem_ex_data;
+      wb_ram_data <= mem_ram_data;
+      wb_csr_data <= mem_csr_data;
+      wb_reg_wr_addr <= mem_reg_wr_addr;
+      wb_reg_wr_ena <= mem_reg_wr_ena;
+      wb_csr_wr_addr <= mem_csr_wr_addr;
+      wb_csr_wr_ena <= mem_csr_wr_ena;
+    end
+  end
   
   // WB_STAGE
-  // pipeline control
-  wire wb_allowin;
-  // datapath
-  wire [`REG_BUS] mem_data;
-  // wb_stage -> difftest
-  wire [`REG_BUS] diff_pc;
-  wire [31  :  0] diff_inst;
-  wire wb_valid;
-
   wb_stage Wb_stage(
-    .clk(clock),
     .rst(reset),
     
-    .mem_wb_valid(mem_wb_valid),
-    .wb_allowin(wb_allowin),
-    .wb_valid(wb_valid),
+    .reg_wr_ctrl(wb_reg_wr_ctrl),
+    .exe_data(wb_ex_data),
+    .mem_data(wb_ram_data),
+    .csr_data(wb_csr_data),
     
-    .pc_in(mem_wb_pc),
-    .inst_in(mem_wb_inst),
-    .pc_out(diff_pc),
-    .inst_out(diff_inst),
-
-    .reg_wr_ctrl(mem_wb_reg_wr_ctrl),
-    .exe_data(mem_wb_ex_data),
-    .mem_data(mem_data),
-    .csr_data(csr_rd_data),
-    
-    .w_data(rd_data)
+    .reg_wr_data(wb_reg_wr_data)
   );
   
   // General Purpose Registers
@@ -375,7 +401,7 @@ module SimTop(
   wire [4 : 0]rs2_r_addr;
   wire [`REG_BUS] r_data2;
   // wb_stage <-> regfile
-  wire [`REG_BUS] rd_data;
+  wire [`REG_BUS] wb_reg_wr_data;
   
   // difftest
   wire [`REG_BUS] regs[0 : 31];
@@ -383,9 +409,9 @@ module SimTop(
   regfile Regfile(
     .clk(clock),
     .rst(reset),
-    .w_addr(mem_wb_rd_addr),
-    .w_data(rd_data),
-    .w_ena(mem_wb_rd_ena),
+    .w_addr(wb_reg_wr_addr),
+    .w_data(wb_reg_wr_data),
+    .w_ena(wb_reg_wr_ena),
   
     .r_addr1(rs1_r_addr),
     .r_data1(r_data1),
@@ -399,14 +425,15 @@ module SimTop(
 
   // exception
   wire excp_enter, excp_exit;
-  
+  wire excp_jmp_ena;
+  wire [`REG_BUS] excp_pc;
   excp_handler Excp_handler(
     .if_excp(if_excp),
     .id_excp(id_excp),
     .mem_excp(mem_excp),
     .itrp_info(0),
-    .now_pc(mem_wb_pc),
-    .now_inst(mem_wb_inst),
+    .now_pc(mem_pc),
+    .now_inst(mem_inst),
     .mem_acc_addr(0),
     .excp_exit(excp_exit),
 
@@ -449,12 +476,12 @@ module SimTop(
   csrfile CSRfile(
   .clk(clock),
   .rst(reset),
-
+  
+  .csr_wr_ena(wb_csr_wr_ena),
+  .csr_wr_addr(wb_csr_wr_addr),
   .csr_rd_ena(csr_rd_ena),
   .csr_rd_addr(csr_rd_addr),
-  .csr_wr_ena(csr_wr_ena),
-  .csr_wr_addr(csr_wr_addr),
-  .csr_wr_data(mem_wb_ex_data),
+  .csr_wr_data(wb_ex_data),
   .csr_rd_data(csr_rd_data),
   
   .excp_enter(excp_enter),
@@ -479,30 +506,30 @@ reg [7:0]cmt_wdest;
 reg [`REG_BUS] cmt_wdata;
 reg [`REG_BUS] cmt_pc;
 reg [31:0]cmt_inst;
-reg valid;
+reg vaild;
 reg skip;
 reg [63:0] cycleCnt;
 reg [63:0] instrCnt;
 
 always @(posedge clock) begin
   if (reset) begin
-    {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, valid, cycleCnt, instrCnt} <= 0;
+    {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, vaild, cycleCnt, instrCnt} <= 0;
   end
   else begin
-    cmt_wen <= mem_wb_rd_ena;
-    cmt_wdest <= {3'd0, mem_wb_rd_addr};
-    cmt_wdata <= rd_data;
-    cmt_pc <= mem_wb_pc;
-    cmt_inst <= mem_wb_inst;
-    //vaild <= 1'd1;
-    valid <= wb_valid;
+    cmt_wen <= wb_reg_wr_ena;
+    cmt_wdest <= {3'd0, wb_reg_wr_addr};
+    cmt_wdata <= wb_reg_wr_data;
+    cmt_pc <= wb_pc;
+    cmt_inst <= wb_inst;
+    vaild <= 1'd1;
+
     // Skip comparison of the first instruction
     // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
     // Maybe you can avoid it in pipeline
-    skip <= (!wb_valid);
+    skip <= (if_pc == `PC_START);
     
     cycleCnt <= cycleCnt + 1;
-    instrCnt <= instrCnt + (wb_valid ? 1 : 0);
+    instrCnt <= instrCnt + 1;
   end
 end
 
@@ -510,7 +537,7 @@ DifftestInstrCommit DifftestInstrCommit(
   .clock              (clock),
   .coreid             (0),
   .index              (0),
-  .valid              (valid),
+  .valid              (vaild),
   .pc                 (cmt_pc),
   .instr              (cmt_inst),
   .skip               (skip),
@@ -561,7 +588,7 @@ DifftestArchIntRegState DifftestArchIntRegState (
 DifftestTrapEvent DifftestTrapEvent(
   .clock              (clock),
   .coreid             (0),
-  .valid              (mem_wb_inst[6:0] == 7'h6b),
+  .valid              (wb_inst[6:0] == 7'h6b),
   .code               (regs[10][7:0]),
   .pc                 (cmt_pc),
   .cycleCnt           (cycleCnt),

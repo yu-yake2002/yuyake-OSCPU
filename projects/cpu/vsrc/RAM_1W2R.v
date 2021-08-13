@@ -22,10 +22,10 @@ module RAM_1W2R(
   wire[`REG_BUS] inst_2 = ram_read_helper(inst_ena,{3'b000,(inst_addr-`PC_START)>>3});
 
   assign inst = inst_addr[2] ? inst_2[63:32] : inst_2[31:0];
-  
+
   // DATA PORT 
-  wire [`REG_BUS] real_addr = {64{mem_rd_ena || mem_wr_ena}} & (mem_addr-`PC_START)>>3;
-  assign mem_rd_data = ram_read_helper(mem_rd_ena, real_addr);
+    
+  assign mem_rd_data = ram_read_helper(mem_rd_ena, {3'b000,(mem_addr-`PC_START)>>3});
 
   // 掩码转换
   wire [`REG_BUS] wmask = { {8{byte_enable[7]}},
@@ -40,7 +40,7 @@ module RAM_1W2R(
   //wire [`REG_BUS] wr_data = {mem_wr_data[31:0],mem_rd_data[63:32]};
 
   always @(posedge clk) begin
-    ram_write_helper(real_addr, mem_wr_data, wmask, mem_wr_ena);
+    ram_write_helper((mem_addr-`PC_START)>>3, mem_wr_data, wmask, mem_wr_ena);
   end
 
 endmodule
