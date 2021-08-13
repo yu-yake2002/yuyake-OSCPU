@@ -128,6 +128,8 @@ module SimTop(
     // -> ex
     .id_op1(id_op1),
     .id_op2(id_op2),
+    .use_rs1(id_use_rs1),
+    .use_rs2(id_use_rs2),
     
     .is_word_opt(id_is_word_opt),
     .alu_info(id_alu_info),
@@ -154,6 +156,7 @@ module SimTop(
   wire [`SAVE_BUS] id_save_info;
   wire [`REG_BUS] id_jmp_imm;
   wire [`REG_BUS] id_op1, id_op2;
+  wire id_use_rs1, id_use_rs2;
   wire [`REG_BUS] id_csr_data;
 
   wire id_ram_wr_ena, id_ram_rd_ena;
@@ -172,6 +175,7 @@ module SimTop(
   reg [`BJ_BUS] ex_bj_info;
   reg [`REG_BUS] ex_jmp_imm;
   reg [`REG_BUS] ex_now_op1, ex_now_op2;
+  reg ex_use_rs1, ex_use_rs2;
   reg [4 : 0] ex_rs1_addr, ex_rs2_addr;
   reg [`REG_BUS] ex_csr_data;
 
@@ -216,6 +220,8 @@ module SimTop(
       ex_jmp_imm <= id_jmp_imm;
       ex_now_op1 <= id_op1;
       ex_now_op2 <= id_op2;
+      ex_use_rs1 <= id_use_rs1;
+      ex_use_rs2 <= id_use_rs2;
       ex_rs1_addr <= rs1_r_addr;
       ex_rs2_addr <= rs2_r_addr;
       
@@ -250,19 +256,25 @@ module SimTop(
     .now_op1(ex_now_op1),
     .now_op2(ex_now_op2),
 
-    .op1_src(op1_src),
-    .op2_src(op2_src)
+    .rs1_forward(rs1_forward),
+    .rs2_forward(rs2_forward)
   );
   
+  // forward rs1, rs2
+  wire [`REG_BUS] rs1_forward, rs2_forward;
+
   // True operands, considering "forwards"
-  wire [`REG_BUS] op1_src, op2_src;
+  wire [`REG_BUS] true_op1, true_op2;
+  
+  assign true_op1 = ex_use_rs1 ? rs1_forward : ex_now_op1;
+  assign true_op2 = ex_use_rs2 ? rs2_forward : ex_now_op2;
   
   ex_stage Ex_stage(
     .rst(reset),
     
     .ex_valid(ex_valid),
-    .ex_op1(op1_src),
-    .ex_op2(op2_src),
+    .ex_op1(true_op1),
+    .ex_op2(true_op2),
     .is_word_opt(ex_is_word_opt),
     .alu_info(ex_alu_info),
     .bj_info(ex_bj_info),
@@ -317,7 +329,7 @@ module SimTop(
       mem_inst <= ex_inst;
       mem_load_info <= ex_load_info;
       mem_save_info <= ex_save_info;
-      mem_ram_wr_src <= op2_src;
+      mem_ram_wr_src <= rs2_forward;
       mem_ex_data <= ex_data;
       mem_csr_data <= ex_csr_data;
       mem_ram_wr_ena <= ex_ram_wr_ena;
