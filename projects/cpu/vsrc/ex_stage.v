@@ -40,7 +40,7 @@ module ex_stage(
     .bj_info(bj_info),
     .bj_data(bj_data),
     .jmp_imm(jmp_imm),
-    .exe_op1(ex_op1),
+    .ex_op1(ex_op1),
     .now_pc(now_pc),
     
     .bj_ena(bj_ena),
