@@ -70,7 +70,7 @@ module SimTop(
   wire id_ready_go;
   wire id_to_ex_valid;
   
-  assign id_ready_go = 1'b1;
+  assign id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_to_ex_valid = id_valid && id_ready_go;
   always @(posedge clock) begin
@@ -95,7 +95,7 @@ module SimTop(
     .rs1_addr(rs1_r_addr),
     .rs2_addr(rs2_r_addr),
 
-    .id_stall(stall)
+    .stall(stall)
   );
   wire stall;
   
@@ -198,7 +198,7 @@ module SimTop(
   assign ex_to_mem_valid = ex_valid && ex_ready_go;
   
   always @(posedge clock) begin
-    if (reset) begin
+    if (reset || bj_ena) begin
       ex_valid <= 1'b0;
     end
     else if (ex_allowin) begin
