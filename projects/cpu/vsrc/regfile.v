@@ -105,10 +105,10 @@ module regfile(
 	end
 	
 	assign r_data1 = {64{~rst & r_ena1}} & (
-    (r_addr1 == w_addr) ? w_data : regs[r_addr1]
+    (r_addr1 == w_addr && (|r_addr1)) ? w_data : regs[r_addr1]
 	);
 	assign r_data2 = {64{~rst & r_ena2}} & (
-    (r_addr2 == w_addr) ? w_data : regs[r_addr2]
+    (r_addr2 == w_addr && (|r_addr2)) ? w_data : regs[r_addr2]
 	);
   assign regs_o = regs;
 endmodule
