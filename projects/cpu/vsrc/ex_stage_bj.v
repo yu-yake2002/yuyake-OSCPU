@@ -16,6 +16,6 @@ module ex_stage_bj (
   output wire [`REG_BUS] new_pc
   );
   
-  assign new_pc = `PC_START | (jmp_imm + (bj_info[`BJ_JALR] ? ex_op1 : now_pc));
+  assign new_pc = jmp_imm + (bj_info[`BJ_JALR] ? ex_op1 : now_pc);
   assign bj_ena = ~rst & ex_valid & (|(bj_info & bj_data));
 endmodule
