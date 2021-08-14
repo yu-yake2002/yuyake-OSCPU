@@ -107,7 +107,7 @@ module SimTop(
     .clk(clock),
     .rst(reset),
 
-    .inst(bj_ena ? 64'h13 : id_inst),
+    .inst(id_inst),
     .pc_id(id_pc),
   
     // data from regfile and CSRs
@@ -217,7 +217,7 @@ module SimTop(
   always @(posedge clock) begin
     if (id_to_ex_valid && ex_allowin) begin
       ex_pc <= id_pc;
-      ex_inst <= bj_ena ? 64'h13 : id_inst;
+      ex_inst <= id_inst;
       ex_is_word_opt <= id_is_word_opt;
       ex_alu_info <= id_alu_info;
       ex_bj_info <= id_bj_info;
