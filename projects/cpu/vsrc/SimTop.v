@@ -63,6 +63,7 @@ module SimTop(
   // IF/ID reg
   reg [`REG_BUS] id_pc;
   wire [31  :  0] id_inst;
+  wire flush = bj_ena;
   
   // pipeline control
   reg id_valid;
@@ -184,16 +185,20 @@ module SimTop(
   reg [`REG_BUS] ex_csr_data;
 
   // -> mem
-  reg ex_ram_wr_ena, ex_ram_rd_ena;
+  reg ex_ram_wr_ena_r, ex_ram_rd_ena_r;
+  wire ex_ram_wr_ena = ex_ram_wr_ena_r & ex_valid;
+  wire ex_ram_rd_ena = ex_ram_rd_ena_r & ex_valid;
   reg [`LOAD_BUS] ex_load_info;
   reg [`SAVE_BUS] ex_save_info;
 
   // -> wb
   reg [`REG_CTRL_BUS] ex_reg_wr_ctrl;
   reg [4 : 0] ex_reg_wr_addr;
-  reg ex_reg_wr_ena;
+  reg ex_reg_wr_ena_r;
+  wire ex_reg_wr_ena = ex_reg_wr_ena_r & ex_valid;
   reg [11 : 0] ex_csr_wr_addr;
-  reg ex_csr_wr_ena;
+  reg ex_csr_wr_ena_r;
+  wire ex_csr_wr_ena = ex_csr_wr_ena_r & ex_valid;
   
   // pipeline control
   reg ex_valid;
@@ -224,16 +229,16 @@ module SimTop(
       ex_jmp_imm <= id_jmp_imm;
       ex_now_op1 <= id_op1;
       ex_now_op2 <= id_op2;
-      ex_use_rs1 <= id_use_rs1 & id_valid;
-      ex_use_rs2 <= id_use_rs2 & id_valid;
+      ex_use_rs1 <= id_use_rs1;
+      ex_use_rs2 <= id_use_rs2;
       ex_rs1_data <= id_rs1_data;
       ex_rs2_data <= id_rs2_data;
       ex_rs1_addr <= rs1_r_addr;
       ex_rs2_addr <= rs2_r_addr;
       
       // -> mem
-      ex_ram_wr_ena <= id_ram_wr_ena & id_valid & ~bj_ena;
-      ex_ram_rd_ena <= id_ram_rd_ena & id_valid & ~bj_ena;
+      ex_ram_wr_ena_r <= id_ram_wr_ena;
+      ex_ram_rd_ena_r <= id_ram_rd_ena;
       ex_load_info <= id_load_info;
       ex_save_info <= id_save_info;
 
@@ -241,9 +246,9 @@ module SimTop(
       ex_csr_data <= id_csr_data;
       ex_reg_wr_ctrl <= id_reg_wr_ctrl & {3{id_valid}};
       ex_reg_wr_addr <= id_reg_wr_addr;
-      ex_reg_wr_ena <= id_reg_wr_ena & id_valid & ~bj_ena;
+      ex_reg_wr_ena_r <= id_reg_wr_ena;
       ex_csr_wr_addr <= id_csr_wr_addr;
-      ex_csr_wr_ena <= id_csr_wr_ena & id_valid & ~bj_ena;
+      ex_csr_wr_ena_r <= id_csr_wr_ena;
     end
   end
 
