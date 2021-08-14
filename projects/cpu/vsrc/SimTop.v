@@ -232,8 +232,8 @@ module SimTop(
       ex_rs2_addr <= rs2_r_addr;
       
       // -> mem
-      ex_ram_wr_ena <= id_ram_wr_ena & id_valid;
-      ex_ram_rd_ena <= id_ram_rd_ena & id_valid;
+      ex_ram_wr_ena <= id_ram_wr_ena & id_valid & ~bj_ena;
+      ex_ram_rd_ena <= id_ram_rd_ena & id_valid & ~bj_ena;
       ex_load_info <= id_load_info;
       ex_save_info <= id_save_info;
 
@@ -241,9 +241,9 @@ module SimTop(
       ex_csr_data <= id_csr_data;
       ex_reg_wr_ctrl <= id_reg_wr_ctrl & {3{id_valid}};
       ex_reg_wr_addr <= id_reg_wr_addr;
-      ex_reg_wr_ena <= id_reg_wr_ena & id_valid;
+      ex_reg_wr_ena <= id_reg_wr_ena & id_valid & ~bj_ena;
       ex_csr_wr_addr <= id_csr_wr_addr;
-      ex_csr_wr_ena <= id_csr_wr_ena & id_valid;
+      ex_csr_wr_ena <= id_csr_wr_ena & id_valid & ~bj_ena;
     end
   end
 
