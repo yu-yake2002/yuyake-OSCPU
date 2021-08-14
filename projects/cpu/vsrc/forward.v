@@ -51,7 +51,7 @@ module forward (
   wire wb_op2_src_ex = (rs2_addr == wb_reg_wr_addr) 
                         && wb_reg_wr_ena 
                         && (|rs2_addr)
-                        && mem_reg_wr_ctrl[`EXE_TO_REG];
+                        && wb_reg_wr_ctrl[`EXE_TO_REG];
   wire mem_op2_src_mem = (rs2_addr == mem_reg_wr_addr) 
                         && mem_reg_wr_ena 
                         && (|rs2_addr)
@@ -59,7 +59,7 @@ module forward (
   wire wb_op2_src_mem = (rs2_addr == wb_reg_wr_addr) 
                         && wb_reg_wr_ena 
                         && (|rs2_addr)
-                        && mem_reg_wr_ctrl[`MEM_TO_REG];
+                        && wb_reg_wr_ctrl[`MEM_TO_REG];
   assign rs2_forward = (mem_op2_src_ex) ? mem_ex_data :
                        (wb_op2_src_ex)  ? wb_ex_data  :
                        (wb_op2_src_mem) ? wb_mem_data :
