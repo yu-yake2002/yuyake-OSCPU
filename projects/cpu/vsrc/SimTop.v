@@ -107,7 +107,7 @@ module SimTop(
     .clk(clock),
     .rst(reset),
 
-    .inst(id_inst),
+    .inst(bj_ena ? 64'h13 : id_inst),
     .pc_id(id_pc),
   
     // data from regfile and CSRs
@@ -224,16 +224,16 @@ module SimTop(
       ex_jmp_imm <= id_jmp_imm;
       ex_now_op1 <= id_op1;
       ex_now_op2 <= id_op2;
-      ex_use_rs1 <= id_use_rs1;
-      ex_use_rs2 <= id_use_rs2;
+      ex_use_rs1 <= id_use_rs1 & id_valid;
+      ex_use_rs2 <= id_use_rs2 & id_valid;
       ex_rs1_data <= id_rs1_data;
       ex_rs2_data <= id_rs2_data;
       ex_rs1_addr <= rs1_r_addr;
       ex_rs2_addr <= rs2_r_addr;
       
       // -> mem
-      ex_ram_wr_ena <= id_ram_wr_ena & id_valid & ~bj_ena;
-      ex_ram_rd_ena <= id_ram_rd_ena & id_valid & ~bj_ena;
+      ex_ram_wr_ena <= id_ram_wr_ena & id_valid;
+      ex_ram_rd_ena <= id_ram_rd_ena & id_valid;
       ex_load_info <= id_load_info;
       ex_save_info <= id_save_info;
 
