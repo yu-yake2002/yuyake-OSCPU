@@ -211,7 +211,7 @@ module SimTop(
   assign ex_to_mem_valid = ex_valid && ex_ready_go;
   
   always @(posedge clock) begin
-    if (reset || bj_ena) begin
+    if (reset || flush) begin
       ex_valid <= 1'b0;
     end
     else if (ex_allowin) begin
