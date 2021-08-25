@@ -8,6 +8,19 @@
 `define REG_BUS    63 : 0
 `define INST_ADD   8'h11
 
+`define AXI_ADDR_WIDTH      64
+`define AXI_DATA_WIDTH      64
+`define AXI_ID_WIDTH        4
+`define AXI_USER_WIDTH      1
+
+`define SIZE_B              2'b00
+`define SIZE_H              2'b01
+`define SIZE_W              2'b10
+`define SIZE_D              2'b11
+
+`define REQ_READ            1'b0
+`define REQ_WRITE           1'b1
+
 `define ALU_ADD    0
 `define ALU_SUB    1
 `define ALU_SLT    2
