@@ -66,9 +66,9 @@ module axi_rw # (
   input                               rw_valid_i,
   output                              rw_ready_o,
   input                               rw_req_i,
-  output reg [RW_DATA_WIDTH:0]        data_read_o,
-  input  [RW_DATA_WIDTH:0]            data_write_i,
-  input  [AXI_DATA_WIDTH:0]           rw_addr_i,
+  output reg [RW_DATA_WIDTH-1:0]      data_read_o,
+  input  [RW_DATA_WIDTH-1:0]          data_write_i,
+  input  [AXI_DATA_WIDTH-1:0]         rw_addr_i,
   input  [1:0]                        rw_size_i,
   output [1:0]                        rw_resp_o,
   
