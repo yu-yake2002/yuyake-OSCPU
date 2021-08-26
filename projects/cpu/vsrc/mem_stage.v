@@ -74,6 +74,8 @@ module mem_stage(
             mem_next_state = IDLE;
           end
         end
+      default:
+        mem_next_state = IDLE;
     endcase
   end
 

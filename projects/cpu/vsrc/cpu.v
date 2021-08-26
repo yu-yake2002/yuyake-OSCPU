@@ -79,7 +79,7 @@ module cpu(
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_to_ex_valid = id_valid && id_ready_go;
 
-  always @(clock) begin
+  always @(posedge clock) begin
     if (reset) begin
       if_stage_refresh <= 1'b1;
     end

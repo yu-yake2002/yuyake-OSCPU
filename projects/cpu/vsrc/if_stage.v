@@ -31,8 +31,8 @@ module if_stage(
   );
   
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
-  reg if_state;
-  reg if_next_state;
+  reg [1:0] if_state;
+  reg [1:0] if_next_state;
 
   always @(posedge clk) begin
     if (rst) begin
@@ -46,17 +46,14 @@ module if_stage(
   always @(*) begin
     case (if_state)
       IDLE:
-        if (refresh) begin
-          if_next_state = ADDR;
-        end
+        if_next_state = refresh ? ADDR : IDLE;
       ADDR:
-        if (if_handshake) begin
-          if_next_state = RETN;
-        end
+        if_next_state = if_handshake ? RETN : ADDR;
       RETN:
-        if (refresh) begin
-          if_next_state = ADDR;
-        end
+        if_next_state = refresh ? ADDR : RETN;
+      default:
+        if_next_state = IDLE;
+    endcase
   end
 
   // fetch an instruction
