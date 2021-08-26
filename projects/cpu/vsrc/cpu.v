@@ -29,7 +29,7 @@ module cpu(
 );
   
   // pipeline control
-  wire if_valid;
+  wire if_valid = 1'b1;
   wire if_ready_go;
   wire if_to_id_valid;
   reg if_stage_refresh;
@@ -62,7 +62,7 @@ module cpu(
     .if_axi_size(if_rw_size),
     .if_axi_resp(if_rw_resp),
 
-    .if_finish(if_valid)
+    .if_finish(if_ready_go)
   );
   
   // IF/ID reg
@@ -82,13 +82,13 @@ module cpu(
   
   always @(posedge clock) begin
     if (reset) begin
-      if_stage_refresh = 1'b1;
+      if_stage_refresh <= 1'b1;
     end
     else if (if_to_id_valid && id_allowin) begin
-      if_stage_refresh = 1'b1;
+      if_stage_refresh <= 1'b1;
     end
     else begin
-      if_stage_refresh = 1'b0;
+      if_stage_refresh <= 1'b0;
     end
   end
   
