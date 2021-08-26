@@ -24,12 +24,8 @@ module mem_stage(
   output wire [1 : 0]     mem_rw_size,
   input  wire [1 : 0]     mem_rw_resp,
   
-  output reg              mem_fetched
+  output wire             mem_finish
   );
-
-  // idle(0) -> addr (1) -> idle(0)
-  parameter IDLE = 1'b0, ADDR = 1'b1;
-  reg mem_state;
 
   wire mem_handshake = mem_rw_valid && mem_rw_ready;
 
@@ -46,22 +42,39 @@ module mem_stage(
   wire op_lhu = load_info[`LOAD_LHU];
   wire op_lwu = load_info[`LOAD_LWU];
   
+  parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
+  reg mem_state;
+  reg mem_next_state;
+  
   always @(posedge clk) begin
     if (rst) begin
       mem_state <= IDLE;
     end
     else begin
-      case (mem_state)
-        IDLE:
-          if (refresh && (ram_rd_ena || ram_wr_ena)) begin
-            mem_state <= ADDR;
-          end
-        ADDR:
-          if (mem_handshake) begin
-            mem_state <= IDLE;
-          end
-      endcase
+      mem_state <= mem_next_state;
     end
+  end
+
+  always @(*) begin
+    case (mem_state)
+      IDLE:
+        if (refresh && (ram_rd_ena || ram_wr_ena)) begin
+          mem_next_state = ADDR;
+        end
+      ADDR:
+        if (mem_handshake) begin
+          mem_next_state = RETN;
+        end
+      RETN:
+        if (refresh) begin
+          if (ram_rd_ena || ram_wr_ena) begin
+            mem_next_state = ADDR;
+          end
+          else begin
+            mem_next_state = IDLE;
+          end
+        end
+    endcase
   end
 
   assign mem_rw_valid = mem_state == ADDR;
@@ -81,9 +94,6 @@ module mem_stage(
   );
 
   always @(posedge clk) begin
-    if (rst) begin
-      mem_fetched <= 1'b0;
-    end
     if (mem_handshake) begin
       mem_data <= (
           ({64{op_lb}} & {{56{mem_r_data[7 ]}}, mem_r_data[7  : 0]})
@@ -94,11 +104,9 @@ module mem_stage(
         | ({64{op_lhu}} & {48'b0, mem_r_data[15 : 0]})
         | ({64{op_lwu}} & {32'b0, mem_r_data[31 : 0]})
       );
-      mem_fetched <= 1'b1;
-    end
-    else begin
-      mem_fetched <= 1'b0;
     end
   end
+
+  assign mem_finish = mem_state == RETN;
   
 endmodule

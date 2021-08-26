@@ -27,28 +27,11 @@ module cpu(
   output [1 : 0]        mem_rw_size,
   input  [1 : 0]        mem_rw_resp
 );
-  /*
-  // MEMHelper: Access memory
-  wire [7 : 0] byte_enable;
-  wire [`REG_BUS] ram_wr_data, ram_rd_data;
-  RAM_1W2R RAM_1W2R(
-    .clk(clock),
-    
-    .inst_addr(id_pc),
-    .inst_ena(1),
-    .inst(id_inst),
   
-    .mem_wr_ena(mem_ram_wr_ena),
-    .mem_rd_ena(mem_ram_rd_ena),
-    .byte_enable(byte_enable),
-    .mem_addr(mem_ex_data),
-    .mem_wr_data(ram_wr_data),
-    .mem_rd_data(ram_rd_data)
-  );
-  */
   // pipeline control
   wire if_valid;
   wire if_to_id_valid;
+  reg if_stage_refresh;
   assign if_to_id_valid = if_valid;
   // IF stage
   wire [`EXCP_BUS] if_excp;
@@ -58,6 +41,7 @@ module cpu(
   if_stage If_stage(
     .clk(clock),
     .rst(reset),
+    .refresh(if_stage_refresh),
     
     // branch and jump control
     .bj_ena(bj_ena),
@@ -77,7 +61,7 @@ module cpu(
     .if_axi_size(if_rw_size),
     .if_axi_resp(if_rw_resp),
 
-    .fetched(if_valid)
+    .if_finish(if_valid)
   );
   
   // IF/ID reg
@@ -94,6 +78,19 @@ module cpu(
   assign id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_to_ex_valid = id_valid && id_ready_go;
+
+  always @(clock) begin
+    if (reset) begin
+      if_stage_refresh <= 1'b1;
+    end
+    else if (if_to_id_valid && id_allowin) begin
+      if_stage_refresh <= 1'b1;
+    end
+    else begin
+      if_stage_refresh <= 1'b0;
+    end
+  end
+
   always @(posedge clock) begin
     if (reset) begin
       id_valid <= 1'b0;
@@ -341,11 +338,11 @@ module cpu(
   wire mem_allowin;
   wire mem_ready_go;
   wire mem_to_wb_valid;
-  wire mem_fetched;
+  wire mem_finish;
   
   assign mem_ready_go = (
       (~mem_ram_rd_ena && ~mem_ram_wr_ena)
-    | mem_fetched
+    | mem_finish
   );
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
@@ -423,7 +420,7 @@ module cpu(
     .mem_rw_size(mem_rw_size),
     .mem_rw_resp(mem_rw_resp),
     
-    .mem_fetched(mem_fetched)
+    .mem_finish(mem_finish)
   );
 
   wire [`REG_BUS] mem_ram_data;

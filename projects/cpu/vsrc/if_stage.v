@@ -5,13 +5,14 @@
 `include "defines.v"
 
 module if_stage(
-  input wire clk,
-  input wire rst,
+  input wire            clk,
+  input wire            rst,
+  input wire            refresh,
   
   // branch and jump control
-  input wire bj_ena,
+  input wire            bj_ena,
   input wire [`REG_BUS] bj_pc,
-  input wire excp_jmp_ena,
+  input wire            excp_jmp_ena,
   input wire [`REG_BUS] excp_pc,
   
   // output to pipeline
@@ -26,11 +27,40 @@ module if_stage(
   output wire [1:0]     if_axi_size,
   input wire [1:0]      if_axi_resp,
 
-  output reg fetched
+  output wire           if_finish
   );
+  
+  parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
+  reg if_state;
+  reg if_next_state;
+
+  always @(posedge clk) begin
+    if (rst) begin
+      if_state <= IDLE;
+    end
+    else begin
+      if_state <= if_next_state;
+    end
+  end
+
+  always @(*) begin
+    case (if_state)
+      IDLE:
+        if (refresh) begin
+          if_next_state = ADDR;
+        end
+      ADDR:
+        if (if_handshake) begin
+          if_next_state = RETN;
+        end
+      RETN:
+        if (refresh) begin
+          if_next_state = ADDR;
+        end
+  end
 
   // fetch an instruction
-  assign if_axi_valid = 1'b1;
+  assign if_axi_valid = if_state == ADDR;
   assign if_axi_size = `SIZE_W;
 
   wire if_handshake = if_axi_valid & if_axi_ready;
@@ -39,18 +69,15 @@ module if_stage(
     if (rst) begin
       if_pc <= `PC_START;
       if_axi_addr <= `PC_START;
-      fetched <= 1'b0;
     end
     else if (if_handshake) begin
       if_pc <= if_axi_addr; // this pc
       if_axi_addr <= excp_jmp_ena ? excp_pc :
                      bj_ena       ? bj_pc   :
                      (if_axi_addr + 4) ; // next pc
-      fetched <= 1'b1;
       if_inst <= if_axi_data_read[31 : 0]; // this inst
     end
-    else begin
-      fetched <= 1'b0;
-    end
   end
+
+  assign if_finish = if_state == RETN;
 endmodule
