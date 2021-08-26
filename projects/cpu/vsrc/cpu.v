@@ -31,7 +31,7 @@ module cpu(
   // pipeline control
   wire if_valid;
   wire if_to_id_valid;
-  wire if_stage_refresh = if_to_id_valid && id_allowin;
+  reg if_stage_refresh;
   assign if_to_id_valid = if_valid;
   // IF stage
   wire [`EXCP_BUS] if_excp;
@@ -78,19 +78,19 @@ module cpu(
   assign id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_to_ex_valid = id_valid && id_ready_go;
-  /*
-  always @(posedge clock) begin
+  
+  always @(*) begin
     if (reset) begin
-      if_stage_refresh <= 1'b1;
+      if_stage_refresh = 1'b1;
     end
     else if (if_to_id_valid && id_allowin) begin
-      if_stage_refresh <= 1'b1;
+      if_stage_refresh = 1'b1;
     end
     else begin
-      if_stage_refresh <= 1'b0;
+      if_stage_refresh = 1'b0;
     end
   end
-  */
+  
   always @(posedge clock) begin
     if (reset) begin
       id_valid <= 1'b0;
