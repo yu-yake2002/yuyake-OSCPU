@@ -76,5 +76,5 @@ module if_stage(
     end
   end
 
-  assign if_finish = if_state == RETN/* && ~refresh*/;
+  assign if_finish = if_state == RETN && ~refresh;
 endmodule
