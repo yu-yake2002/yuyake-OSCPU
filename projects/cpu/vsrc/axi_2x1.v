@@ -468,12 +468,12 @@ module axi_2x1 # (
     | ({2{r_state_1}} & ar_burst_i_1)
   );
   assign top_ar_lock_o = (
-      (r_state_0 & ar_addr_i_0) 
-    | (r_state_1 & ar_addr_i_1)
+      (r_state_0 & ar_lock_i_0) 
+    | (r_state_1 & ar_lock_i_1)
   );
   assign top_ar_cache_o = (
-      ({4{r_state_0}} & ar_addr_i_0) 
-    | ({4{r_state_1}} & ar_addr_i_1)
+      ({4{r_state_0}} & ar_cache_i_0) 
+    | ({4{r_state_1}} & ar_cache_i_1)
   );
   assign top_ar_qos_o = (
       ({4{r_state_0}} & ar_qos_i_0) 
