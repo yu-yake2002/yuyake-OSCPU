@@ -32,8 +32,7 @@ module cpu(
   wire if_valid = 1'b1;
   wire if_ready_go;
   wire if_to_id_valid;
-  //reg if_stage_refresh;
-  wire if_stage_refresh = reset || (if_to_id_valid && id_allowin);
+  reg if_stage_refresh;
   assign if_to_id_valid = if_valid && if_ready_go;
   // IF stage
   wire [`EXCP_BUS] if_excp;
@@ -80,7 +79,7 @@ module cpu(
   assign id_ready_go = ~stall;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
   assign id_to_ex_valid = id_valid && id_ready_go;
-  /*
+  
   always @(posedge clock) begin
     if (reset) begin
       if_stage_refresh <= 1'b1;
@@ -92,7 +91,7 @@ module cpu(
       if_stage_refresh <= 1'b0;
     end
   end
-  */
+  
   always @(posedge clock) begin
     if (reset) begin
       id_valid <= 1'b0;
