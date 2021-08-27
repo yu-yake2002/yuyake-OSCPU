@@ -139,10 +139,16 @@ module axi_rw # (
   
   
   // ------------------State Machine------------------
+  /*
   parameter [1:0] W_STATE_IDLE = 2'b00, W_STATE_ADDR = 2'b01, W_STATE_WRITE = 2'b10, W_STATE_RESP = 2'b11;
   parameter [1:0] R_STATE_IDLE = 2'b00, R_STATE_ADDR = 2'b01, R_STATE_READ  = 2'b10;
-  
+  */
+  parameter [2:0] W_STATE_IDLE = 3'b000, W_STATE_ADDR = 3'b001, W_STATE_WRITE = 3'b010, W_STATE_RESP = 3'b011, W_STATE_RETN = 3'b100;
+  parameter [2:0] R_STATE_IDLE = 3'b000, R_STATE_ADDR = 3'b001, R_STATE_READ  = 3'b010, R_STATE_RETN = 3'b011;
+  /*
   reg [1:0] w_state, r_state;
+  */
+  reg [2:0] w_state, r_state;
   wire w_state_idle = w_state == W_STATE_IDLE, w_state_addr = w_state == W_STATE_ADDR, w_state_write = w_state == W_STATE_WRITE, w_state_resp = w_state == W_STATE_RESP;
   wire r_state_idle = r_state == R_STATE_IDLE, r_state_addr = r_state == R_STATE_ADDR, r_state_read  = r_state == R_STATE_READ;
   
@@ -157,7 +163,10 @@ module axi_rw # (
           W_STATE_IDLE:               w_state <= W_STATE_ADDR;
           W_STATE_ADDR:  if (aw_hs)   w_state <= W_STATE_WRITE;
           W_STATE_WRITE: if (w_done)  w_state <= W_STATE_RESP;
-          W_STATE_RESP:  if (b_hs)    w_state <= W_STATE_IDLE;
+          //W_STATE_RESP:  if (b_hs)    w_state <= W_STATE_IDLE;
+          W_STATE_RESP:  if (b_hs)    w_state <= W_STATE_RETN;
+          W_STATE_RETN:               w_state <= W_STATE_IDLE;
+          default:                    w_state <= W_STATE_IDLE;
         endcase
        end
     end
@@ -173,8 +182,10 @@ module axi_rw # (
         case (r_state)
           R_STATE_IDLE:               r_state <= R_STATE_ADDR;
           R_STATE_ADDR: if (ar_hs)    r_state <= R_STATE_READ;
-          R_STATE_READ: if (r_done)   r_state <= R_STATE_IDLE;
-          default:;
+          //R_STATE_READ: if (r_done)   r_state <= R_STATE_IDLE;
+          R_STATE_READ: if (r_done)   r_state <= R_STATE_RETN;
+          R_STATE_RETN:               r_state <= R_STATE_IDLE;
+          default:                    r_state <= R_STATE_IDLE;
         endcase
       end
     end
