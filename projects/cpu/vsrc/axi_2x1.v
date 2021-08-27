@@ -481,8 +481,8 @@ module axi_2x1 # (
   );
     
   assign top_r_ready_o = (
-      (r_state_0 & ar_user_i_0) 
-    | (r_state_1 & ar_user_i_1)
+      (r_state_0 & r_ready_i_0) 
+    | (r_state_1 & r_ready_i_1)
   );
   
 endmodule
