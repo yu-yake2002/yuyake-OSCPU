@@ -18,9 +18,13 @@ module forward (
   input wire [`REG_CTRL_BUS] wb_reg_wr_ctrl,
   input wire [`REG_BUS] rs1_now,
   input wire [`REG_BUS] rs2_now,
+  input wire ex_use_rs1,
+  input wire ex_use_rs2,
 
   output wire [`REG_BUS] rs1_forward,
-  output wire [`REG_BUS] rs2_forward
+  output wire [`REG_BUS] rs2_forward,
+
+  output wire wait_for_axi
 );
   
   wire mem_op1_src_ex = (rs1_addr == mem_reg_wr_addr) 
@@ -65,4 +69,7 @@ module forward (
                        (wb_op2_src_mem) ? wb_mem_data :
                        rs2_now;
   
+  
+  
+  assign wait_for_axi = wb_op1_src_mem || wb_op2_src_mem;
 endmodule

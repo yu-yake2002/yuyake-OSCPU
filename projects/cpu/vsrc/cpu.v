@@ -221,8 +221,9 @@ module cpu(
   wire ex_allowin;
   wire ex_ready_go;
   wire ex_to_mem_valid;
-  
-  assign ex_ready_go = 1'b1;
+  wire wait_for_axi;
+
+  assign ex_ready_go = ~wait_for_axi || mem_finish;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
   assign ex_to_mem_valid = ex_valid && ex_ready_go;
   
@@ -282,17 +283,20 @@ module cpu(
     .wb_reg_wr_ctrl(wb_reg_wr_ctrl),
     .rs1_now(ex_rs1_data),
     .rs2_now(ex_rs2_data),
+    .ex_use_rs1(ex_use_rs1),
+    .ex_use_rs2(ex_use_rs2),
 
     .rs1_forward(rs1_forward),
-    .rs2_forward(rs2_forward)
-  );
-  
-  // forward rs1, rs2
-  wire [`REG_BUS] rs1_forward, rs2_forward;
+    .rs2_forward(rs2_forward),
 
+    .wait_for_axi(wait_for_axi)
+  );
+
+  // forward data
+  wire [`REG_BUS] rs1_forward, rs2_forward;
   // True operands, considering "forwards"
   wire [`REG_BUS] true_op1, true_op2;
-  
+
   assign true_op1 = ex_use_rs1 ? rs1_forward : ex_now_op1;
   assign true_op2 = ex_use_rs2 ? rs2_forward : ex_now_op2;
   
@@ -337,14 +341,10 @@ module cpu(
   reg mem_stage_refresh; // the first beat of mem_stage
   reg mem_valid;
   wire mem_allowin;
-  wire mem_ready_go;
+  wire mem_ready_go = (~mem_ram_rd_ena && ~mem_ram_wr_ena) | mem_finish;
   wire mem_to_wb_valid;
   wire mem_finish;
   
-  assign mem_ready_go = (
-      (~mem_ram_rd_ena && ~mem_ram_wr_ena)
-    | mem_finish
-  );
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
   
