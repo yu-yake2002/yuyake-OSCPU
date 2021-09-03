@@ -4,51 +4,181 @@
 `include "defines.v"
 
 module ex_stage(
-  input wire rst,
+  input wire                          clk,
+  input wire                          rst,
+  
+  // pipeline control
+  input wire                          id_to_ex_valid,
+  input wire [`ID_TO_EX_WIDTH-1:0]    id_to_ex_bus,
+  output wire                         ex_allowin,
 
-  input wire ex_valid,
-  input wire [`REG_BUS] ex_op1,
-  input wire [`REG_BUS] ex_op2,
-  input wire [`REG_BUS] rs1_forward,
-  input wire [`REG_BUS] rs2_forward,
-  input wire is_word_opt,
-  input wire [`ALU_BUS] alu_info,
-  input wire [`BJ_BUS] bj_info,
-  input wire [`REG_BUS] jmp_imm,
-  input wire [`REG_BUS] now_pc,
+  output wire                         ex_to_mem_valid,
+  output wire [`EX_TO_MEM_WIDTH-1:0]  ex_to_mem_bus,
+  input wire                          mem_allowin,
+  
+  input wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
+  input wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus,
 
-  output wire [`REG_BUS] rd_data,
-  output wire [`REG_BUS] bj_pc,
-  output wire bj_ena
+  output wire [`BJ_CTRL_WIDTH-1:0]    bj_ctrl_bus
   );
   
-  // alu -> bj
-  wire [`BJ_BUS] bj_data;
+  // pipeline control
+  reg ex_valid;
+  wire ex_ready_go;
+  reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   
-  wire [`REG_BUS] op1 = {{32{~is_word_opt}} & ex_op1[63 : 32], ex_op1[31 : 0]};
-  wire [`REG_BUS] op2 = {{32{~is_word_opt}} & ex_op2[63 : 32], ex_op2[31 : 0]};
+  assign ex_ready_go = ~hazard;
+  assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
+  assign ex_to_mem_valid = ex_valid && ex_ready_go;
+  
+  always @(posedge clk) begin
+    if (rst) begin
+      ex_valid <= 1'b0;
+    end
+    else if (ex_allowin) begin
+      ex_valid <= id_to_ex_valid;
+    end
+
+    if (id_to_ex_valid && ex_allowin) begin
+      id_to_ex_bus_r <= id_to_ex_bus;
+    end
+  end
+
+  assign {
+    ex_inst,        // 549:517
+    ex_pc,          // 516:452
+
+    // -> ex
+    ex_rs1_addr,    // 451:447
+    ex_rs2_addr,    // 446:442
+    ex_op1,         // 441:378
+    ex_op2,         // 377:314
+    ex_use_rs1,     // 313:313
+    ex_use_rs2,     // 312:312
+    ex_rs1_data,    // 311:248
+    ex_rs2_data,    // 247:184
+    ex_is_word_opt, // 183:183
+    ex_alu_info,    // 182:171
+    ex_bj_info,     // 170:163
+    ex_jmp_imm,     // 162:99
+    
+    // -> mem
+    ex_load_info,   // 98 :92
+    ex_save_info,   // 91 :88
+    ex_ram_rd_ena,  // 87 :87
+    ex_ram_wr_ena,  // 86 :86
+    
+    // -> wb
+    ex_reg_wr_ctrl, // 85: 83
+    ex_reg_wr_ena,  // 82: 82
+    ex_reg_wr_addr, // 81 :77
+    ex_csr_wr_ena,  // 76 :76
+    ex_csr_wr_addr, // 75 :64
+    ex_csr_data     // 64 :0
+  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}};
+  
+  wire [`INST_BUS] ex_inst;
+  wire [`REG_BUS]  ex_pc;
+  wire [4 : 0]     ex_rs1_addr, ex_rs2_addr;
+  wire [`REG_BUS]  ex_op1, ex_op2;
+  wire ex_use_rs1, ex_use_rs2;
+  wire [`REG_BUS]  ex_rs1_data, ex_rs2_data;
+  wire ex_is_word_opt;
+  wire [`ALU_BUS]  ex_alu_info;
+  wire [`BJ_BUS]   ex_bj_info;
+  wire [`REG_BUS]  ex_jmp_imm;
+
+  wire [`LOAD_BUS] ex_load_info;
+  wire [`SAVE_BUS] ex_save_info;
+  wire ex_ram_rd_ena, ex_ram_wr_ena;
+  
+  wire [`REG_CTRL_BUS] ex_reg_wr_ctrl;
+  wire ex_reg_wr_ena, ex_csr_wr_ena;
+  wire [4 : 0] ex_reg_wr_addr;
+  wire [11: 0] ex_csr_wr_addr;
+  wire [`REG_BUS] ex_csr_data;
+  
+  wire hazard;
+  forward Forward(
+    .ex_rs1_addr(ex_rs1_addr),
+    .ex_rs2_addr(ex_rs2_addr),
+    .ex_rs1_data(ex_rs1_data),
+    .ex_rs2_data(ex_rs2_data),
+    .ex_use_rs1(ex_use_rs1),
+    .ex_use_rs2(ex_use_rs2),
+
+    .mem_forward_bus(mem_forward_bus),
+    .wb_forward_bus(wb_forward_bus),
+
+    .rs1_forward(rs1_forward),
+    .rs2_forward(rs2_forward),
+
+    .hazard(hazard)
+  );
+  
+  wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
+  assign true_op1 = ex_use_rs1 ? rs1_forward : ex_op1;
+  assign true_op2 = ex_use_rs2 ? rs2_forward : ex_op2;
+  wire [`REG_BUS] op1 = {{32{~ex_is_word_opt}} & true_op1[63 : 32], true_op1[31 : 0]};
+  wire [`REG_BUS] op2 = {{32{~ex_is_word_opt}} & true_op2[63 : 32], true_op2[31 : 0]};
+  
+  // alu -> bj
+  wire [`BJ_BUS] ex_bj_data;
+  
   ex_stage_alu Exe_stage_alu(
     .rst(rst),
     .op1(op1),
     .op2(op2),
-    .alu_info(alu_info),
-    .is_word_opt(is_word_opt),
+    .alu_info(ex_alu_info),
+    .is_word_opt(ex_is_word_opt),
     
-    .alu_output(rd_data),
-    .bj_data(bj_data)
+    .alu_output(ex_data),
+    .bj_data(ex_bj_data)
   );
   
   ex_stage_bj Exe_stage_bj(
     .rst(rst),
     .ex_valid(ex_valid),
-    .bj_info(bj_info),
-    .bj_data(bj_data),
-    .jmp_imm(jmp_imm),
-    .ex_op1(rs1_forward),
-    .now_pc(now_pc),
+    .bj_info(ex_bj_info),
+    .bj_data(ex_bj_data),
+    .jmp_imm(ex_jmp_imm),
+    .rs1_data(rs1_forward),
+    .ex_pc(ex_pc),
     
-    .bj_ena(bj_ena),
-    .new_pc(bj_pc)
+    .bj_ena(ex_bj_ena),
+    .new_pc(ex_bj_pc)
   );
+  
+  wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
+  wire [`REG_BUS] ex_data;
+  assign ex_to_mem_bus = {
+    ex_pc,          // 310:247
+    ex_inst,        // 246:215
 
+    // mem
+    ex_load_info,   // 214:208
+    ex_save_info,   // 207:204
+    ex_ram_wr_src,  // 203:140
+    ex_data,        // 139:76
+    ex_csr_data,    // 75 :12
+    ex_ram_rd_ena,  // 11 :11
+    ex_ram_wr_ena,  // 10 :10
+    
+    // wb
+    ex_reg_wr_ctrl, // 9  :7
+    ex_reg_wr_addr, // 6  :2
+    ex_reg_wr_ena,  // 1  :1
+    ex_csr_wr_ena   // 0  :0
+  };
+
+  wire [`REG_BUS]    ex_bj_pc;
+  wire               ex_bj_ena;
+  wire               ex_bj_stall; // 1: not finish the computation of branch
+  
+  assign             ex_bj_stall = (|ex_bj_info) && ~ex_ready_go;
+  assign bj_ctrl_bus = {
+    ex_bj_pc,
+    ex_bj_ena,
+    ex_bj_stall
+  };
 endmodule

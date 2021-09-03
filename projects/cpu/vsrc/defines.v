@@ -6,7 +6,16 @@
 `define ZERO_WORD  64'h00000000_00000000
 `define PC_START   64'h00000000_80000000
 `define REG_BUS    63 : 0
-`define INST_ADD   8'h11
+`define INST_BUS   31 : 0
+
+`define IF_TO_ID_WIDTH        96
+`define ID_TO_EX_WIDTH        550
+`define EX_TO_MEM_WIDTH       311
+`define MEM_TO_WB_WIDTH       297
+`define DIFFTEST_WIDTH        97
+`define BJ_CTRL_WIDTH         66
+`define MEM_FORWARD_WIDTH     73
+`define WB_FORWARD_WIDTH      137
 
 `define AXI_ADDR_WIDTH      64
 `define AXI_DATA_WIDTH      64
