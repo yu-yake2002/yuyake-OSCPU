@@ -293,11 +293,11 @@ module cpu(
   
   // Difftest
   reg cmt_wen;
-  reg [7:0]cmt_wdest;
+  reg [7:0] cmt_wdest;
   reg [`REG_BUS] cmt_wdata;
   reg [`REG_BUS] cmt_pc;
   reg [31:0]cmt_inst;
-  reg vaild;
+  reg cmt_vaild;
   reg skip;
   reg [63:0] cycleCnt;
   reg [63:0] instrCnt;
@@ -313,7 +313,7 @@ module cpu(
 
   always @(posedge clock) begin
     if (reset) begin
-      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, vaild, cycleCnt, instrCnt} <= 0;
+      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, cycleCnt, instrCnt} <= 0;
     end
     else begin
       cmt_wen <= reg_wr_ena;
@@ -321,7 +321,7 @@ module cpu(
       cmt_wdata <= reg_wr_data;
       cmt_pc <= wb_pc;
       cmt_inst <= wb_inst;
-      vaild <= wb_commit;
+      cmt_vaild <= wb_commit;
   
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
@@ -337,7 +337,7 @@ module cpu(
     .clock              (clock),
     .coreid             (0),
     .index              (0),
-    .valid              (vaild),
+    .valid              (cmt_vaild),
     .pc                 (cmt_pc),
     .instr              (cmt_inst),
     .skip               (skip),
