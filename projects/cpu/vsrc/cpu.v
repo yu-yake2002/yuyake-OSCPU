@@ -297,10 +297,8 @@ module cpu(
   reg [`REG_BUS] cmt_wdata;
   reg [`REG_BUS] cmt_pc;
   reg [31:0]cmt_inst;
-  reg cmt_vaild;
-  reg skip;
-  reg [63:0] cycleCnt;
-  reg [63:0] instrCnt;
+  reg cmt_vaild, cmt_skip;
+  reg [`REG_BUS] cycleCnt, instrCnt;
   
   wire [`REG_BUS] wb_pc;
   wire [31: 0] wb_inst;
@@ -313,7 +311,7 @@ module cpu(
 
   always @(posedge clock) begin
     if (reset) begin
-      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, skip, cycleCnt, instrCnt} <= 0;
+      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, cmt_skip, cycleCnt, instrCnt} <= 0;
     end
     else begin
       cmt_wen <= reg_wr_ena;
@@ -326,7 +324,7 @@ module cpu(
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
-      skip <= wb_pc == `PC_START;
+      cmt_skip <= wb_pc == `PC_START;
       
       cycleCnt <= cycleCnt + 1;
       instrCnt <= instrCnt + wb_commit;
@@ -340,7 +338,7 @@ module cpu(
     .valid              (cmt_vaild),
     .pc                 (cmt_pc),
     .instr              (cmt_inst),
-    .skip               (skip),
+    .skip               (cmt_skip),
     .isRVC              (0),
     .scFailed           (0),
     .wen                (cmt_wen),
