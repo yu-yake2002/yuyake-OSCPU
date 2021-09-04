@@ -46,7 +46,6 @@ module cpu(
   if_stage If_stage(
     .clk(clock),
     .rst(reset),
-    .refresh(if_stage_refresh),
     
     // pipeline control
     .if_to_id_valid(if_to_id_valid),

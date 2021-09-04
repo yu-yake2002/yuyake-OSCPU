@@ -7,7 +7,6 @@
 module if_stage(
   input wire                          clk,
   input wire                          rst,
-  input wire                          refresh,
   
   // pipeline control
   output wire                         if_to_id_valid,
@@ -85,7 +84,7 @@ module if_stage(
   wire if_ready_go;
   wire if_allowin;
   
-  assign if_ready_go    = if_finish;
+  assign if_ready_go    = 1'b1;
   assign if_allowin     = !if_valid || if_ready_go && id_allowin;
   assign if_to_id_valid = if_valid && if_ready_go;
   
@@ -110,8 +109,6 @@ module if_stage(
       if_inst <= if_axi_data_read[31 : 0]; // this inst
     end
   end
-  
-  wire if_finish = (if_state == RETN) && ~refresh;
 
   assign if_to_id_bus = {
     if_inst,
