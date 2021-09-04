@@ -313,7 +313,7 @@ module cpu(
 
   always @(posedge clock) begin
     if (reset) begin
-      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, cycleCnt, instrCnt} <= 0;
+      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, skip, cycleCnt, instrCnt} <= 0;
     end
     else begin
       cmt_wen <= reg_wr_ena;
