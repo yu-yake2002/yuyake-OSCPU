@@ -103,7 +103,7 @@ module if_stage(
   
   always @(posedge clk) begin
     if (rst) begin
-      if_pc <= `PC_START - 64'h4;
+      if_pc <= `PC_START;
     end
     else if (pre_to_if_valid && if_allowin) begin
       if_pc <= next_pc;
