@@ -112,7 +112,7 @@ module if_stage(
       if_pc <= 64'h7ffffffc;
     end
     else if (pre_to_if_valid && if_allowin) begin
-      if_pc <= next_pc;
+      if_pc <= if_axi_addr;
       if_inst <= if_axi_data_read[31 : 0]; // this inst
     end
   end
