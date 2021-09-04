@@ -64,12 +64,11 @@ module if_stage(
       if_state <= if_next_state;
     end
   end
-
+  
   always @(*) begin
     case (if_state)
       IDLE: begin
         if_next_state = bj_handshake ? ADDR : IDLE;
-        if_axi_addr <= next_pc;
       end
       ADDR:
         if_next_state = if_handshake ? RETN : ADDR;
@@ -80,6 +79,11 @@ module if_stage(
     endcase
   end
   
+  always @(posedge clk) begin
+    if (if_state == IDLE)
+      if_axi_addr <= next_pc;
+  end
+
   // IF stage
   
   // pipeline control
