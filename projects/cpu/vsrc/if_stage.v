@@ -37,7 +37,7 @@ module if_stage(
   } = bj_ctrl_bus;
 
   // pre-IF stage
-  wire pre_valid = ~rst;
+  wire pre_valid = 1'b1;
   wire pre_ready_go = if_state == RETN;
   wire pre_to_if_valid = pre_valid && pre_ready_go;
   wire [`REG_BUS] next_pc = excp_jmp_ena ? excp_pc :
@@ -103,7 +103,7 @@ module if_stage(
   
   always @(posedge clk) begin
     if (rst) begin
-      if_pc <= `PC_START;
+      if_pc <= 64'h7ffffffc;
     end
     else if (pre_to_if_valid && if_allowin) begin
       if_pc <= next_pc;
