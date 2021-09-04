@@ -18,7 +18,8 @@ module ex_stage(
   
   input wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
   input wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus,
-
+  
+  input wire                          if_bj_ready,
   output wire [`BJ_CTRL_WIDTH-1:0]    bj_ctrl_bus
   );
   
@@ -27,7 +28,9 @@ module ex_stage(
   wire ex_ready_go;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   
-  assign ex_ready_go = ~hazard;
+  wire ex_done = ~hazard;
+  wire bj_handshake = ex_bj_valid && if_bj_ready;
+  assign ex_ready_go = ~(|ex_bj_info) || bj_handshake;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
   assign ex_to_mem_valid = ex_valid && ex_ready_go;
   
@@ -173,12 +176,12 @@ module ex_stage(
 
   wire [`REG_BUS]    ex_bj_pc;
   wire               ex_bj_ena;
-  wire               ex_bj_stall; // 1: not finish the computation of branch
+  wire               ex_bj_valid; // 1: not finish the computation of branch
   
-  assign             ex_bj_stall = (|ex_bj_info) && ~ex_ready_go;
+  assign             ex_bj_valid = ~(|ex_bj_info) || ex_done;
   assign bj_ctrl_bus = {
     ex_bj_pc,
     ex_bj_ena,
-    ex_bj_stall
+    ex_bj_valid
   };
 endmodule

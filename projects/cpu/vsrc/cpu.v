@@ -41,7 +41,8 @@ module cpu(
   wire [`BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus;
   wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus;
   wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus;
-
+  
+  wire if_bj_ready;
   // IF stage
   if_stage If_stage(
     .clk(clock),
@@ -53,6 +54,7 @@ module cpu(
     .id_allowin(id_allowin),
     
     // branch and jump control
+    .if_bj_ready(if_bj_ready),
     .bj_ctrl_bus(bj_ctrl_bus),
     .excp_jmp_ena(excp_jmp_ena),
     .excp_pc(excp_pc),
@@ -123,7 +125,8 @@ module cpu(
 
     .mem_forward_bus(mem_forward_bus),
     .wb_forward_bus(wb_forward_bus),
-
+    
+    .if_bj_ready(if_bj_ready),
     .bj_ctrl_bus(bj_ctrl_bus)
   );
   

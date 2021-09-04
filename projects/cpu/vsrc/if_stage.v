@@ -14,6 +14,7 @@ module if_stage(
   input wire                          id_allowin,
   
   // branch and jump control
+  output wire                         if_bj_ready,
   input wire [`BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus,
   input wire                          excp_jmp_ena,
   input wire [`REG_BUS]               excp_pc,
@@ -28,11 +29,11 @@ module if_stage(
   );
   
   wire [`REG_BUS] bj_pc;
-  wire            bj_ena, bj_stall;
+  wire            bj_ena, bj_valid;
   assign {
     bj_pc,    // 65:2
     bj_ena,   // 1 :1
-    bj_stall  // 0 :0
+    bj_valid  // 0 :0
   } = bj_ctrl_bus;
 
   // pre-IF stage
@@ -47,9 +48,9 @@ module if_stage(
   assign if_axi_valid = if_state == ADDR;
   wire   if_handshake = if_axi_valid & if_axi_ready;
   
-  assign if_axi_addr = next_pc;
   assign if_axi_size = `SIZE_W;
-
+  assign if_bj_ready = if_state == IDLE;
+  wire bj_handshake = if_bj_ready & bj_valid;
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;
@@ -66,12 +67,14 @@ module if_stage(
 
   always @(*) begin
     case (if_state)
-      IDLE:
-        if_next_state = bj_stall ? IDLE : ADDR;
+      IDLE: begin
+        if_next_state = bj_handshake ? ADDR : IDLE;
+        if_axi_addr <= next_pc;
+      end
       ADDR:
         if_next_state = if_handshake ? RETN : ADDR;
       RETN:
-        if_next_state = bj_stall ? RETN : ADDR;
+        if_next_state = (pre_to_if_valid && if_allowin) ? IDLE : RETN;
       default:
         if_next_state = IDLE;
     endcase
