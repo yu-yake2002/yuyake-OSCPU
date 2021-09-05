@@ -39,8 +39,7 @@ module ex_stage(
       ex_valid <= 1'b0;
     end
     else if (ex_allowin) begin
-      // when branch or jump, data from id is invalid
-      ex_valid <= id_to_ex_valid && ex_bj_ena;
+      ex_valid <= id_to_ex_valid;
     end
 
     if (id_to_ex_valid && ex_allowin) begin
