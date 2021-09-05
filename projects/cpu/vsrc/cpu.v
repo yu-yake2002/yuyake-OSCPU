@@ -67,20 +67,6 @@ module cpu(
     .if_axi_size(if_rw_size),
     .if_axi_resp(if_rw_resp)
   );
-  
-  /*
-  always @(posedge clock) begin
-    if (reset) begin
-      if_stage_refresh <= 1'b1;
-    end
-    else if (if_to_id_valid && id_allowin) begin
-      if_stage_refresh <= 1'b1;
-    end
-    else begin
-      if_stage_refresh <= 1'b0;
-    end
-  end
-  */
 
   // ID stage
   id_stage Id_stage(
@@ -326,7 +312,7 @@ module cpu(
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
-      //cmt_skip <= wb_pc == `PC_START;
+      cmt_skip <= wb_pc == `PC_START;
       
       cycleCnt <= cycleCnt + 1;
       instrCnt <= instrCnt + wb_commit;
