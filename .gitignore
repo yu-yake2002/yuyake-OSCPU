@@ -11,6 +11,9 @@
 !*.py
 !*.mk
 !*.bin
+!*.scala
+!*.elf
+!*.txt
 !Makefile
 !README
 !README.md
@@ -19,6 +22,7 @@
 **/build/
 **/build_test/
 **/difftest
+**/out/
 !libraries/difftest
 !libraries/NEMU
 !libraries/DRAMsim3
