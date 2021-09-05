@@ -108,7 +108,9 @@ module cpu(
     
     // control csr
     .csr_rd_ena(csr_rd_ena),
-    .csr_rd_addr(csr_rd_addr)  
+    .csr_rd_addr(csr_rd_addr),
+
+    .bj_ctrl_bus(bj_ctrl_bus)
   );
   
   ex_stage Ex_stage(

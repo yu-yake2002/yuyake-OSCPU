@@ -89,11 +89,12 @@ module if_stage(
   // pipeline control
   reg if_valid;
   wire if_ready_go;
+  wire if_flush = bj_ena;
   wire if_allowin;
   
   assign if_ready_go    = 1'b1;
   assign if_allowin     = !if_valid || if_ready_go && id_allowin;
-  assign if_to_id_valid = if_valid && if_ready_go;
+  assign if_to_id_valid = if_valid && if_ready_go && ~if_flush;
   
   always @(posedge clk) begin
     if (rst) begin
@@ -101,6 +102,9 @@ module if_stage(
     end
     else if (if_allowin) begin
       if_valid <= pre_to_if_valid;
+    end
+    else if (if_flush) begin
+      if_valid <= 1'b0;
     end
   end
   

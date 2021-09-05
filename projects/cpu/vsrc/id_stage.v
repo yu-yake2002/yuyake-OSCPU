@@ -31,17 +31,28 @@ module id_stage(
 
   // control csr
   output wire                       csr_rd_ena,
-  output wire [11: 0]               csr_rd_addr
+  output wire [11: 0]               csr_rd_addr,
+
+  input wire [`BJ_CTRL_WIDTH-1:0]   bj_ctrl_bus
 );
+
+  wire [`REG_BUS] bj_pc;
+  wire            bj_ena, bj_valid;
+  assign {
+    bj_pc,    // 65:2
+    bj_ena,   // 1 :1
+    bj_valid  // 0 :0
+  } = bj_ctrl_bus;
 
   // pipeline control
   reg id_valid;
   wire id_ready_go;
+  wire id_flush = bj_ena;
   reg [`IF_TO_ID_WIDTH-1:0] if_to_id_bus_r;
 
   assign id_ready_go = 1'b1;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
-  assign id_to_ex_valid = id_valid && id_ready_go;
+  assign id_to_ex_valid = id_valid && id_ready_go && ~id_flush;
 
   always @(posedge clk) begin
     if (rst) begin
@@ -49,6 +60,9 @@ module id_stage(
     end
     else if (id_allowin) begin
       id_valid <= if_to_id_valid;
+    end
+    else if (id_flush) begin // not allowin, and flush happen
+      id_valid <= 1'b0;
     end
     
     if (if_to_id_valid && id_allowin) begin
