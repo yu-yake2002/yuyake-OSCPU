@@ -273,7 +273,7 @@ module axi_2x1 # (
   wire w_state_0 = w_state == STATE_0;
   wire w_state_1 = w_state == STATE_1;
   
-  // to IF
+  // to MEM
   assign aw_ready_o_0  = w_state_0                   & top_aw_ready_i;
   assign w_ready_o_0   = w_state_0                   & top_w_ready_i;
   assign b_valid_o_0   = w_state_0                   & top_b_valid_i;
@@ -281,7 +281,7 @@ module axi_2x1 # (
   assign b_id_o_0      = {AXI_ID_WIDTH{w_state_0}}   & top_b_id_i;
   assign b_user_o_0    = {AXI_USER_WIDTH{w_state_0}} & top_b_user_i;
   
-  // to MEM
+  // to IF
   assign aw_ready_o_1  = w_state_1                   & top_aw_ready_i;
   assign w_ready_o_1   = w_state_1                   & top_w_ready_i;
   assign b_valid_o_1   = w_state_1                   & top_b_valid_i;
@@ -416,7 +416,7 @@ module axi_2x1 # (
   wire r_state_0 = r_state == STATE_0;
   wire r_state_1 = r_state == STATE_1;
   
-  // to IF
+  // to MEM
   assign ar_ready_o_0  = r_state_0                    & top_ar_ready_i;
   assign r_valid_o_0   = r_state_0                    & top_r_valid_i;
   assign r_resp_o_0    = {2{r_state_0}}               & top_r_resp_i;
@@ -425,7 +425,7 @@ module axi_2x1 # (
   assign r_id_o_0      = {AXI_ID_WIDTH{r_state_0}}    & top_r_id_i;
   assign r_user_o_0    = {AXI_USER_WIDTH{r_state_0}}  & top_r_user_i;
   
-  // to MEM
+  // to IF
   assign ar_ready_o_1  = r_state_1                    & top_ar_ready_i;
   assign r_valid_o_1   = r_state_1                    & top_r_valid_i;
   assign r_resp_o_1    = {2{r_state_1}}               & top_r_resp_i;
@@ -434,7 +434,8 @@ module axi_2x1 # (
   assign r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & top_r_id_i;
   assign r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & top_r_user_i;
   
-  wire [63:0] temp_test = {AXI_DATA_WIDTH{r_state_1}};
+  wire [63:0] temp_test1 = {AXI_DATA_WIDTH{r_state_1}};
+  wire [63:0] temp_test2 = {AXI_DATA_WIDTH{r_state_1}} & top_r_data_i;
 
   // to RAM
   assign top_ar_valid_o = (
