@@ -413,8 +413,8 @@ module axi_2x1 # (
 
   // Output of State Machine
 
-  wire r_state_0 = (r_state == STATE_0);
-  wire r_state_1 = (r_state == STATE_1);
+  wire r_state_0 = (r_state === STATE_0);
+  wire r_state_1 = (r_state === STATE_1);
   
   // to MEM
   assign ar_ready_o_0  = r_state_0                    & top_ar_ready_i;
