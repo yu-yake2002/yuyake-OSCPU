@@ -100,8 +100,8 @@ module mem_stage(
   wire op_lwu = mem_load_info[`LOAD_LWU];
   
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
-  reg mem_state;
-  reg mem_next_state;
+  reg [1:0] mem_state;
+  reg [1:0] mem_next_state;
   
   always @(posedge clk) begin
     if (rst) begin
