@@ -434,7 +434,7 @@ module axi_2x1 # (
   assign r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & top_r_id_i;
   assign r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & top_r_user_i;
   
-  wire temp_test = {AXI_DATA_WIDTH{r_state_1}};
+  wire [63:0] temp_test = {AXI_DATA_WIDTH{r_state_1}};
 
   // to RAM
   assign top_ar_valid_o = (
