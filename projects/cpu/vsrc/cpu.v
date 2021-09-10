@@ -312,7 +312,7 @@ module cpu(
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
-      cmt_skip <= wb_pc == `PC_START;
+      //cmt_skip <= wb_pc == `PC_START;
       
       cycleCnt <= cycleCnt + 1;
       instrCnt <= instrCnt + wb_commit;
