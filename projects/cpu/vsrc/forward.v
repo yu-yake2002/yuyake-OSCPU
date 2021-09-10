@@ -62,6 +62,13 @@ module forward (
                        (wb_op1_src_mem) ? wb_mem_data :
                        ex_rs1_data;
 
+  /* test wires begin */
+  wire test_eq     = (ex_rs1_addr == mem_reg_wr_addr);
+  wire test_wr_ena = mem_reg_wr_ena;
+  wire test_rs1    = (|ex_rs1_addr);
+  wire test_wr_src = mem_reg_wr_ctrl[`MEM_TO_REG];
+  /* test wires end */
+
   wire mem_op2_src_ex = (ex_rs2_addr == mem_reg_wr_addr) 
                         && mem_reg_wr_ena 
                         && (|ex_rs2_addr)
