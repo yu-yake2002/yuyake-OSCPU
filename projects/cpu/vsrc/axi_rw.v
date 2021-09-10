@@ -123,7 +123,7 @@ module axi_rw # (
   
   wire w_trans    = rw_req_i == `REQ_WRITE;
   wire r_trans    = rw_req_i == `REQ_READ;
-  wire w_valid    = rw_valid_i & r_trans;
+  wire w_valid    = rw_valid_i & w_trans;
   wire r_valid    = rw_valid_i & r_trans;
   
   // handshake
