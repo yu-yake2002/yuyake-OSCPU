@@ -270,8 +270,8 @@ module axi_2x1 # (
   end
   
   // Output of State Machine
-  wire w_state_0 = w_state == STATE_0;
-  wire w_state_1 = w_state == STATE_1;
+  wire w_state_0 = (w_state === STATE_0);
+  wire w_state_1 = (w_state === STATE_1);
   
   // to MEM
   assign aw_ready_o_0  = w_state_0                   & top_aw_ready_i;
@@ -425,6 +425,8 @@ module axi_2x1 # (
   assign r_id_o_0      = {AXI_ID_WIDTH{r_state_0}}    & top_r_id_i;
   assign r_user_o_0    = {AXI_USER_WIDTH{r_state_0}}  & top_r_user_i;
   
+  wire test_wire = {AXI_DATA_WIDTH{r_state_0}}  & top_r_data_i;
+
   // to IF
   assign ar_ready_o_1  = r_state_1                    & top_ar_ready_i;
   assign r_valid_o_1   = r_state_1                    & top_r_valid_i;
