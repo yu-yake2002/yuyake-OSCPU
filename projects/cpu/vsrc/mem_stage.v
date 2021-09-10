@@ -180,4 +180,11 @@ module mem_stage(
     mem_data,        // 127:0
     mem_csr_data     // 63 :0
   };
+
+  assign mem_forward_bus = {
+    mem_reg_wr_addr, // 72 :68
+    mem_reg_wr_ena,  // 67 :67
+    mem_ex_data,     // 66 :3
+    mem_reg_wr_ctrl  // 2  :0
+  };
 endmodule
