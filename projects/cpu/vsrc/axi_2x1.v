@@ -154,12 +154,12 @@ module axi_2x1 # (
   input  wire [3:0]                       ar_qos_i_1,
   
   input  wire                             r_ready_i_1,
-  output reg                             r_valid_o_1,
-  output reg [1:0]                       r_resp_o_1,
-  output reg [AXI_DATA_WIDTH-1:0]        r_data_o_1,
-  output reg                             r_last_o_1,
-  output reg [AXI_ID_WIDTH-1:0]          r_id_o_1,
-  output reg [AXI_USER_WIDTH-1:0]        r_user_o_1,
+  output wire                             r_valid_o_1,
+  output wire [1:0]                       r_resp_o_1,
+  output wire [AXI_DATA_WIDTH-1:0]        r_data_o_1,
+  output wire                             r_last_o_1,
+  output wire [AXI_ID_WIDTH-1:0]          r_id_o_1,
+  output wire [AXI_USER_WIDTH-1:0]        r_user_o_1,
   
   // Advanced eXtensible Interface
   // 2x1 interconnect -> RAM
@@ -427,20 +427,12 @@ module axi_2x1 # (
   
   // to IF
   assign ar_ready_o_1  = r_state_1                    & top_ar_ready_i;
-  //assign r_valid_o_1   = r_state_1                    & top_r_valid_i;
-  //assign r_resp_o_1    = {2{r_state_1}}               & top_r_resp_i;
-  //assign r_data_o_1    = {AXI_DATA_WIDTH{r_state_1}}  & top_r_data_i;
-  //assign r_last_o_1    = r_state_1                    & top_r_last_i;
-  //assign r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & top_r_id_i;
-  //assign r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & top_r_user_i;
-  always @(*) begin
-    r_valid_o_1   = r_state_1                    & top_r_valid_i;
-    r_resp_o_1    = {2{r_state_1}}               & top_r_resp_i;
-    r_data_o_1    = {AXI_DATA_WIDTH{r_state_1}}  & top_r_data_i;
-    r_last_o_1    = r_state_1                    & top_r_last_i;
-    r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & top_r_id_i;
-    r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & top_r_user_i;
-  end
+  assign r_valid_o_1   = r_state_1                    & top_r_valid_i;
+  assign r_resp_o_1    = {2{r_state_1}}               & top_r_resp_i;
+  assign r_data_o_1    = {AXI_DATA_WIDTH{r_state_1}}  & top_r_data_i;
+  assign r_last_o_1    = r_state_1                    & top_r_last_i;
+  assign r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & top_r_id_i;
+  assign r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & top_r_user_i;
 
   // to RAM
   assign top_ar_valid_o = (
