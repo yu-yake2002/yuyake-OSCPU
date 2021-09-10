@@ -407,8 +407,8 @@ module SimTop # (
   wire [`REG_BUS] mem_r_data;
   wire [`REG_BUS] mem_w_data;
   wire [`REG_BUS] mem_rw_addr;
-  wire mem_rw_size;
-  wire mem_rw_resp;
+  wire [1:0] mem_rw_size;
+  wire [1:0] mem_rw_resp;
 
   cpu u_cpu(
     .clock                          (clock),
