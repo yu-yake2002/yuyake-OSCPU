@@ -16,8 +16,8 @@ module if_stage(
   // branch and jump control
   output wire                         if_bj_ready,
   input wire [`BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus,
-  input wire                          excp_jmp_ena,
-  input wire [`REG_BUS]               excp_pc,
+  //input wire                          excp_jmp_ena,
+  //input wire [`REG_BUS]               excp_pc,
 
   // AXI4
   output wire                         if_axi_valid, // master is valid
@@ -40,7 +40,7 @@ module if_stage(
   wire pre_valid = 1'b1;
   wire pre_ready_go = if_state == RETN;
   wire pre_to_if_valid = pre_valid && pre_ready_go;
-  wire [`REG_BUS] next_pc = excp_jmp_ena ? excp_pc :
+  wire [`REG_BUS] next_pc = /*excp_jmp_ena ? excp_pc :*/
                             bj_ena       ? bj_pc   :
                             (if_pc + 4);
   

@@ -85,12 +85,12 @@ module id_stage(
   
   assign rs1_addr = {5{rs1_r_ena}} & id_inst[19 : 15];
   assign rs2_addr = {5{rs2_r_ena}} & id_inst[24 : 20];
-  wire [11 : 0] csr_addr = id_inst[31 : 20];
-  assign csr_rd_addr = csr_addr;
+  wire [11 : 0] id_csr_addr = id_inst[31 : 20];
+  assign csr_rd_addr = id_csr_addr;
   wire [4  : 0] rd_addr = id_inst[11 : 7];
   
   wire [4  : 0] zimm = rs1_addr;
-  wire [11 : 0] immI = csr_addr;
+  wire [11 : 0] immI = id_csr_addr;
   wire [11 : 0] immS = {func7, id_inst[11 :  7]};
   wire [12 : 0] immB = {id_inst[31], id_inst[7], id_inst[30 : 25], id_inst[11 : 8], 1'b0};
   wire [19 : 0] immU = id_inst[31 : 12];
@@ -254,37 +254,37 @@ module id_stage(
                     | arith_rw_vld | branch_vld | jump_vld | excp_vld
                     | csr_vld;
 
-  wire [`ALU_BUS] alu_info;
-  assign alu_info[`ALU_ADD]  = inst_add   | inst_addi   | inst_addw  | inst_addiw 
+  wire [`ALU_BUS] id_alu_info;
+  assign id_alu_info[`ALU_ADD]  = inst_add   | inst_addi   | inst_addw  | inst_addiw 
                              | inst_auipc | inst_lui    | inst_i_load | inst_s 
                              | inst_jal   | inst_jalr;
-  assign alu_info[`ALU_SUB]  = inst_sub   | inst_subw   | inst_b;
-  assign alu_info[`ALU_SLT]  = inst_slt   | inst_slti   | inst_blt   | inst_bge;
-  assign alu_info[`ALU_SLTU] = inst_sltu  | inst_sltiu  | inst_bltu  | inst_bgeu;
-  assign alu_info[`ALU_XOR]  = inst_xor   | inst_xori   | inst_beq   | inst_bne;
-  assign alu_info[`ALU_OR]   = inst_or    | inst_ori    | inst_csrrs | inst_csrrsi;
-  assign alu_info[`ALU_AND]  = inst_and   | inst_andi;
-  assign alu_info[`ALU_SLL]  = inst_sll   | inst_slli   | inst_sllw  | inst_slliw;
-  assign alu_info[`ALU_SRL]  = inst_srl   | inst_srli   | inst_srlw  | inst_srliw;
-  assign alu_info[`ALU_SRA]  = inst_sra   | inst_srai   | inst_sraw  | inst_sraiw;
-  assign alu_info[`ALU_ANDN] = inst_csrrc | inst_csrrci;
-  assign alu_info[`ALU_WRI]  = inst_csrrw | inst_csrrwi;
+  assign id_alu_info[`ALU_SUB]  = inst_sub   | inst_subw   | inst_b;
+  assign id_alu_info[`ALU_SLT]  = inst_slt   | inst_slti   | inst_blt   | inst_bge;
+  assign id_alu_info[`ALU_SLTU] = inst_sltu  | inst_sltiu  | inst_bltu  | inst_bgeu;
+  assign id_alu_info[`ALU_XOR]  = inst_xor   | inst_xori   | inst_beq   | inst_bne;
+  assign id_alu_info[`ALU_OR]   = inst_or    | inst_ori    | inst_csrrs | inst_csrrsi;
+  assign id_alu_info[`ALU_AND]  = inst_and   | inst_andi;
+  assign id_alu_info[`ALU_SLL]  = inst_sll   | inst_slli   | inst_sllw  | inst_slliw;
+  assign id_alu_info[`ALU_SRL]  = inst_srl   | inst_srli   | inst_srlw  | inst_srliw;
+  assign id_alu_info[`ALU_SRA]  = inst_sra   | inst_srai   | inst_sraw  | inst_sraiw;
+  assign id_alu_info[`ALU_ANDN] = inst_csrrc | inst_csrrci;
+  assign id_alu_info[`ALU_WRI]  = inst_csrrw | inst_csrrwi;
   
-  wire [`BJ_BUS] bj_info;
-  assign bj_info[`BJ_BEQ]  = inst_beq;
-  assign bj_info[`BJ_BNE]  = inst_bne;
-  assign bj_info[`BJ_BLT]  = inst_blt;
-  assign bj_info[`BJ_BGE]  = inst_bge;
-  assign bj_info[`BJ_BLTU] = inst_bltu;
-  assign bj_info[`BJ_BGEU] = inst_bgeu;
-  assign bj_info[`BJ_JALR] = inst_jalr;
-  assign bj_info[`BJ_JAL]  = inst_jal;
+  wire [`BJ_BUS] id_bj_info;
+  assign id_bj_info[`BJ_BEQ]  = inst_beq;
+  assign id_bj_info[`BJ_BNE]  = inst_bne;
+  assign id_bj_info[`BJ_BLT]  = inst_blt;
+  assign id_bj_info[`BJ_BGE]  = inst_bge;
+  assign id_bj_info[`BJ_BLTU] = inst_bltu;
+  assign id_bj_info[`BJ_BGEU] = inst_bgeu;
+  assign id_bj_info[`BJ_JALR] = inst_jalr;
+  assign id_bj_info[`BJ_JAL]  = inst_jal;
   
-  wire [`LOAD_BUS] load_info = {
+  wire [`LOAD_BUS] id_load_info = {
     inst_lwu, inst_lhu, inst_lbu, inst_ld, inst_lw, inst_lh, inst_lb
   };
   
-  wire [`SAVE_BUS] save_info = {
+  wire [`SAVE_BUS] id_save_info = {
     inst_sd, inst_sw, inst_sh, inst_sb
   };
   
@@ -316,7 +316,7 @@ module id_stage(
                 | ({64{inst_i_csr_imm}}     & {59'b0, zimm})
                 | ({64{inst_i_csr_reg}}     & r_data1)
                );
-  wire use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
+  wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                   | inst_i_arith_word | inst_s | inst_r_dword
                   | inst_r_word | inst_b | inst_i_csr_reg;
   wire [`REG_BUS] id_rs1_data = r_data1;
@@ -337,10 +337,11 @@ module id_stage(
                 | ({64{inst_i_csr_imm}}     & csr_data)
                 | ({64{inst_i_csr_reg}}     & csr_data)
                );
-  wire use_rs2 = inst_r_dword | inst_r_word | inst_b;
+  wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
+  wire id_use_csr = inst_i_csr_imm | inst_i_csr_reg;
   wire [`REG_BUS] id_rs2_data = r_data2;
   
-  wire [`REG_BUS] jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
+  wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
                  | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
                  | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
   //               | ({64{inst_t}}       & 64'b0);
@@ -369,27 +370,36 @@ module id_stage(
   wire csr_wr_ena  = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   wire [11: 0] csr_wr_addr = id_inst[31 : 20];
   
+  wire [`EXCP_BUS] id_excp_bus;
+  wire id_excp_exit = inst_mret;
+  assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
+  assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
+
+
   assign id_to_ex_bus = {
-    id_inst,     // 549:517
-    id_pc,       // 516:452
+    id_excp_exit,   // 566:566
+    id_excp_bus,    // 565:550
+
+    id_inst,        // 549:517
+    id_pc,          // 516:452
 
     // -> ex
-    rs1_addr,    // 451:447
-    rs2_addr,    // 446:442
-    id_op1,      // 441:378
-    id_op2,      // 377:314
-    use_rs1,     // 313:313
-    use_rs2,     // 312:312
-    id_rs1_data, // 311:248
-    id_rs2_data, // 247:184
-    is_word_opt, // 183:183
-    alu_info,    // 182:171
-    bj_info,     // 170:163
-    jmp_imm,     // 162:99
+    rs1_addr,       // 451:447
+    rs2_addr,       // 446:442
+    id_op1,         // 441:378
+    id_op2,         // 377:314
+    id_use_rs1,     // 313:313
+    id_use_rs2,     // 312:312
+    id_rs1_data,    // 311:248
+    id_rs2_data,    // 247:184
+    is_word_opt,    // 183:183
+    id_alu_info,    // 182:171
+    id_bj_info,     // 170:163
+    id_jmp_imm,     // 162:99
     
     // -> mem
-    load_info,   // 98 :92
-    save_info,   // 91 :88
+    id_load_info,   // 98 :92
+    id_save_info,   // 91 :88
     mem_rd_ena,  // 87 :87
     mem_wr_ena,  // 86 :86
     

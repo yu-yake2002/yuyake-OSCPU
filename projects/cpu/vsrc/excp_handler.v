@@ -3,36 +3,41 @@
 `include "defines.v"
 
 module excp_handler (
-  input wire [`EXCP_BUS] if_excp,
-  input wire [`EXCP_BUS] id_excp,
-  input wire [`EXCP_BUS] mem_excp,
-  input wire [`ITRP_BUS] itrp_info,
-  input wire [`REG_BUS] now_pc,
-  input wire [31 : 0] now_inst,
-  input wire [`REG_BUS] mem_acc_addr,
-  input wire excp_exit,
-
-  output wire excp_enter,
+  input wire [`EXCP_BUS]             excp_info,
+  input wire [`ITRP_BUS]             itrp_info,
+  input wire [`REG_BUS]              now_pc,
+  input wire [31 : 0]                now_inst,
+  input wire [`REG_BUS]              mem_addr,
+  input wire                         excp_exit,
+  output wire                        excp_enter,
   
   // to CSRs
-  output wire [`REG_BUS] mcause_wr_data,
-  output wire [`REG_BUS] mepc_wr_data,
-  output wire [`REG_BUS] mtval_wr_data,
-  output wire [`REG_BUS] mstatus_wr_data,
+  input wire [`EXCP_RD_WIDTH-1:0]    csr_excp_rd_bus,
+  output wire [`EXCP_WR_WIDTH-1:0]   csr_excp_wr_bus,
   
-  // from CSRs
-  input wire [`REG_BUS] mstatus_rd_data,
-  input wire [`REG_BUS] mtvec_rd_data,
-  input wire [`REG_BUS] mepc_rd_data,
-
   // to if_stage
-  output wire excp_jmp_ena,
-  output wire [`EXCP_BUS] excp_pc
+  output wire                        excp_jmp_ena,
+  output wire [`REG_BUS]             excp_jmp_pc
   );
+  
+  // to CSRs
+  wire [`REG_BUS] mcause_wr_data, mepc_wr_data, mtval_wr_data, mstatus_wr_data;
+  assign csr_excp_wr_bus = {
+    mcause_wr_data,   // 255:192
+    mepc_wr_data,     // 191:128
+    mtval_wr_data,    // 127:64
+    mstatus_wr_data   // 63 :0
+  };
 
+  // from CSRs
+  wire [`REG_BUS] mstatus_rd_data, mtvec_rd_data, mepc_rd_data;
+  assign {
+    mstatus_rd_data,  // 191:128
+    mtvec_rd_data,    // 127:64
+    mepc_rd_data      // 63 :0
+  } = csr_excp_rd_bus;
 
   // generate excp_ena
-  wire [`EXCP_BUS] excp_info = if_excp | id_excp | mem_excp;
   wire sp_excp_ena = |excp_info;
   wire sp_itrp_ena = |itrp_info;
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
@@ -91,7 +96,7 @@ module excp_handler (
   assign mtval_wr_data = (
       ({64{inst_acc_fault}} & now_pc)
     | ({64{excp_ilg_inst}}  & {32'b0, now_inst})
-    | ({64{mem_acc_fault}}  & mem_acc_addr)
+    | ({64{mem_acc_fault}}  & mem_addr)
   );
   
   wire [63 : 8] mstatus_p1 = mstatus_rd_data[63 : 8];
@@ -111,14 +116,14 @@ module excp_handler (
   wire mtvec_mode0 = (mtvec_mode == 2'b0);
   wire mtvec_mode1 = (mtvec_mode == 2'b1);
   wire [61 : 0] mtvec_base = mtvec_rd_data[63 : 2];
-  wire [63 : 0] excp_enter_pc = 
+  wire [`REG_BUS] excp_enter_pc = 
       ({64{mtvec_mode0}} & {mtvec_base, 2'b0}) // mode0, jump to base
     | ({64{mtvec_mode1}} & { // mode1
            ({60{sp_excp_ena}} & mtvec_base) // when exception, jump to base
          | ({60{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
         , 2'b0
       });
-  wire [63 : 0] excp_exit_pc = mepc_rd_data;
+  wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
-  assign excp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
+  assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
 endmodule

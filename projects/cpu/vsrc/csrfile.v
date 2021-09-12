@@ -4,32 +4,38 @@
 `include "defines.v"
 
 module csrfile(
-  input clk,
-  input rst,
+  input wire                      clk,
+  input wire                      rst,
 
-  // common read and write
-  input csr_wr_ena,
-  input [11 : 0] csr_wr_addr,
-  input csr_rd_ena,
-  input [11 : 0] csr_rd_addr,
-  input [`REG_BUS] csr_wr_data,
-  output [`REG_BUS] csr_rd_data,
+  // id stage
+  input wire                      csr_rd_ena,
+  input wire [11 : 0]             csr_rd_addr,
+  output wire [`REG_BUS]          csr_rd_data,
+  
+  // wb stage
+  input wire                      csr_wr_ena,
+  input wire [11 : 0]             csr_wr_addr,
+  input wire [`REG_BUS]           csr_wr_data,
+
+  // exception
+  input wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus,
+  input wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus,
   
   // exception read and write
-  input excp_enter,
-  input excp_exit,
-  input  [`REG_BUS] mstatus_wr_data,
-  output [`REG_BUS] mstatus_rd_data,
-  output [`REG_BUS] mie_rd_data,
-  output [`REG_BUS] mtvec_rd_data,
-  output [`REG_BUS] mscratch_rd_data,
-  input  [`REG_BUS] mepc_wr_data,
-  output [`REG_BUS] mepc_rd_data,
-  input  [`REG_BUS] mcause_wr_data,
-  output [`REG_BUS] mcause_rd_data,
-  input  [`REG_BUS] mtval_wr_data,
-  output [`REG_BUS] mtval_rd_data,
-  output [`REG_BUS] mip_rd_data
+  input wire                      excp_enter,
+  input wire                      excp_exit,
+  input wire [`REG_BUS]           mstatus_wr_data,
+  output wire [`REG_BUS]          mstatus_rd_data,
+  output wire [`REG_BUS]          mie_rd_data,
+  output wire [`REG_BUS]          mtvec_rd_data,
+  output wire [`REG_BUS]          mscratch_rd_data,
+  input wire [`REG_BUS]           mepc_wr_data,
+  output wire [`REG_BUS]          mepc_rd_data,
+  input wire [`REG_BUS]           mcause_wr_data,
+  output wire [`REG_BUS]          mcause_rd_data,
+  input wire [`REG_BUS]           mtval_wr_data,
+  output wire [`REG_BUS]          mtval_rd_data,
+  output wire [`REG_BUS]          mip_rd_data
   );
   
   // 0x300 Machine Status Register

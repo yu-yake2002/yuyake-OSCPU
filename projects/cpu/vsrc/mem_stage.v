@@ -54,7 +54,7 @@ module mem_stage(
   wire [`LOAD_BUS] mem_load_info;
   wire [`SAVE_BUS] mem_save_info;
   wire [`REG_BUS]  mem_ram_wr_src;
-  wire [`REG_BUS]  mem_addr, mem_csr_data;
+  wire [`REG_BUS]  mem_addr, mem_csr_rd_data;
   wire             mem_ram_rd_ena;
   wire             mem_ram_wr_ena;
 
@@ -63,6 +63,8 @@ module mem_stage(
   wire             mem_reg_wr_ena, mem_csr_wr_ena;
 
   assign {
+    mem_excp_bus,    // 326:311
+
     mem_pc,          // 310:247
     mem_inst,        // 246:215
 
@@ -71,7 +73,7 @@ module mem_stage(
     mem_save_info,   // 207:204
     mem_ram_wr_src,  // 203:140
     mem_addr,        // 139:76
-    mem_csr_data,    // 75 :12
+    mem_csr_rd_data,    // 75 :12
     mem_ram_rd_ena,  // 11 :11
     mem_ram_wr_ena,  // 10 :10
     
@@ -170,7 +172,13 @@ module mem_stage(
 
   wire mem_finish = mem_state == RETN;
   wire [`REG_BUS] mem_ex_data = mem_addr;
+
+  // exception
+  wire [`EXCP_BUS] mem_excp_bus;
+
+
   assign mem_to_wb_bus = {
+    mem_excp_bus,    // 312:297
     mem_pc,          // 296:233
     mem_inst,        // 232:201
     mem_reg_wr_ena,  // 200:200
@@ -178,7 +186,7 @@ module mem_stage(
     mem_reg_wr_ctrl, // 194:192
     mem_ex_data,     // 191:0
     mem_data,        // 127:0
-    mem_csr_data     // 63 :0
+    mem_csr_rd_data  // 63 :0
   };
 
   assign mem_forward_bus = {

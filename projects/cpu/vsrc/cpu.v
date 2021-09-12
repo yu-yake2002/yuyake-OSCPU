@@ -45,124 +45,201 @@ module cpu(
   wire if_bj_ready;
   // IF stage
   if_stage If_stage(
-    .clk(clock),
-    .rst(reset),
+    .clk                       (clock),
+    .rst                       (reset),
     
     // pipeline control
-    .if_to_id_valid(if_to_id_valid),
-    .if_to_id_bus(if_to_id_bus),
-    .id_allowin(id_allowin),
+    .if_to_id_valid            (if_to_id_valid),
+    .if_to_id_bus              (if_to_id_bus),
+    .id_allowin                (id_allowin),
     
     // branch and jump control
-    .if_bj_ready(if_bj_ready),
-    .bj_ctrl_bus(bj_ctrl_bus),
-    .excp_jmp_ena(excp_jmp_ena),
-    .excp_pc(excp_pc),
+    .if_bj_ready               (if_bj_ready),
+    .bj_ctrl_bus               (bj_ctrl_bus),
+    //.excp_jmp_ena(excp_jmp_ena),
+    //.excp_pc(excp_pc),
     
     // Custom Interface
-    .if_axi_valid(if_rw_valid),
-    .if_axi_ready(if_rw_ready),
-    .if_axi_data_read(if_r_data),
-    .if_axi_addr(if_rw_addr),
-    .if_axi_size(if_rw_size),
-    .if_axi_resp(if_rw_resp)
+    .if_axi_valid              (if_rw_valid),
+    .if_axi_ready              (if_rw_ready),
+    .if_axi_data_read          (if_r_data),
+    .if_axi_addr               (if_rw_addr),
+    .if_axi_size               (if_rw_size),
+    .if_axi_resp               (if_rw_resp)
   );
 
   // ID stage
   id_stage Id_stage(
-    .clk(clock),
-    .rst(reset),
+    .clk                       (clock),
+    .rst                       (reset),
   
     // pipeline control
-    .if_to_id_valid(if_to_id_valid),
-    .if_to_id_bus(if_to_id_bus),
-    .id_allowin(id_allowin),
-    .id_to_ex_valid(id_to_ex_valid),
-    .id_to_ex_bus(id_to_ex_bus),
-    .ex_allowin(ex_allowin),
+    .if_to_id_valid            (if_to_id_valid),
+    .if_to_id_bus              (if_to_id_bus),
+    .id_allowin                (id_allowin),
+    .id_to_ex_valid            (id_to_ex_valid),
+    .id_to_ex_bus              (id_to_ex_bus),
+    .ex_allowin                (ex_allowin),
 
     // data from regfile and CSRs
-    .r_data1(r_data1),
-    .r_data2(r_data2),
-    .csr_data(csr_rd_data),
+    .r_data1                   (r_data1),
+    .r_data2                   (r_data2),
+    .csr_data                  (csr_rd_data),
     
     // control reg
-    .rs1_r_ena(rs1_r_ena),
-    .rs1_addr(rs1_r_addr),
-    .rs2_r_ena(rs2_r_ena),
-    .rs2_addr(rs2_r_addr),
+    .rs1_r_ena                 (rs1_r_ena),
+    .rs1_addr                  (rs1_r_addr),
+    .rs2_r_ena                 (rs2_r_ena),
+    .rs2_addr                  (rs2_r_addr),
     
     // control csr
-    .csr_rd_ena(csr_rd_ena),
-    .csr_rd_addr(csr_rd_addr),
+    .csr_rd_ena                (csr_rd_ena),
+    .csr_rd_addr               (csr_rd_addr),
 
-    .bj_ctrl_bus(bj_ctrl_bus)
+    .bj_ctrl_bus               (bj_ctrl_bus)
   );
   
   ex_stage Ex_stage(
     .clk(clock),
     .rst(reset),
     
-    .id_to_ex_valid(id_to_ex_valid),
-    .id_to_ex_bus(id_to_ex_bus),
-    .ex_allowin(ex_allowin),
+    // pipeline control
+    .id_to_ex_valid            (id_to_ex_valid),
+    .id_to_ex_bus              (id_to_ex_bus),
+    .ex_allowin                (ex_allowin),
 
-    .ex_to_mem_valid(ex_to_mem_valid),
-    .ex_to_mem_bus(ex_to_mem_bus),
-    .mem_allowin(mem_allowin),
-
-    .mem_forward_bus(mem_forward_bus),
-    .wb_forward_bus(wb_forward_bus),
+    .ex_to_mem_valid           (ex_to_mem_valid),
+    .ex_to_mem_bus             (ex_to_mem_bus),
+    .mem_allowin               (mem_allowin),
     
-    .if_bj_ready(if_bj_ready),
-    .bj_ctrl_bus(bj_ctrl_bus)
+    // pipeline forward control
+    .mem_forward_bus           (mem_forward_bus),
+    .wb_forward_bus            (wb_forward_bus),
+    
+    // branch and jump control
+    .if_bj_ready               (if_bj_ready),
+    .bj_ctrl_bus               (bj_ctrl_bus),
+    
+    // csr control
+    .csr_wr_ena                (csr_wr_ena),
+    .csr_wr_addr               (csr_wr_addr),
+    .csr_wr_data               (csr_wr_data),
+
+    // exception
+    .excp_enter                (excp_enter),
+    .excp_exit                 (excp_exit),
+    .csr_excp_rd_bus           (csr_excp_rd_bus),
+    .csr_excp_wr_bus           (csr_excp_wr_bus)
+  );
+
+  // CSRs
+  // id stage <-> csrfile
+  wire            csr_rd_ena;
+  wire [11 : 0]   csr_rd_addr;
+  wire [`REG_BUS] csr_rd_data;
+  // ex stage <=> csrfile
+  wire            csr_wr_ena;
+  wire [11 : 0]   csr_wr_addr;
+  wire [`REG_BUS] csr_wr_data;
+  // excption control
+  wire                      excp_enter, excp_exit;
+  wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
+  wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
+
+  // direct read and write
+  wire [`REG_BUS] mstatus_wr_data;
+  wire [`REG_BUS] mstatus_rd_data;
+  wire [`REG_BUS] mie_rd_data;
+  wire [`REG_BUS] mtvec_rd_data;
+  wire [`REG_BUS] mscratch_rd_data;
+  wire [`REG_BUS] mepc_wr_data;
+  wire [`REG_BUS] mepc_rd_data;
+  wire [`REG_BUS] mcause_wr_data;
+  wire [`REG_BUS] mcause_rd_data;
+  wire [`REG_BUS] mtval_rd_data;
+  wire [`REG_BUS] mtval_wr_data;
+  wire [`REG_BUS] mip_rd_data;
+
+  csrfile CSRfile(
+    .clk                       (clock),
+    .rst                       (reset),
+    
+    // read: id stage
+    .csr_rd_ena                (csr_rd_ena),
+    .csr_rd_addr               (csr_rd_addr),
+    .csr_rd_data               (csr_rd_data),
+    
+    // write: ex stages
+    .csr_wr_ena                (csr_wr_ena),
+    .csr_wr_addr               (csr_wr_addr),
+    .csr_wr_data               (csr_wr_data),
+    
+    // exception
+    .csr_excp_rd_bus           (csr_excp_rd_bus),
+    .csr_excp_wr_bus           (csr_excp_wr_bus),
+
+    .excp_enter                (excp_enter),
+    .excp_exit                 (excp_exit),
+    .mstatus_wr_data           (mstatus_wr_data),
+    .mstatus_rd_data           (mstatus_rd_data),
+    .mie_rd_data               (mie_rd_data),
+    .mtvec_rd_data             (mtvec_rd_data),
+    .mscratch_rd_data          (mscratch_rd_data),
+    .mepc_wr_data              (mepc_wr_data),
+    .mepc_rd_data              (mepc_rd_data),
+    .mcause_wr_data            (mcause_wr_data),
+    .mcause_rd_data            (mcause_rd_data),
+    .mtval_wr_data             (mtval_wr_data),
+    .mtval_rd_data             (mtval_rd_data),
+    .mip_rd_data               (mip_rd_data)
   );
   
   // MEM_STAGE
   mem_stage Mem_stage(
-    .clk(clock),
-    .rst(reset),
+    .clk                       (clock),
+    .rst                       (reset),
   
     // pipeline control
-    .ex_to_mem_valid(ex_to_mem_valid),
-    .ex_to_mem_bus(ex_to_mem_bus),
-    .mem_allowin(mem_allowin),
+    .ex_to_mem_valid           (ex_to_mem_valid),
+    .ex_to_mem_bus             (ex_to_mem_bus),
+    .mem_allowin               (mem_allowin),
 
-    .mem_to_wb_valid,
-    .mem_to_wb_bus(mem_to_wb_bus),
-    .wb_allowin(wb_allowin),
+    .mem_to_wb_valid           (mem_to_wb_valid),
+    .mem_to_wb_bus             (mem_to_wb_bus),
+    .wb_allowin                (wb_allowin),
     
-    .mem_forward_bus(mem_forward_bus),
+    // pipeline forward control
+    .mem_forward_bus           (mem_forward_bus),
 
     // Custom interface
-    .mem_rw_valid(mem_rw_valid),
-    .mem_rw_ready(mem_rw_ready),
-    .mem_rw_req(mem_rw_req),
-    .mem_r_data(mem_r_data),
-    .mem_w_data(mem_w_data),
-    .mem_rw_addr(mem_rw_addr),
-    .mem_rw_size(mem_rw_size),
-    .mem_rw_resp(mem_rw_resp)
+    .mem_rw_valid              (mem_rw_valid),
+    .mem_rw_ready              (mem_rw_ready),
+    .mem_rw_req                (mem_rw_req),
+    .mem_r_data                (mem_r_data),
+    .mem_w_data                (mem_w_data),
+    .mem_rw_addr               (mem_rw_addr),
+    .mem_rw_size               (mem_rw_size),
+    .mem_rw_resp               (mem_rw_resp)
   );
   
   // WB_STAGE
   wb_stage Wb_stage(
-    .clk(clock),
-    .rst(reset),
+    .clk                       (clock),
+    .rst                       (reset),
     
     // pipeline control
-    .mem_to_wb_valid(mem_to_wb_valid),
-    .mem_to_wb_bus(mem_to_wb_bus),
-    .wb_allowin(wb_allowin),
+    .mem_to_wb_valid           (mem_to_wb_valid),
+    .mem_to_wb_bus             (mem_to_wb_bus),
+    .wb_allowin                (wb_allowin),
 
-    .wb_forward_bus(wb_forward_bus),
+    .wb_forward_bus            (wb_forward_bus),
 
     // regfile control
-    .reg_wr_ena(reg_wr_ena),
-    .reg_wr_addr(reg_wr_addr),
-    .reg_wr_data(reg_wr_data),
+    .reg_wr_ena                (reg_wr_ena),
+    .reg_wr_addr               (reg_wr_addr),
+    .reg_wr_data               (reg_wr_data),
     
-    .difftest_bus(difftest_bus)
+    .difftest_bus              (difftest_bus)
   );
   
   // General Purpose Registers
@@ -182,115 +259,34 @@ module cpu(
   wire [`REG_BUS] regs[0 : 31];
 
   regfile Regfile(
-    .clk(clock),
-    .rst(reset),
-    .w_addr(reg_wr_addr),
-    .w_data(reg_wr_data),
-    .w_ena(reg_wr_ena),
+    .clk                       (clock),
+    .rst                       (reset),
+    .w_addr                    (reg_wr_addr),
+    .w_data                    (reg_wr_data),
+    .w_ena                     (reg_wr_ena),
   
-    .r_addr1(rs1_r_addr),
-    .r_data1(r_data1),
-    .r_ena1(rs1_r_ena),
-    .r_addr2(rs2_r_addr),
-    .r_data2(r_data2),
-    .r_ena2(rs2_r_ena),
+    .r_addr1                   (rs1_r_addr),
+    .r_data1                   (r_data1),
+    .r_ena1                    (rs1_r_ena),
+    .r_addr2                   (rs2_r_addr),
+    .r_data2                   (r_data2),
+    .r_ena2                    (rs2_r_ena),
   
-    .regs_o(regs)
-  );
-
-  // exception
-  wire excp_enter, excp_exit;
-  wire excp_jmp_ena;
-  wire [`REG_BUS] excp_pc;
-  wire [`REG_BUS] excp_now_pc;
-  wire [31 : 0] excp_now_inst;
-  wire [`EXCP_BUS] if_excp = 16'b0 , id_excp = 16'b0, mem_excp = 16'b0;
-  excp_handler Excp_handler(
-    .if_excp(if_excp),
-    .id_excp(id_excp),
-    .mem_excp(mem_excp),
-    .itrp_info(0),
-    .now_pc(excp_now_pc),
-    .now_inst(excp_now_inst),
-    .mem_acc_addr(0),
-    .excp_exit(excp_exit),
-
-    .excp_enter(excp_enter),
-    .mcause_wr_data(mcause_wr_data),
-    .mepc_wr_data(mepc_wr_data),
-    .mtval_wr_data(mtval_wr_data),
-    .mstatus_wr_data(mstatus_wr_data),
-  
-    .mstatus_rd_data(mstatus_rd_data),
-    .mtvec_rd_data(mtvec_rd_data),
-    .mepc_rd_data(mepc_rd_data),
-
-    .excp_jmp_ena(excp_jmp_ena),
-    .excp_pc(excp_pc)
-  );
-
-  // CSRs
-  // id_stage <-> csrfile
-  wire csr_rd_ena;
-  wire [`REG_BUS] wb_ex_data = 64'b0;
-  wire [11 : 0] csr_rd_addr;
-  wire csr_wr_ena = 1'b0;
-  wire [11 : 0] csr_wr_addr;
-  // csrfile <-> id_stage
-  wire [`REG_BUS] csr_rd_data;
-  // direct read and write
-  wire [`REG_BUS] mstatus_wr_data;
-  wire [`REG_BUS] mstatus_rd_data;
-  wire [`REG_BUS] mie_rd_data;
-  wire [`REG_BUS] mtvec_rd_data;
-  wire [`REG_BUS] mscratch_rd_data;
-  wire [`REG_BUS] mepc_wr_data;
-  wire [`REG_BUS] mepc_rd_data;
-  wire [`REG_BUS] mcause_wr_data;
-  wire [`REG_BUS] mcause_rd_data;
-  wire [`REG_BUS] mtval_rd_data;
-  wire [`REG_BUS] mtval_wr_data;
-  wire [`REG_BUS] mip_rd_data;
-
-  csrfile CSRfile(
-    .clk(clock),
-    .rst(reset),
-    
-    .csr_wr_ena(csr_wr_ena),
-    .csr_wr_addr(csr_wr_addr),
-    .csr_rd_ena(csr_rd_ena),
-    .csr_rd_addr(csr_rd_addr),
-    .csr_wr_data(wb_ex_data),
-    .csr_rd_data(csr_rd_data),
-    
-    .excp_enter(excp_enter),
-    .excp_exit(excp_exit),
-    .mstatus_wr_data(mstatus_wr_data),
-    .mstatus_rd_data(mstatus_rd_data),
-    .mie_rd_data(mie_rd_data),
-    .mtvec_rd_data(mtvec_rd_data),
-    .mscratch_rd_data(mscratch_rd_data),
-    .mepc_wr_data(mepc_wr_data),
-    .mepc_rd_data(mepc_rd_data),
-    .mcause_wr_data(mcause_wr_data),
-    .mcause_rd_data(mcause_rd_data),
-    .mtval_wr_data(mtval_wr_data),
-    .mtval_rd_data(mtval_rd_data),
-    .mip_rd_data(mip_rd_data)
+    .regs_o                    (regs)
   );
   
   // Difftest
-  reg cmt_wen;
-  reg [7:0] cmt_wdest;
-  reg [`REG_BUS] cmt_wdata;
-  reg [`REG_BUS] cmt_pc;
-  reg [31:0]cmt_inst;
-  reg cmt_vaild, cmt_skip;
-  reg [`REG_BUS] cycleCnt, instrCnt;
+  reg              cmt_wen;
+  reg [7:0]        cmt_wdest;
+  reg [`REG_BUS]   cmt_wdata;
+  reg [`REG_BUS]   cmt_pc;
+  reg [`INST_BUS]  cmt_inst;
+  reg              cmt_vaild, cmt_skip;
+  reg [`REG_BUS]   cycleCnt, instrCnt;
   
-  wire [`REG_BUS] wb_pc;
-  wire [31: 0] wb_inst;
-  wire wb_commit;
+  wire [`REG_BUS]  wb_pc;
+  wire [`INST_BUS] wb_inst;
+  wire             wb_commit;
   assign {
     wb_pc,
     wb_inst,

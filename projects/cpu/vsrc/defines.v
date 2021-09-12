@@ -9,13 +9,16 @@
 `define INST_BUS   31 : 0
 
 `define IF_TO_ID_WIDTH        96
-`define ID_TO_EX_WIDTH        550
-`define EX_TO_MEM_WIDTH       311
-`define MEM_TO_WB_WIDTH       297
+`define ID_TO_EX_WIDTH        567
+`define EX_TO_MEM_WIDTH       327
+`define MEM_TO_WB_WIDTH       313
 `define DIFFTEST_WIDTH        97
 `define BJ_CTRL_WIDTH         66
 `define MEM_FORWARD_WIDTH     73
 `define WB_FORWARD_WIDTH      137
+
+`define EXCP_RD_WIDTH       256
+`define EXCP_WR_WIDTH       192
 
 `define AXI_ADDR_WIDTH      64
 `define AXI_DATA_WIDTH      64
