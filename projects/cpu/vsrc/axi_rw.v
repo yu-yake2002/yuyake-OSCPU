@@ -299,12 +299,13 @@ module axi_rw # (
         | ({64{size_w}} & {2{data_write_i[31:0]}})
         | ({64{size_d}} & {1{data_write_i[63:0]}})
       );
-      axi_w_strb_o <= (
+      /*axi_w_strb_o <= (
           ({8{size_b}} & 8'b00000001)
         | ({8{size_h}} & 8'b00000011)
         | ({8{size_w}} & 8'b00001111)
         | ({8{size_d}} & 8'b11111111)
-      ) << rw_addr_i[2:0];
+      ) << rw_addr_i[2:0];*/
+      axi_w_strb_o <= 8'hff;
     end
   end
   assign axi_w_last_o     = 1'b1;
