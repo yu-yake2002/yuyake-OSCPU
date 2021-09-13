@@ -482,6 +482,7 @@ module cpu(
     .fpr_31             (0)
   );
   
+  /*
   reg [`REG_BUS] cmt_rw_addr, cmt_w_data, buf_rw_addr, buf_w_data;
   reg [7 : 0]    cmt_w_mask, buf_w_mask;
   reg            cmt_w_ena, cmt_r_ena, buf_w_ena, buf_r_ena;
@@ -503,7 +504,7 @@ module cpu(
       cmt_r_ena   <= buf_r_ena;
     end
   end
-  /*
+  
   DifftestStoreEvent DifftestStoreEvent(
     .clock              (clock),
     .coreid             (0),
