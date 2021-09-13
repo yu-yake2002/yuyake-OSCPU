@@ -336,7 +336,7 @@ module cpu(
     .valid              (cmt_valid),
     .pc                 (cmt_pc),
     .instr              (cmt_inst),
-    .skip               (cmt_skip),
+    .skip               (buf_r_ena),
     .isRVC              (0),
     .scFailed           (0),
     .wen                (cmt_wen),
