@@ -4,40 +4,44 @@
 `include "defines.v"
 
 module ex_stage(
-  input wire                          clk,
-  input wire                          rst,
+  input wire                              clk,
+  input wire                              rst,
   
   // pipeline control
-  input wire                          id_to_ex_valid,
-  input wire [`ID_TO_EX_WIDTH-1:0]    id_to_ex_bus,
-  output wire                         ex_allowin,
+  input wire                              id_to_ex_valid,
+  input wire [`ID_TO_EX_WIDTH-1:0]        id_to_ex_bus,
+  output wire                             ex_allowin,
 
-  output wire                         ex_to_mem_valid,
-  output wire [`EX_TO_MEM_WIDTH-1:0]  ex_to_mem_bus,
-  input wire                          mem_allowin,
+  output wire                             ex_to_mem_valid,
+  output wire [`EX_TO_MEM_WIDTH-1:0]      ex_to_mem_bus,
+  input wire                              mem_allowin,
   
-  input wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
-  input wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus,
+  input wire [`MEM_FORWARD_WIDTH-1:0]     mem_forward_bus,
+  input wire [`WB_FORWARD_WIDTH-1:0]      wb_forward_bus,
   
-  input wire                          if_bj_ready,
-  output wire [`BJ_CTRL_WIDTH-1:0]    bj_ctrl_bus,
+  input wire                              if_bj_ready,
+  output wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
 
   // csr control
-  output wire                         csr_wr_ena,
-  output wire [11 : 0]                csr_wr_addr,
-  output wire [`REG_BUS]              csr_wr_data,
+  output wire                             csr_wr_ena,
+  output wire [11 : 0]                    csr_wr_addr,
+  output wire [`REG_BUS]                  csr_wr_data,
   // exception
-  output wire                         excp_enter,
-  output wire                         excp_exit,
-  input wire [`EXCP_RD_WIDTH-1:0]     csr_excp_rd_bus,
-  output wire [`EXCP_WR_WIDTH-1:0]    csr_excp_wr_bus,
+  output wire                             excp_enter,
+  output wire                             excp_exit,
+  input wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
+  output wire [`EXCP_WR_WIDTH-1:0]        csr_excp_wr_bus,
 
-  output wire                       rs1_r_ena,
-  output wire [4 : 0]               rs1_addr,
-  output wire                       rs2_r_ena,
-  output wire [4 : 0]               rs2_addr,
-  input wire [`REG_BUS]             rs1_data,
-  input wire [`REG_BUS]             rs2_data
+  output wire                             rs1_r_ena,
+  output wire [4 : 0]                     rs1_addr,
+  output wire                             rs2_r_ena,
+  output wire [4 : 0]                     rs2_addr,
+  input wire [`REG_BUS]                   rs1_data,
+  input wire [`REG_BUS]                   rs2_data,
+
+  // difftest bus
+  input wire [`CSR_TO_EX_DIFF_WIDTH-1:0]  csr_to_ex_diffbus,
+  output wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus
   );
 
   // read GPRs
@@ -241,5 +245,7 @@ module ex_stage(
   assign csr_wr_ena  = ex_csr_wr_ena;
   assign csr_wr_addr = ex_csr_wr_addr;
   assign csr_wr_data = ex_data;
+
+  assign ex_to_mem_diffbus = csr_to_ex_diffbus;
 
 endmodule

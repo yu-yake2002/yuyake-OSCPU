@@ -4,26 +4,29 @@
 `include "defines.v"
 
 module csrfile(
-  input wire                      clk,
-  input wire                      rst,
+  input wire                              clk,
+  input wire                              rst,
 
   // id stage
-  input wire                      csr_rd_ena,
-  input wire [11 : 0]             csr_rd_addr,
-  output wire [`REG_BUS]          csr_rd_data,
+  input wire                              csr_rd_ena,
+  input wire [11 : 0]                     csr_rd_addr,
+  output wire [`REG_BUS]                  csr_rd_data,
   
   // wb stage
-  input wire                      csr_wr_ena,
-  input wire [11 : 0]             csr_wr_addr,
-  input wire [`REG_BUS]           csr_wr_data,
+  input wire                              csr_wr_ena,
+  input wire [11 : 0]                     csr_wr_addr,
+  input wire [`REG_BUS]                   csr_wr_data,
 
   // exception
-  input wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus,
-  input wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus,
+  input wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
+  input wire [`EXCP_WR_WIDTH-1:0]         csr_excp_wr_bus,
   
   // exception read and write
-  input wire                      excp_enter,
-  input wire                      excp_exit
+  input wire                              excp_enter,
+  input wire                              excp_exit,
+
+  // difftest bus
+  output wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus
   );
   
   wire [`REG_BUS] mstatus_wr_data, mepc_wr_data, mcause_wr_data, mtval_wr_data;
@@ -306,5 +309,10 @@ module csrfile(
     | ({64{mimpid_rd_ena}}    & csr_mimpid)
     | ({64{mhartid_rd_ena}}   & csr_mhartid)
   );
- 
+
+  assign csr_to_ex_diffbus = {
+    mstatus_rd_data, mepc_rd_data, mtval_rd_data, mtvec_rd_data,
+    mcause_rd_data, mip_rd_data, mie_rd_data, mscratch_rd_data
+  };
+
 endmodule

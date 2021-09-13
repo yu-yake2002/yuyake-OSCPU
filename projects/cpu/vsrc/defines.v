@@ -12,10 +12,16 @@
 `define ID_TO_EX_WIDTH        567
 `define EX_TO_MEM_WIDTH       327
 `define MEM_TO_WB_WIDTH       313
-`define DIFFTEST_WIDTH        97
+
 `define BJ_CTRL_WIDTH         66
 `define MEM_FORWARD_WIDTH     73
 `define WB_FORWARD_WIDTH      137
+
+`define CSR_TO_EX_DIFF_WIDTH  512
+`define EX_TO_MEM_DIFF_WIDTH  `CSR_TO_EX_DIFF_WIDTH
+`define MEM_TO_WB_DIFF_WIDTH  138+`EX_TO_MEM_DIFF_WIDTH
+`define WB_DIFFTEST_WIDTH     97+`MEM_TO_WB_DIFF_WIDTH
+
 
 `define EXCP_RD_WIDTH       192
 `define EXCP_WR_WIDTH       256

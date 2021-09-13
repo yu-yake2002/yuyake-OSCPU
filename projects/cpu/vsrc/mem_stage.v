@@ -1,34 +1,41 @@
 `include "defines.v"
 
 module mem_stage(
-  input  wire             clk,
-  input  wire             rst,
+  input  wire                              clk,
+  input  wire                              rst,
   
   // pipeline control
-  input wire ex_to_mem_valid,
-  input wire [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus,
-  output wire mem_allowin,
+  input wire                               ex_to_mem_valid,
+  input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
+  output wire                              mem_allowin,
 
-  output wire mem_to_wb_valid,
-  output wire [`MEM_TO_WB_WIDTH-1:0] mem_to_wb_bus,
-  input wire wb_allowin,
-
-  output wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
+  output wire                              mem_to_wb_valid,
+  output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
+  input wire                               wb_allowin,
   
-  output wire             mem_rw_valid,
-  input  wire             mem_rw_ready,
-  output wire             mem_rw_req,
-  input  wire [`REG_BUS]  mem_r_data,
-  output wire [`REG_BUS]  mem_w_data,
-  output wire [`REG_BUS]  mem_rw_addr,
-  output wire [1 : 0]     mem_rw_size,
-  input  wire [1 : 0]     mem_rw_resp
+  // pipeline forward control
+  output wire [`MEM_FORWARD_WIDTH-1:0]     mem_forward_bus,
+  
+  // difftest bus
+  input wire [`EX_TO_MEM_DIFF_WIDTH-1:0]   ex_to_mem_diffbus,
+  output wire [`MEM_TO_WB_DIFF_WIDTH-1:0]  mem_to_wb_diffbus,
+
+  // custom interface
+  output wire                              mem_rw_valid,
+  input  wire                              mem_rw_ready,
+  output wire                              mem_rw_req,
+  input  wire [`REG_BUS]                   mem_r_data,
+  output wire [`REG_BUS]                   mem_w_data,
+  output wire [`REG_BUS]                   mem_rw_addr,
+  output wire [1 : 0]                      mem_rw_size,
+  input  wire [1 : 0]                      mem_rw_resp
   );
   
   // pipeline control
   reg mem_valid;
   wire mem_ready_go;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
+  reg [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus_r;
   
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
@@ -44,7 +51,7 @@ module mem_stage(
 
     if (ex_to_mem_valid && mem_allowin) begin
       ex_to_mem_bus_r <= ex_to_mem_bus;
-
+      ex_to_mem_diffbus_r <= ex_to_mem_diffbus;
     end
   end
   
@@ -175,7 +182,31 @@ module mem_stage(
 
   // exception
   wire [`EXCP_BUS] mem_excp_bus;
+  
+  // difftest
+  wire inst_size_b = mem_rw_size == `SIZE_B;
+  wire inst_size_h = mem_rw_size == `SIZE_H;
+  wire inst_size_w = mem_rw_size == `SIZE_W;
+  wire inst_size_d = mem_rw_size == `SIZE_D;
+  wire            difftest_s_valid = |mem_save_info;
+  wire            difftest_l_valid = |mem_load_info;
+  wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
+  wire [`REG_BUS] difftest_data = mem_w_data << mem_addr[2:0];
+  wire [7:0]      difftest_mask = (
+      ({8{inst_size_b}} & 8'b00000001)
+    | ({8{inst_size_h}} & 8'b00000011)
+    | ({8{inst_size_w}} & 8'b00001111)
+    | ({8{inst_size_d}} & 8'b11111111)
+  ) << mem_addr[2:0];
+  assign mem_to_wb_diffbus = {
+    ex_to_mem_diffbus_r,
 
+    difftest_addr,      // 137:74
+    difftest_data,      // 73 :10
+    difftest_mask,      // 9  :2
+    difftest_s_valid,   // 1  :1
+    difftest_l_valid    // 0  :0
+  };
 
   assign mem_to_wb_bus = {
     mem_excp_bus,    // 312:297

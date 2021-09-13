@@ -29,18 +29,25 @@ module cpu(
 );
 
   // pipeline control
-  reg if_stage_refresh;
-
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
-  wire [`IF_TO_ID_WIDTH-1:0]    if_to_id_bus;
-  wire [`ID_TO_EX_WIDTH-1:0]    id_to_ex_bus;
-  wire [`EX_TO_MEM_WIDTH-1:0]   ex_to_mem_bus;
-  wire [`MEM_TO_WB_WIDTH-1:0]   mem_to_wb_bus;
-  wire [`DIFFTEST_WIDTH-1:0]    difftest_bus;
-  wire [`BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus;
-  wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus;
-  wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus;
+  wire [`IF_TO_ID_WIDTH-1:0]     if_to_id_bus;
+  wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
+  wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
+  wire [`MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
+
+  // difftest bus
+  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
+  wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus;
+  wire [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus;
+  wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus;
+  
+  // branch and jump bus
+  wire [`BJ_CTRL_WIDTH-1:0]      bj_ctrl_bus;
+
+  // pipeline forward control bus
+  wire [`MEM_FORWARD_WIDTH-1:0]  mem_forward_bus;
+  wire [`WB_FORWARD_WIDTH-1:0]   wb_forward_bus;
   
   wire if_bj_ready;
   // IF stage
@@ -136,7 +143,10 @@ module cpu(
     .rs2_r_ena                 (rs2_r_ena),
     .rs2_addr                  (rs2_r_addr),
     .rs1_data                  (r_data1),
-    .rs2_data                  (r_data2)
+    .rs2_data                  (r_data2),
+
+    .csr_to_ex_diffbus         (csr_to_ex_diffbus),
+    .ex_to_mem_diffbus         (ex_to_mem_diffbus)
   );
 
   // CSRs
@@ -154,18 +164,7 @@ module cpu(
   wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
 
   // direct read and write
-  wire [`REG_BUS] mstatus_wr_data;
-  wire [`REG_BUS] mstatus_rd_data;
-  wire [`REG_BUS] mie_rd_data;
-  wire [`REG_BUS] mtvec_rd_data;
-  wire [`REG_BUS] mscratch_rd_data;
-  wire [`REG_BUS] mepc_wr_data;
-  wire [`REG_BUS] mepc_rd_data;
-  wire [`REG_BUS] mcause_wr_data;
-  wire [`REG_BUS] mcause_rd_data;
-  wire [`REG_BUS] mtval_rd_data;
-  wire [`REG_BUS] mtval_wr_data;
-  wire [`REG_BUS] mip_rd_data;
+  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
 
   csrfile CSRfile(
     .clk                       (clock),
@@ -186,7 +185,9 @@ module cpu(
     .csr_excp_wr_bus           (csr_excp_wr_bus),
 
     .excp_enter                (excp_enter),
-    .excp_exit                 (excp_exit)
+    .excp_exit                 (excp_exit),
+
+    .csr_to_ex_diffbus         (csr_to_ex_diffbus)
   );
   
   // MEM_STAGE
@@ -205,6 +206,10 @@ module cpu(
     
     // pipeline forward control
     .mem_forward_bus           (mem_forward_bus),
+
+    // difftest bus
+    .ex_to_mem_diffbus         (ex_to_mem_diffbus),
+    .mem_to_wb_diffbus         (mem_to_wb_diffbus),
 
     // Custom interface
     .mem_rw_valid              (mem_rw_valid),
@@ -234,6 +239,7 @@ module cpu(
     .reg_wr_addr               (reg_wr_addr),
     .reg_wr_data               (reg_wr_data),
     
+    .mem_to_wb_diffbus         (mem_to_wb_diffbus),
     .difftest_bus              (difftest_bus)
   );
   
@@ -276,21 +282,34 @@ module cpu(
   reg [`REG_BUS]   cmt_wdata;
   reg [`REG_BUS]   cmt_pc;
   reg [`INST_BUS]  cmt_inst;
-  reg              cmt_vaild, cmt_skip;
+  reg              cmt_valid, cmt_skip;
   reg [`REG_BUS]   cycleCnt, instrCnt;
   
-  wire [`REG_BUS]  wb_pc;
+  wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
   wire [`INST_BUS] wb_inst;
-  wire             wb_commit;
+  wire             wb_commit, wb_w_ena, wb_r_ena;
+  wire [7 : 0]     wb_w_mask;
+  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] wb_csr_diff;
   assign {
-    wb_pc,
-    wb_inst,
-    wb_commit
+    // ex stage
+    wb_csr_diff,
+    
+    // mem stage
+    wb_rw_addr,
+    wb_w_data,
+    wb_w_mask,
+    wb_w_ena,
+    wb_r_ena,
+
+    // wb stage 
+    wb_pc,       // 96 :33
+    wb_inst,     // 32 :1
+    wb_commit    // 0  :0
   } = difftest_bus;
 
   always @(posedge clock) begin
     if (reset) begin
-      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_vaild, cmt_skip, cycleCnt, instrCnt} <= 0;
+      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_valid, cmt_skip, cycleCnt, instrCnt} <= 0;
     end
     else begin
       cmt_wen <= reg_wr_ena;
@@ -298,7 +317,7 @@ module cpu(
       cmt_wdata <= reg_wr_data;
       cmt_pc <= wb_pc;
       cmt_inst <= wb_inst;
-      cmt_vaild <= wb_commit;
+      cmt_valid <= wb_commit;
   
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
@@ -314,7 +333,7 @@ module cpu(
     .clock              (clock),
     .coreid             (0),
     .index              (0),
-    .valid              (cmt_vaild),
+    .valid              (cmt_valid),
     .pc                 (cmt_pc),
     .instr              (cmt_inst),
     .skip               (cmt_skip),
@@ -365,31 +384,62 @@ module cpu(
   DifftestTrapEvent DifftestTrapEvent(
     .clock              (clock),
     .coreid             (0),
-    .valid              (wb_inst[6:0] == 7'h6b),
+    .valid              (cmt_inst[6:0] == 7'h6b),
     .code               (regs[10][7:0]),
     .pc                 (cmt_pc),
     .cycleCnt           (cycleCnt),
     .instrCnt           (instrCnt)
   );
   
+  wire [`REG_BUS] wb_mstatus, wb_mepc, wb_mtval, wb_mtvec,
+                  wb_mcause, wb_mip, wb_mie, wb_mscratch;
+  assign {
+    wb_mstatus,
+    wb_mepc,
+    wb_mtval,
+    wb_mtvec,
+    wb_mcause,
+    wb_mip,
+    wb_mie,
+    wb_mscratch
+  } = wb_csr_diff;
+
+  reg [`REG_BUS] cmt_mstatus, cmt_mepc, cmt_mtval, cmt_mtvec, 
+                 cmt_mcause, cmt_mip, cmt_mie, cmt_mscratch;
+  always @(posedge clock) begin
+    if (reset) begin
+      {cmt_mstatus, cmt_mepc, cmt_mtval, cmt_mtvec, cmt_mcause, cmt_mip, cmt_mie, cmt_mscratch} <= 0;
+    end
+    else begin
+      cmt_mstatus   <= wb_mstatus;
+      cmt_mepc      <= wb_mepc;
+      cmt_mtval     <= wb_mtval;
+      cmt_mtvec     <= wb_mtvec;
+      cmt_mcause    <= wb_mcause;
+      cmt_mip       <= wb_mip;
+      cmt_mie       <= wb_mie;
+      cmt_mscratch  <= wb_mscratch; 
+    end
+  end
+
   DifftestCSRState DifftestCSRState(
     .clock              (clock),
     .coreid             (0),
     .priviledgeMode     (0),
-    .mstatus            (0),
+    .mstatus            (cmt_mstatus),
     .sstatus            (0),
-    .mepc               (0),
+    .mepc               (cmt_mepc),
     .sepc               (0),
-    .mtval              (0),
+    .mtval              (cmt_mtval),
     .stval              (0),
-    .mtvec              (0),
+    .mtvec              (cmt_mtvec),
     .stvec              (0),
-    .mcause             (0),
+    .mcause             (cmt_mcause),
     .scause             (0),
     .satp               (0),
-    .mip                (0),
-    .mie                (0),
-    .mscratch           (0),
+    .mip                (cmt_mip),
+    .mie                (cmt_mie),
+    .mscratch           (cmt_mscratch),
     .sscratch           (0),
     .mideleg            (0),
     .medeleg            (0)
@@ -431,5 +481,30 @@ module cpu(
     .fpr_30             (0),
     .fpr_31             (0)
   );
+  
+  reg [`REG_BUS] cmt_rw_addr, cmt_w_data;
+  reg [7 : 0]    cmt_w_mask;
+  reg cmt_w_ena, cmt_r_ena;
+  always @(posedge clock) begin
+    if (reset) begin
+      {cmt_rw_addr, cmt_w_data, cmt_w_mask, cmt_w_ena, cmt_r_ena} <= 0; 
+    end
+    else begin
+      cmt_rw_addr <= wb_rw_addr;
+      cmt_w_data  <= wb_w_data;
+      cmt_w_mask  <= wb_w_mask;
+      cmt_w_ena   <= wb_w_ena;
+      cmt_r_ena   <= wb_r_ena;
+    end
+  end
 
+  DifftestStoreEvent DifftestStoreEvent(
+    .clock              (clock),
+    .coreid             (0),
+    .index              (0),
+    .valid              (cmt_valid && cmt_w_ena),
+    .storeAddr          (cmt_rw_addr),
+    .storeData          (cmt_w_data),
+    .storeMask          (cmt_w_mask)
+  );
 endmodule
