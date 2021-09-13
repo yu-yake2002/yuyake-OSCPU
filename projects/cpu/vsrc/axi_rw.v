@@ -293,7 +293,6 @@ module axi_rw # (
       axi_w_strb_o <= 8'b0;
     end
     else if (aw_hs) begin
-      
       axi_w_data_o <= (
           ({64{size_b}} & {8{data_write_i[7 :0]}})
         | ({64{size_h}} & {4{data_write_i[15:0]}})
@@ -306,8 +305,6 @@ module axi_rw # (
         | ({8{size_w}} & 8'b00001111)
         | ({8{size_d}} & 8'b11111111)
       ) << rw_addr_i[2:0];
-      //axi_w_data_o <= data_write_i;
-      //axi_w_strb_o <= 8'hff;
     end
   end
   assign axi_w_last_o     = axi_w_valid_o;
