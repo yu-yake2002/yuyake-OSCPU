@@ -425,7 +425,7 @@ module cpu(
   DifftestCSRState DifftestCSRState(
     .clock              (clock),
     .coreid             (0),
-    .priviledgeMode     (0),
+    .priviledgeMode     (`RISCV_PRIV_MODE_M),
     .mstatus            (cmt_mstatus),
     .sstatus            (0),
     .mepc               (cmt_mepc),
