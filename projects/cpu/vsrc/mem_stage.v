@@ -184,24 +184,48 @@ module mem_stage(
   wire [`EXCP_BUS] mem_excp_bus;
   
   // difftest
-  wire inst_size_b = mem_rw_size == `SIZE_B;
-  wire inst_size_h = mem_rw_size == `SIZE_H;
-  wire inst_size_w = mem_rw_size == `SIZE_W;
-  wire inst_size_d = mem_rw_size == `SIZE_D;
+  wire size_b = mem_rw_size == `SIZE_B;
+  wire size_h = mem_rw_size == `SIZE_H;
+  wire size_w = mem_rw_size == `SIZE_W;
+  wire size_d = mem_rw_size == `SIZE_D;
+  wire addr0 = mem_rw_addr[2:0] == 3'b000;
+  wire addr1 = mem_rw_addr[2:0] == 3'b001;
+  wire addr2 = mem_rw_addr[2:0] == 3'b010;
+  wire addr3 = mem_rw_addr[2:0] == 3'b011;
+  wire addr4 = mem_rw_addr[2:0] == 3'b100;
+  wire addr5 = mem_rw_addr[2:0] == 3'b101;
+  wire addr6 = mem_rw_addr[2:0] == 3'b110;
+  wire addr7 = mem_rw_addr[2:0] == 3'b111;
   wire            difftest_s_valid = |mem_save_info;
   wire            difftest_l_valid = |mem_load_info;
   wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
   wire [`REG_BUS] difftest_data = (
-      ({64{inst_size_b}} & {8{mem_w_data[7 :0]}})
-    | ({64{inst_size_h}} & {4{mem_w_data[15:0]}})
-    | ({64{inst_size_w}} & {2{mem_w_data[31:0]}})
-    | ({64{inst_size_d}} & {1{mem_w_data[63:0]}})
+      ({64{size_b}} & {8{mem_w_data[7 :0]}})
+    | ({64{size_h}} & {4{mem_w_data[15:0]}})
+    | ({64{size_w}} & {2{mem_w_data[31:0]}})
+    | ({64{size_d}} & {1{mem_w_data[63:0]}})
+  ) & (
+      {64{addr0 && size_d}} & 64'hffffffffffffffff
+    | {64{addr0 && size_w}} & 64'h00000000ffffffff
+    | {64{addr0 && size_h}} & 64'h000000000000ffff
+    | {64{addr0 && size_b}} & 64'h00000000000000ff
+    | {64{addr1 && size_b}} & 64'h000000000000ff00
+    | {64{addr2 && size_h}} & 64'h00000000ffff0000
+    | {64{addr2 && size_b}} & 64'h0000000000ff0000
+    | {64{addr3 && size_b}} & 64'h00000000ff000000
+    | {64{addr4 && size_w}} & 64'hffffffff00000000
+    | {64{addr4 && size_h}} & 64'h0000ffff00000000
+    | {64{addr4 && size_b}} & 64'h000000ff00000000
+    | {64{addr5 && size_b}} & 64'h0000ff0000000000
+    | {64{addr6 && size_h}} & 64'hffff000000000000
+    | {64{addr6 && size_b}} & 64'h00ff000000000000
+    | {64{addr7 && size_b}} & 64'hff00000000000000
   );
   wire [7:0]      difftest_mask = (
-      ({8{inst_size_b}} & 8'b00000001)
-    | ({8{inst_size_h}} & 8'b00000011)
-    | ({8{inst_size_w}} & 8'b00001111)
-    | ({8{inst_size_d}} & 8'b11111111)
+      ({8{size_b}} & 8'b00000001)
+    | ({8{size_h}} & 8'b00000011)
+    | ({8{size_w}} & 8'b00001111)
+    | ({8{size_d}} & 8'b11111111)
   ) << mem_addr[2:0];
   assign mem_to_wb_diffbus = {
     ex_to_mem_diffbus_r,
