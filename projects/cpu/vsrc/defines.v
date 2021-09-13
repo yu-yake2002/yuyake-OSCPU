@@ -17,8 +17,8 @@
 `define MEM_FORWARD_WIDTH     73
 `define WB_FORWARD_WIDTH      137
 
-`define EXCP_RD_WIDTH       256
-`define EXCP_WR_WIDTH       192
+`define EXCP_RD_WIDTH       192
+`define EXCP_WR_WIDTH       256
 
 `define AXI_ADDR_WIDTH      64
 `define AXI_DATA_WIDTH      64

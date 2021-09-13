@@ -23,45 +23,47 @@ module csrfile(
   
   // exception read and write
   input wire                      excp_enter,
-  input wire                      excp_exit,
-  input wire [`REG_BUS]           mstatus_wr_data,
-  output wire [`REG_BUS]          mstatus_rd_data,
-  output wire [`REG_BUS]          mie_rd_data,
-  output wire [`REG_BUS]          mtvec_rd_data,
-  output wire [`REG_BUS]          mscratch_rd_data,
-  input wire [`REG_BUS]           mepc_wr_data,
-  output wire [`REG_BUS]          mepc_rd_data,
-  input wire [`REG_BUS]           mcause_wr_data,
-  output wire [`REG_BUS]          mcause_rd_data,
-  input wire [`REG_BUS]           mtval_wr_data,
-  output wire [`REG_BUS]          mtval_rd_data,
-  output wire [`REG_BUS]          mip_rd_data
+  input wire                      excp_exit
   );
   
+  wire [`REG_BUS] mstatus_wr_data, mepc_wr_data, mcause_wr_data, mtval_wr_data;
+  assign {
+    mstatus_wr_data,
+    mepc_wr_data,
+    mcause_wr_data,
+    mtval_wr_data
+  } = csr_excp_wr_bus;
+  
+  wire excp_wr = excp_enter | excp_exit;
+
   // 0x300 Machine Status Register
   wire sel_rd_mstatus = (csr_rd_addr == 12'h300);
   wire sel_wr_mstatus = (csr_wr_addr == 12'h300);
-  wire rd_mstatus = sel_rd_mstatus & csr_rd_ena;
-  wire wr_mstatus = sel_wr_mstatus & csr_wr_ena;
+  wire mstatus_rd_ena = sel_rd_mstatus & csr_rd_ena;
+  wire mstatus_wr_ena = sel_wr_mstatus & csr_wr_ena;
   reg [`REG_BUS] csr_mstatus;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mstatus <= 64'h1888;
     end
-    else if (excp_enter | excp_exit) begin
+    else if (excp_wr) begin
       csr_mstatus <= mstatus_wr_data;
     end
-    else if (wr_mstatus) begin
+    else if (mstatus_wr_ena) begin
       csr_mstatus <= csr_wr_data;
     end
   end
 
-  assign mstatus_rd_data = csr_mstatus;
-
+  wire [`REG_BUS] mstatus_rd_data = (
+    excp_wr        ? mstatus_wr_data :
+    mstatus_wr_ena ? csr_wr_data :
+                     csr_mstatus
+  );
+  
   // 0x301 Machine ISA Register
   wire sel_misa = (csr_rd_addr == 12'h301);
-  wire rd_misa = sel_misa & csr_rd_ena;
+  wire misa_rd_ena = sel_misa & csr_rd_ena;
   wire [`REG_BUS] csr_misa = {
     2'b10
     ,4'b0 //WIRI
@@ -93,65 +95,67 @@ module csrfile(
     ,1'b0 //              0 A Atomic extension
   };
 
+  wire [`REG_BUS] misa_rd_data = csr_misa;
+
   // 0x304 Machine Interrupt Enable Register
   wire sel_rd_mie = (csr_rd_addr == 12'h304);
   wire sel_wr_mie = (csr_wr_addr == 12'h304);
-  wire rd_mie = (csr_rd_ena & sel_rd_mie);
-  wire wr_mie = (csr_wr_ena & sel_wr_mie);
+  wire mie_rd_ena = (csr_rd_ena & sel_rd_mie);
+  wire mie_wr_ena = (csr_wr_ena & sel_wr_mie);
   reg [`REG_BUS] csr_mie;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mie <= 64'h888;  // only for machine mode
     end
-    else if (wr_mie) begin
+    else if (mie_wr_ena) begin
       csr_mie <= csr_wr_data;
     end
   end
 
-  assign mie_rd_data = csr_mie;
+  wire [`REG_BUS] mie_rd_data = mie_wr_ena ? csr_wr_data : csr_mie;
 
   // 0x305 Machine Trap-Vector Base-Address Register
   wire sel_rd_mtvec = (csr_rd_addr == 12'h305);
   wire sel_wr_mtvec = (csr_wr_addr == 12'h305);
-  wire rd_mtvec = (csr_rd_ena & sel_rd_mtvec);
-  wire wr_mtvec = (csr_wr_ena & sel_wr_mtvec);
+  wire mtvec_rd_ena = (csr_rd_ena & sel_rd_mtvec);
+  wire mtvec_wr_ena = (csr_wr_ena & sel_wr_mtvec);
   reg [`REG_BUS] csr_mtvec;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mtvec <= `ZERO_WORD;
     end
-    else if (wr_mtvec) begin
+    else if (mtvec_wr_ena) begin
       csr_mtvec <= csr_wr_data;
     end
   end
 
-  assign mtvec_rd_data = csr_mtvec;
+  wire [`REG_BUS] mtvec_rd_data = mtvec_wr_ena ? csr_wr_data : csr_mtvec;
   
   // 0x340 Machine Scratch Register
   wire sel_rd_mscratch = (csr_rd_addr == 12'h430);
   wire sel_wr_mscratch = (csr_wr_addr == 12'h430);
-  wire rd_mscratch = (csr_rd_ena & sel_rd_mscratch);
-  wire wr_mscratch = (csr_wr_ena & sel_wr_mscratch);
+  wire mscratch_rd_ena = (csr_rd_ena & sel_rd_mscratch);
+  wire mscratch_wr_ena = (csr_wr_ena & sel_wr_mscratch);
   reg [`REG_BUS] csr_mscratch;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mscratch <= `ZERO_WORD;
     end
-    else if (wr_mscratch) begin
+    else if (mscratch_wr_ena) begin
       csr_mscratch <= csr_wr_data;
     end
   end
 
-  assign mscratch_rd_data = csr_mscratch;
+  wire [`REG_BUS] mscratch_rd_data = mscratch_wr_ena ? csr_wr_data : csr_mscratch;
 
   // 0x341 Machine Exception Program Counter
   wire sel_rd_mepc = (csr_rd_addr == 12'h341);
   wire sel_wr_mepc = (csr_wr_addr == 12'h341);
-  wire rd_mepc = (csr_rd_ena & sel_rd_mepc);
-  wire wr_mepc = (csr_wr_ena & sel_wr_mepc);
+  wire mepc_rd_ena = (csr_rd_ena & sel_rd_mepc);
+  wire mepc_wr_ena = (csr_wr_ena & sel_wr_mepc);
   reg [`REG_BUS] csr_mepc;
 
   always @(posedge clk) begin
@@ -161,18 +165,22 @@ module csrfile(
     else if (excp_enter) begin
       csr_mtvec <=  mepc_wr_data;
     end
-    else if (wr_mepc) begin
+    else if (mepc_wr_ena) begin
       csr_mepc <= csr_wr_data;
     end
   end
   
-  assign mepc_rd_data = csr_mepc;
+  wire [`REG_BUS] mepc_rd_data = (
+    excp_enter  ? mepc_wr_data :
+    mepc_wr_ena ? csr_wr_data :
+                  csr_mepc
+  );
 
   // 0x342 Machine Cause Register
   wire sel_rd_mcause = (csr_rd_addr == 12'h342);
   wire sel_wr_mcause = (csr_wr_addr == 12'h342);
-  wire rd_mcause = (csr_rd_ena & sel_rd_mcause);
-  wire wr_mcause = (csr_wr_ena & sel_wr_mcause);
+  wire mcause_rd_ena = (csr_rd_ena & sel_rd_mcause);
+  wire mcause_wr_ena = (csr_wr_ena & sel_wr_mcause);
   reg [`REG_BUS] csr_mcause;
 
   always @(posedge clk) begin
@@ -182,18 +190,22 @@ module csrfile(
     else if (excp_enter) begin
       csr_mcause <=  mcause_wr_data;
     end
-    else if (wr_mcause) begin
+    else if (mcause_wr_ena) begin
       csr_mcause <= csr_wr_data;
     end
   end
   
-  assign mcause_rd_data = csr_mcause;
+  wire [`REG_BUS] mcause_rd_data = (
+    excp_enter    ? mcause_wr_data :
+    mcause_wr_ena ? csr_wr_data :
+                    csr_mcause
+  );
   
   // 0x343 Machine Trap Value Register
   wire sel_rd_mtval = (csr_rd_addr == 12'h343);
   wire sel_wr_mtval = (csr_wr_addr == 12'h343);
-  wire rd_mtval = (csr_rd_ena & sel_rd_mtval);
-  wire wr_mtval = (csr_wr_ena & sel_wr_mtval);
+  wire mtval_rd_ena = (csr_rd_ena & sel_rd_mtval);
+  wire mtval_wr_ena = (csr_wr_ena & sel_wr_mtval);
   reg [`REG_BUS] csr_mtval;
   
   always @(posedge clk) begin
@@ -203,42 +215,48 @@ module csrfile(
     else if (excp_enter) begin
       csr_mtval <= mtval_wr_data;
     end
-    else if (wr_mtval) begin
+    else if (mtval_wr_ena) begin
       csr_mtval <= csr_wr_data;
     end
   end
 
+  wire [`REG_BUS] mtval_rd_data = (
+    excp_enter   ? mtval_wr_data :
+    mtval_wr_ena ? csr_wr_data :
+                   csr_mtval
+  );
+
   // 0x344 Machine Interrupt Pending Register
   wire sel_rd_mip = (csr_rd_addr == 12'h344);
   wire sel_wr_mip = (csr_wr_addr == 12'h344);
-  wire rd_mip = (csr_rd_ena & sel_rd_mip);
-  wire wr_mip = (csr_wr_ena & sel_wr_mip);
+  wire mip_rd_ena = (csr_rd_ena & sel_rd_mip);
+  wire mip_wr_ena = (csr_wr_ena & sel_wr_mip);
   reg [`REG_BUS] csr_mip;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mip <= 64'b0;
     end
-    else if (wr_mip) begin
+    else if (mip_wr_ena) begin
       csr_mip <= csr_wr_data;
     end
     // TODO: when interruption pending, mip should flip corresponding bit
   end
 
-  assign mip_rd_data = csr_mip;
+  wire [`REG_BUS] mip_rd_data = mip_wr_ena ? csr_wr_data : csr_mip;
 
   // 0xB00 Cycle Counter
   wire sel_rd_mcycle = (csr_rd_addr == 12'hb00);
   wire sel_wr_mcycle = (csr_wr_addr == 12'hb00);
-  wire rd_mcycle = (csr_rd_ena & sel_rd_mcycle);
-  wire wr_mcycle = (csr_wr_ena & sel_wr_mcycle);
+  wire mcycle_rd_ena = (csr_rd_ena & sel_rd_mcycle);
+  wire mcycle_wr_ena = (csr_wr_ena & sel_wr_mcycle);
   reg [`REG_BUS] csr_mcycle;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mcycle <= `ZERO_WORD;
     end
-    else if (wr_mcycle) begin
+    else if (mcycle_wr_ena) begin
       csr_mcycle <= csr_wr_data;
     end
     else begin
@@ -246,41 +264,47 @@ module csrfile(
     end
   end
 
+  wire [`REG_BUS] mcycle_rd_data = mcycle_wr_ena ? csr_wr_data : (csr_mcycle + 64'b1);
+
   // 0xF11 Machine Vendor ID Register
   wire sel_mvendorid = (csr_rd_addr == 12'hf11);
-  wire rd_mvendorid = (csr_rd_ena & sel_mvendorid);
+  wire mvendorid_rd_ena = (csr_rd_ena & sel_mvendorid);
   wire [`REG_BUS] csr_mvendorid = `ZERO_WORD;
+  wire [`REG_BUS] mvendorid_rd_data = csr_mvendorid;
   
   // 0xF12 Machine Architecture ID Register
   wire sel_marchid= (csr_rd_addr == 12'hf12);
-  wire rd_marchid = (csr_rd_ena & sel_marchid);
+  wire marchid_rd_ena = (csr_rd_ena & sel_marchid);
   wire [`REG_BUS] csr_marchid = `ZERO_WORD;
+  wire [`REG_BUS] marchid_rd_data = csr_marchid;
   
   // 0xF13 Machine Implementation ID Register
   wire sel_mimpid= (csr_rd_addr == 12'hf13);
-  wire rd_mimpid = (csr_rd_ena & sel_mimpid);
+  wire mimpid_rd_ena = (csr_rd_ena & sel_mimpid);
   wire [`REG_BUS] csr_mimpid = `ZERO_WORD;
+  wire [`REG_BUS] mimpid_rd_data = csr_mimpid;
 
   // 0xF14 Hart ID Register
   wire sel_mhartid= (csr_rd_addr == 12'hf14);
-  wire rd_mhartid = (csr_rd_ena & sel_mhartid);
+  wire mhartid_rd_ena = (csr_rd_ena & sel_mhartid);
   wire [`REG_BUS] csr_mhartid = `ZERO_WORD;
+  wire [`REG_BUS] mhart_rd_data = csr_mhartid;
 
   assign csr_rd_data = {64{~rst}} & (
-      ({64{rd_mstatus}}   & csr_mstatus)
-    | ({64{rd_misa}}      & csr_misa)
-    | ({64{rd_mie}}       & csr_mie)
-    | ({64{rd_mtvec}}     & csr_mtvec)
-    | ({64{rd_mscratch}}  & csr_mscratch)
-    | ({64{rd_mepc}}      & csr_mepc)
-    | ({64{rd_mcause}}    & csr_mcause)
-    | ({64{rd_mtval}}     & csr_mtval)
-    | ({64{rd_mip}}       & csr_mip)
-    | ({64{rd_mcycle}}    & csr_mcycle)
-    | ({64{rd_mvendorid}} & csr_mvendorid)
-    | ({64{rd_marchid}}   & csr_marchid)
-    | ({64{rd_mimpid}}    & csr_mimpid)
-    | ({64{rd_mhartid}}   & csr_mhartid)
+      ({64{mstatus_rd_ena}}   & csr_mstatus)
+    | ({64{misa_rd_ena}}      & csr_misa)
+    | ({64{mie_rd_ena}}       & csr_mie)
+    | ({64{mtvec_rd_ena}}     & csr_mtvec)
+    | ({64{mscratch_rd_ena}}  & csr_mscratch)
+    | ({64{mepc_rd_ena}}      & csr_mepc)
+    | ({64{mcause_rd_ena}}    & csr_mcause)
+    | ({64{mtval_rd_ena}}     & csr_mtval)
+    | ({64{mip_rd_ena}}       & csr_mip)
+    | ({64{mcycle_rd_ena}}    & csr_mcycle)
+    | ({64{mvendorid_rd_ena}} & csr_mvendorid)
+    | ({64{marchid_rd_ena}}   & csr_marchid)
+    | ({64{mimpid_rd_ena}}    & csr_mimpid)
+    | ({64{mhartid_rd_ena}}   & csr_mhartid)
   );
  
 endmodule

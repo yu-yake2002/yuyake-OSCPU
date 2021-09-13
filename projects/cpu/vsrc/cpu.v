@@ -179,19 +179,7 @@ module cpu(
     .csr_excp_wr_bus           (csr_excp_wr_bus),
 
     .excp_enter                (excp_enter),
-    .excp_exit                 (excp_exit),
-    .mstatus_wr_data           (mstatus_wr_data),
-    .mstatus_rd_data           (mstatus_rd_data),
-    .mie_rd_data               (mie_rd_data),
-    .mtvec_rd_data             (mtvec_rd_data),
-    .mscratch_rd_data          (mscratch_rd_data),
-    .mepc_wr_data              (mepc_wr_data),
-    .mepc_rd_data              (mepc_rd_data),
-    .mcause_wr_data            (mcause_wr_data),
-    .mcause_rd_data            (mcause_rd_data),
-    .mtval_wr_data             (mtval_wr_data),
-    .mtval_rd_data             (mtval_rd_data),
-    .mip_rd_data               (mip_rd_data)
+    .excp_exit                 (excp_exit)
   );
   
   // MEM_STAGE
@@ -381,20 +369,20 @@ module cpu(
     .clock              (clock),
     .coreid             (0),
     .priviledgeMode     (0),
-    .mstatus            (mstatus_rd_data),
+    .mstatus            (0),
     .sstatus            (0),
-    .mepc               (mepc_rd_data),
+    .mepc               (0),
     .sepc               (0),
-    .mtval              (mtval_rd_data),
+    .mtval              (0),
     .stval              (0),
-    .mtvec              (mtvec_rd_data),
+    .mtvec              (0),
     .stvec              (0),
-    .mcause             (mcause_rd_data),
+    .mcause             (0),
     .scause             (0),
     .satp               (0),
-    .mip                (mip_rd_data),
+    .mip                (0),
     .mie                (0),
-    .mscratch           (mscratch_rd_data),
+    .mscratch           (0),
     .sscratch           (0),
     .mideleg            (0),
     .medeleg            (0)
