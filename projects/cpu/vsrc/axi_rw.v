@@ -310,7 +310,7 @@ module axi_rw # (
       axi_w_strb_o <= 8'hff;
     end
   end
-  assign axi_w_last_o     = 1'b1;
+  assign axi_w_last_o     = axi_w_valid_o;
   assign axi_w_id_o       = axi_id;
   
   // Write response channel signals
