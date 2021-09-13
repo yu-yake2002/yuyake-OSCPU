@@ -482,19 +482,25 @@ module cpu(
     .fpr_31             (0)
   );
   
-  reg [`REG_BUS] cmt_rw_addr, cmt_w_data;
-  reg [7 : 0]    cmt_w_mask;
-  reg cmt_w_ena, cmt_r_ena;
+  reg [`REG_BUS] cmt_rw_addr, cmt_w_data, buf_rw_addr, buf_w_data;
+  reg [7 : 0]    cmt_w_mask, buf_w_mask;
+  reg            cmt_w_ena, cmt_r_ena, buf_w_ena, buf_r_ena;
   always @(posedge clock) begin
     if (reset) begin
       {cmt_rw_addr, cmt_w_data, cmt_w_mask, cmt_w_ena, cmt_r_ena} <= 0; 
     end
     else begin
-      cmt_rw_addr <= wb_rw_addr;
-      cmt_w_data  <= wb_w_data;
-      cmt_w_mask  <= wb_w_mask;
-      cmt_w_ena   <= wb_w_ena;
-      cmt_r_ena   <= wb_r_ena;
+      buf_rw_addr <= wb_rw_addr;
+      buf_w_data  <= wb_w_data;
+      buf_w_mask  <= wb_w_mask;
+      buf_w_ena   <= wb_w_ena & wb_commit;
+      buf_r_ena   <= wb_r_ena & wb_commit;
+
+      cmt_rw_addr <= buf_rw_addr;
+      cmt_w_data  <= buf_rw_addr;
+      cmt_w_mask  <= buf_w_mask;
+      cmt_w_ena   <= buf_w_ena;
+      cmt_r_ena   <= buf_r_ena;
     end
   end
 
@@ -502,7 +508,7 @@ module cpu(
     .clock              (clock),
     .coreid             (0),
     .index              (0),
-    .valid              (cmt_valid && cmt_w_ena),
+    .valid              (cmt_w_ena),
     .storeAddr          (cmt_rw_addr),
     .storeData          (cmt_w_data),
     .storeMask          (cmt_w_mask)
