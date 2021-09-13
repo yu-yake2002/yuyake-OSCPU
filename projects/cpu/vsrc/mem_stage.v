@@ -191,7 +191,7 @@ module mem_stage(
   wire            difftest_s_valid = |mem_save_info;
   wire            difftest_l_valid = |mem_load_info;
   wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
-  wire [`REG_BUS] difftest_data = mem_w_data;
+  wire [`REG_BUS] difftest_data = mem_w_data << mem_addr[2:0];
   wire [7:0]      difftest_mask = (
       ({8{inst_size_b}} & 8'b00000001)
     | ({8{inst_size_h}} & 8'b00000011)
