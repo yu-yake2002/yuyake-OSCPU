@@ -497,7 +497,7 @@ module cpu(
       buf_r_ena   <= wb_r_ena & wb_commit;
 
       cmt_rw_addr <= buf_rw_addr;
-      cmt_w_data  <= buf_rw_addr;
+      cmt_w_data  <= buf_w_data;
       cmt_w_mask  <= buf_w_mask;
       cmt_w_ena   <= buf_w_ena;
       cmt_r_ena   <= buf_r_ena;
