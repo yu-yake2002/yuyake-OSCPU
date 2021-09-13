@@ -19,15 +19,15 @@ module id_stage(
   input wire                        ex_allowin,
 
   // data from regfile and CSRs
-  input wire [`REG_BUS]             r_data1,
-  input wire [`REG_BUS]             r_data2,
+//  input wire [`REG_BUS]             r_data1,
+//  input wire [`REG_BUS]             r_data2,
   input wire [`REG_BUS]             csr_data,
   
   // control reg
-  output wire                       rs1_r_ena,
-  output wire [4 : 0]               rs1_addr,
-  output wire                       rs2_r_ena,
-  output wire [4 : 0]               rs2_addr,
+//  output wire                       rs1_r_ena,
+//  output wire [4 : 0]               rs1_addr,
+//  output wire                       rs2_r_ena,
+//  output wire [4 : 0]               rs2_addr,
 
   // control csr
   output wire                       csr_rd_ena,
@@ -35,6 +35,13 @@ module id_stage(
 
   input wire [`BJ_CTRL_WIDTH-1:0]   bj_ctrl_bus
 );
+
+  wire [`REG_BUS] r_data1 = 64'b0;
+  wire [`REG_BUS] r_data2 = 64'b0;
+  wire                       rs1_r_ena;
+  wire [4 : 0]               rs1_addr;
+  wire                       rs2_r_ena;
+  wire [4 : 0]               rs2_addr;
 
   wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;

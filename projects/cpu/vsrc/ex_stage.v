@@ -30,8 +30,21 @@ module ex_stage(
   output wire                         excp_enter,
   output wire                         excp_exit,
   input wire [`EXCP_RD_WIDTH-1:0]     csr_excp_rd_bus,
-  output wire [`EXCP_WR_WIDTH-1:0]    csr_excp_wr_bus
+  output wire [`EXCP_WR_WIDTH-1:0]    csr_excp_wr_bus,
+
+  output wire                       rs1_r_ena,
+  output wire [4 : 0]               rs1_addr,
+  output wire                       rs2_r_ena,
+  output wire [4 : 0]               rs2_addr,
+  input wire [`REG_BUS]             rs1_data,
+  input wire [`REG_BUS]             rs2_data
   );
+
+  // read GPRs
+  assign rs1_r_ena = 1'b1;
+  assign rs2_r_ena = 1'b1;
+  assign rs1_addr = ex_rs1_addr;
+  assign rs2_addr = ex_rs2_addr;
   
   // pipeline control
   reg ex_valid;
@@ -120,8 +133,10 @@ module ex_stage(
   forward Forward(
     .ex_rs1_addr         (ex_rs1_addr),
     .ex_rs2_addr         (ex_rs2_addr),
-    .ex_rs1_data         (ex_rs1_data),
-    .ex_rs2_data         (ex_rs2_data),
+    //.ex_rs1_data         (ex_rs1_data),
+    //.ex_rs2_data         (ex_rs2_data),
+    .ex_rs1_data         (rs1_data),
+    .ex_rs2_data         (rs2_data),
     .ex_use_rs1          (ex_use_rs1),
     .ex_use_rs2          (ex_use_rs2),
 

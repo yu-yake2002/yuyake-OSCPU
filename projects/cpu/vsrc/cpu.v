@@ -82,15 +82,15 @@ module cpu(
     .ex_allowin                (ex_allowin),
 
     // data from regfile and CSRs
-    .r_data1                   (r_data1),
-    .r_data2                   (r_data2),
+    //.r_data1                   (r_data1),
+    //.r_data2                   (r_data2),
     .csr_data                  (csr_rd_data),
     
     // control reg
-    .rs1_r_ena                 (rs1_r_ena),
-    .rs1_addr                  (rs1_r_addr),
-    .rs2_r_ena                 (rs2_r_ena),
-    .rs2_addr                  (rs2_r_addr),
+    //.rs1_r_ena                 (rs1_r_ena),
+    //.rs1_addr                  (rs1_r_addr),
+    //.rs2_r_ena                 (rs2_r_ena),
+    //.rs2_addr                  (rs2_r_addr),
     
     // control csr
     .csr_rd_ena                (csr_rd_ena),
@@ -129,7 +129,14 @@ module cpu(
     .excp_enter                (excp_enter),
     .excp_exit                 (excp_exit),
     .csr_excp_rd_bus           (csr_excp_rd_bus),
-    .csr_excp_wr_bus           (csr_excp_wr_bus)
+    .csr_excp_wr_bus           (csr_excp_wr_bus),
+
+    .rs1_r_ena                 (rs1_r_ena),
+    .rs1_addr                  (rs1_r_addr),
+    .rs2_r_ena                 (rs2_r_ena),
+    .rs2_addr                  (rs2_r_addr),
+    .rs1_data                  (r_data1),
+    .rs2_data                  (r_data2)
   );
 
   // CSRs
