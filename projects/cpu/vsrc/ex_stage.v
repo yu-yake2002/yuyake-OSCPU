@@ -57,7 +57,7 @@ module ex_stage(
   
   wire ex_done = ~hazard;
   wire bj_handshake = ex_bj_valid && if_bj_ready;
-  assign ex_ready_go = (~(|ex_bj_info) || bj_handshake) && ex_done;
+  assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
   assign ex_to_mem_valid = ex_valid && ex_ready_go;
   
