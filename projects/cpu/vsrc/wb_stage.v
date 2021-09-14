@@ -21,7 +21,11 @@ module wb_stage (
 
   // difftest
   input wire [`MEM_TO_WB_DIFF_WIDTH-1:0]  mem_to_wb_diffbus,
-  output wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus
+  output wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus,
+  
+  // serial port output
+  output wire                             wb_uart_out_valid,
+  output wire [7 : 0]                     wb_uart_out_char
   );
   
   // pipeline control
@@ -50,7 +54,10 @@ module wb_stage (
   wire [4  : 0]   wb_wdest;
   
   assign {
-    wb_excp_bus,    // 312:297
+    // serial port output
+    wb_uart_out_valid, // 305:305
+    wb_uart_out_char,  // 304:297
+    
     wb_pc,          // 296:233
     wb_inst,        // 232:201
     wb_wen,         // 200:200

@@ -381,41 +381,46 @@ module id_stage(
   wire id_excp_exit = inst_mret;
   assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
   assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
-
+  
+  wire id_uart_out_valid = inst_putch;
 
   assign id_to_ex_bus = {
-    id_excp_exit,   // 566:566
-    id_excp_bus,    // 565:550
+    // serial port output
+    id_uart_out_valid, // 567:567
+    
+    // exception
+    id_excp_exit,      // 566:566
+    id_excp_bus,       // 565:550
 
-    id_inst,        // 549:517
-    id_pc,          // 516:452
+    id_inst,           // 549:517
+    id_pc,             // 516:452
 
     // -> ex
-    rs1_addr,       // 451:447
-    rs2_addr,       // 446:442
-    id_op1,         // 441:378
-    id_op2,         // 377:314
-    id_use_rs1,     // 313:313
-    id_use_rs2,     // 312:312
-    id_rs1_data,    // 311:248
-    id_rs2_data,    // 247:184
-    is_word_opt,    // 183:183
-    id_alu_info,    // 182:171
-    id_bj_info,     // 170:163
-    id_jmp_imm,     // 162:99
+    rs1_addr,          // 451:447
+    rs2_addr,          // 446:442
+    id_op1,            // 441:378
+    id_op2,            // 377:314
+    id_use_rs1,        // 313:313
+    id_use_rs2,        // 312:312
+    id_rs1_data,       // 311:248
+    id_rs2_data,       // 247:184
+    is_word_opt,       // 183:183
+    id_alu_info,       // 182:171
+    id_bj_info,        // 170:163
+    id_jmp_imm,        // 162:99
     
     // -> mem
-    id_load_info,   // 98 :92
-    id_save_info,   // 91 :88
-    mem_rd_ena,  // 87 :87
-    mem_wr_ena,  // 86 :86
+    id_load_info,      // 98 :92
+    id_save_info,      // 91 :88
+    mem_rd_ena,        // 87 :87
+    mem_wr_ena,        // 86 :86
     
     // -> wb
-    reg_wr_ctrl, // 85: 83
-    reg_wr_ena,  // 82: 82
-    reg_wr_addr, // 81 :77
-    csr_wr_ena,  // 76 :76
-    csr_wr_addr, // 75 :64
-    csr_data     // 64 :0
+    reg_wr_ctrl,       // 85: 83
+    reg_wr_ena,        // 82: 82
+    reg_wr_addr,       // 81 :77
+    csr_wr_ena,        // 76 :76
+    csr_wr_addr,       // 75 :64
+    csr_data           // 64 :0
   };
 endmodule

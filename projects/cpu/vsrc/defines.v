@@ -13,9 +13,9 @@
 `define INST_BUS   31 : 0
 
 `define IF_TO_ID_WIDTH        96
-`define ID_TO_EX_WIDTH        567
-`define EX_TO_MEM_WIDTH       327
-`define MEM_TO_WB_WIDTH       313
+`define ID_TO_EX_WIDTH        568
+`define EX_TO_MEM_WIDTH       320
+`define MEM_TO_WB_WIDTH       306
 
 `define BJ_CTRL_WIDTH         66
 `define MEM_FORWARD_WIDTH     73

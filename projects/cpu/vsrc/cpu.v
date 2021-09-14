@@ -11,21 +11,28 @@ module cpu(
   input wire            reset,
   
   // Custom interface
-  output                if_rw_valid,
-  input                 if_rw_ready,
-  input  [`REG_BUS]     if_r_data,
-  output [`REG_BUS]     if_rw_addr,
-  output [1 : 0]        if_rw_size,
-  input  [1 : 0]        if_rw_resp,
 
-  output                mem_rw_valid,
-  input                 mem_rw_ready,
-  output                mem_rw_req,
-  input  [`REG_BUS]     mem_r_data,
-  output [`REG_BUS]     mem_w_data,
-  output [`REG_BUS]     mem_rw_addr,
-  output [1 : 0]        mem_rw_size,
-  input  [1 : 0]        mem_rw_resp
+  // if stage
+  output wire                if_rw_valid,
+  input wire                 if_rw_ready,
+  input wire [`REG_BUS]      if_r_data,
+  output wire [`REG_BUS]     if_rw_addr,
+  output wire [1 : 0]        if_rw_size,
+  input wire [1 : 0]         if_rw_resp,
+  
+  // mem stage
+  output wire                mem_rw_valid,
+  input wire                 mem_rw_ready,
+  output wire                mem_rw_req,
+  input wire [`REG_BUS]      mem_r_data,
+  output wire [`REG_BUS]     mem_w_data,
+  output wire [`REG_BUS]     mem_rw_addr,
+  output wire [1 : 0]        mem_rw_size,
+  input wire [1 : 0]         mem_rw_resp,
+
+  // UART serial port
+  output wire                uart_out_valid,
+  output wire [7 : 0]        uart_out_char
 );
 
   // pipeline control
@@ -239,8 +246,13 @@ module cpu(
     .reg_wr_addr               (reg_wr_addr),
     .reg_wr_data               (reg_wr_data),
     
+    // difftest bus
     .mem_to_wb_diffbus         (mem_to_wb_diffbus),
-    .difftest_bus              (difftest_bus)
+    .difftest_bus              (difftest_bus),
+    
+    // serial port output
+    .wb_uart_out_valid         (uart_out_valid),
+    .wb_uart_out_char          (uart_out_char)
   );
   
   // General Purpose Registers

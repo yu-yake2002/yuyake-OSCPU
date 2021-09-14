@@ -414,6 +414,7 @@ module SimTop # (
     .clock                          (clock),
     .reset                          (reset),
     
+    // if stage
     .if_rw_valid                   (if_rw_valid),
     .if_rw_ready                   (if_rw_ready),
     .if_r_data                     (if_r_data),
@@ -421,6 +422,7 @@ module SimTop # (
     .if_rw_size                    (if_rw_size),
     .if_rw_resp                    (if_rw_resp),
     
+    // mem stage
     .mem_rw_valid                  (mem_rw_valid),
     .mem_rw_ready                  (mem_rw_ready),
     .mem_rw_req                    (mem_rw_req),
@@ -428,7 +430,11 @@ module SimTop # (
     .mem_w_data                    (mem_w_data),
     .mem_rw_addr                   (mem_rw_addr),
     .mem_rw_size                   (mem_rw_size),
-    .mem_rw_resp                   (mem_rw_resp)
+    .mem_rw_resp                   (mem_rw_resp),
+
+    // serial port output
+    .uart_out_valid                (io_uart_out_valid),
+    .uart_out_char                 (io_uart_out_ch)
   );
 
 endmodule

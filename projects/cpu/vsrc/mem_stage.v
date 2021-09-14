@@ -54,23 +54,30 @@ module mem_stage(
       ex_to_mem_diffbus_r <= ex_to_mem_diffbus;
     end
   end
+
+  // serial port output
+  wire             mem_uart_out_valid;
+  wire [7 : 0]     mem_uart_out_char;
   
   wire [`REG_BUS]  mem_pc;
   wire [31 : 0]    mem_inst;
   
+  // ram control
   wire [`LOAD_BUS] mem_load_info;
   wire [`SAVE_BUS] mem_save_info;
   wire [`REG_BUS]  mem_ram_wr_src;
   wire [`REG_BUS]  mem_addr, mem_csr_rd_data;
   wire             mem_ram_rd_ena;
   wire             mem_ram_wr_ena;
-
+  
+  // wb stage
   wire [2  : 0]    mem_reg_wr_ctrl;
   wire [4  : 0]    mem_reg_wr_addr;
   wire             mem_reg_wr_ena, mem_csr_wr_ena;
 
   assign {
-    mem_excp_bus,    // 326:311
+    mem_uart_out_valid, // 319:319
+    mem_uart_out_char,  // 318:311
 
     mem_pc,          // 310:247
     mem_inst,        // 246:215
@@ -179,9 +186,6 @@ module mem_stage(
 
   wire mem_finish = mem_state == RETN;
   wire [`REG_BUS] mem_ex_data = mem_addr;
-
-  // exception
-  wire [`EXCP_BUS] mem_excp_bus;
   
   // difftest
   wire size_b = mem_rw_size == `SIZE_B;
@@ -238,7 +242,11 @@ module mem_stage(
   };
 
   assign mem_to_wb_bus = {
-    mem_excp_bus,    // 312:297
+    // serial port output
+    mem_uart_out_valid, // 305:305
+    mem_uart_out_char,  // 304:297
+
+    // wb stage
     mem_pc,          // 296:233
     mem_inst,        // 232:201
     mem_reg_wr_ena,  // 200:200

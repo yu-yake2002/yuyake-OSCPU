@@ -75,6 +75,10 @@ module ex_stage(
   end
 
   assign {
+    // serial port output
+    ex_uart_out_valid, // 575:575
+    
+    // exception
     ex_excp_exit,   // 566:566
     ex_excp_bus,    // 565:550
 
@@ -112,6 +116,8 @@ module ex_stage(
     ex_csr_rd_data     // 64 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}};
   
+  wire                   ex_uart_out_valid;
+  wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
   wire [`INST_BUS]       ex_inst;
   wire [`REG_BUS]        ex_pc;
   wire [4 : 0]           ex_rs1_addr, ex_rs2_addr;
@@ -210,7 +216,9 @@ module ex_stage(
   wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
   wire [`REG_BUS] ex_data;
   assign ex_to_mem_bus = {
-    ex_excp_bus,    // 326:311
+    // serial port output
+    ex_uart_out_valid, // 319:319
+    ex_uart_out_char,  // 318:311
 
     ex_pc,          // 310:247
     ex_inst,        // 246:215
