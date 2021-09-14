@@ -100,11 +100,11 @@ module excp_handler (
   );
   
   wire [63 : 8] mstatus_p1 = mstatus_rd_data[63 : 8];
-  wire mstatus_mpie = mstatus_rd_data[7];
+  wire mstatus_mpie = mstatus_rd_data[7];  // MPIE
   wire [6 : 4] mstatus_p2 = mstatus_rd_data[6 : 4];
-  wire mstatus_mie = mstatus_rd_data[3];
+  wire mstatus_mie = mstatus_rd_data[3];   // MIE
   wire [2 : 0] mstatus_p3 = mstatus_rd_data[2 : 0];
-  wire [`REG_BUS] mstatus_excp_enter = {mstatus_p1, mstatus_mie, mstatus_p2, 1'b0, mstatus_p3};
+  wire [`REG_BUS] mstatus_excp_enter = mstatus_mie ? {mstatus_p1, mstatus_mie, mstatus_p2, 1'b0, mstatus_p3} : mstatus_rd_data;
   wire [`REG_BUS] mstatus_excp_exit = {mstatus_p1, 1'b1, mstatus_p2, mstatus_mpie, mstatus_p3};
 
   assign mstatus_wr_data = (
