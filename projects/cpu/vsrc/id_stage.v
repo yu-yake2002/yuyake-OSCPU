@@ -300,7 +300,7 @@ module id_stage(
                             | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
                             | inst_putch);
   assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
-  
+  assign csr_rd_ena = csr_vld;
   
   wire [4 : 0] reg_wr_addr = (reg_wr_ena == 1'b1) ? rd_addr : 0;
   
