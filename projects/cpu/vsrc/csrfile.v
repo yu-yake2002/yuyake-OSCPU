@@ -172,7 +172,7 @@ module csrfile(
       csr_mepc <= `ZERO_WORD;
     end
     else if (excp_enter) begin
-      csr_mtvec <=  mepc_wr_data;
+      csr_mepc <=  mepc_wr_data;
     end
     else if (mepc_wr_ena) begin
       csr_mepc <= csr_wr_data;
