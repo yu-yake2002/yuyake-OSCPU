@@ -297,23 +297,23 @@ module csrfile(
   wire sel_mhartid= (csr_rd_addr == 12'hf14);
   wire mhartid_rd_ena = (csr_rd_ena & sel_mhartid);
   wire [`REG_BUS] csr_mhartid = `ZERO_WORD;
-  wire [`REG_BUS] mhart_rd_data = csr_mhartid;
+  wire [`REG_BUS] mhartid_rd_data = csr_mhartid;
 
   assign csr_rd_data = {64{~rst}} & (
-      ({64{mstatus_rd_ena}}   & csr_mstatus)
-    | ({64{misa_rd_ena}}      & csr_misa)
-    | ({64{mie_rd_ena}}       & csr_mie)
-    | ({64{mtvec_rd_ena}}     & csr_mtvec)
-    | ({64{mscratch_rd_ena}}  & csr_mscratch)
-    | ({64{mepc_rd_ena}}      & csr_mepc)
-    | ({64{mcause_rd_ena}}    & csr_mcause)
-    | ({64{mtval_rd_ena}}     & csr_mtval)
-    | ({64{mip_rd_ena}}       & csr_mip)
-    | ({64{mcycle_rd_ena}}    & csr_mcycle)
-    | ({64{mvendorid_rd_ena}} & csr_mvendorid)
-    | ({64{marchid_rd_ena}}   & csr_marchid)
-    | ({64{mimpid_rd_ena}}    & csr_mimpid)
-    | ({64{mhartid_rd_ena}}   & csr_mhartid)
+      ({64{mstatus_rd_ena}}   & mstatus_rd_data)
+    | ({64{misa_rd_ena}}      & misa_rd_data)
+    | ({64{mie_rd_ena}}       & mie_rd_data)
+    | ({64{mtvec_rd_ena}}     & mtvec_rd_data)
+    | ({64{mscratch_rd_ena}}  & mscratch_rd_data)
+    | ({64{mepc_rd_ena}}      & mepc_rd_data)
+    | ({64{mcause_rd_ena}}    & mcause_rd_data)
+    | ({64{mtval_rd_ena}}     & mtval_rd_data)
+    | ({64{mip_rd_ena}}       & mip_rd_data)
+    | ({64{mcycle_rd_ena}}    & mcycle_rd_data)
+    | ({64{mvendorid_rd_ena}} & mvendorid_rd_data)
+    | ({64{marchid_rd_ena}}   & marchid_rd_data)
+    | ({64{mimpid_rd_ena}}    & mimpid_rd_data)
+    | ({64{mhartid_rd_ena}}   & mhartid_rd_data)
   );
 
   assign csr_to_ex_diffbus = {
