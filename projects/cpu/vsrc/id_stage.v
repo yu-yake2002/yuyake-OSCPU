@@ -124,7 +124,7 @@ module id_stage(
   // decode imm12
   wire imm12_000 = (immI == 12'h000);
   wire imm12_001 = (immI == 12'h001);
-  wire imm12_102 = (immI == 12'h102);
+  wire imm12_302 = (immI == 12'h302);
   
   // decode type
   wire inst_i_load        = (opcode == 7'h03);
@@ -243,7 +243,7 @@ module id_stage(
   // exception
   wire inst_ecall   = inst_i_excp    & imm12_000;
   wire inst_ebreak  = inst_i_excp    & imm12_001;
-  wire inst_mret    = inst_i_excp    & imm12_102;
+  wire inst_mret    = inst_i_excp    & imm12_302;
   wire excp_vld     = inst_ecall | inst_ebreak | inst_mret;
   
   // csr
