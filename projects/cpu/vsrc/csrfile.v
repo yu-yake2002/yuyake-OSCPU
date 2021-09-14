@@ -36,6 +36,12 @@ module csrfile(
     mtval_wr_data,
     mstatus_wr_data
   } = csr_excp_wr_bus;
+
+  assign {
+    mstatus_rd_data,
+    mtvec_rd_data,
+    mepc_rd_data
+  } = csr_excp_rd_bus;
   
   wire excp_wr = excp_enter | excp_exit;
 
