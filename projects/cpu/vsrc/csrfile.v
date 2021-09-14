@@ -31,10 +31,10 @@ module csrfile(
   
   wire [`REG_BUS] mstatus_wr_data, mepc_wr_data, mcause_wr_data, mtval_wr_data;
   assign {
-    mstatus_wr_data,
-    mepc_wr_data,
     mcause_wr_data,
-    mtval_wr_data
+    mepc_wr_data,
+    mtval_wr_data,
+    mstatus_wr_data
   } = csr_excp_wr_bus;
   
   wire excp_wr = excp_enter | excp_exit;
