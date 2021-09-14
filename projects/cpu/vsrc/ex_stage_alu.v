@@ -102,7 +102,7 @@ module ex_stage_alu(
   wire [`REG_BUS] or_res  = op1 | op2;
   wire [`REG_BUS] and_res = op1 & op2;
   wire [`REG_BUS] andn_res = ~op1 & op2;
-  wire [`REG_BUS] wri_res = op2;
+  wire [`REG_BUS] wri_res = op1;
 
   wire [`REG_BUS] temp_output = {64{~rst}} & ( 
                       ({64{op_sll}}    & sll_res)
