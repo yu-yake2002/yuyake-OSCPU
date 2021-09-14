@@ -90,7 +90,7 @@ module id_stage(
   wire [5  : 0] func6  = id_inst[31 : 26];
   wire [6  : 0] func7  = id_inst[31 : 25];
   
-  assign rs1_addr = {5{rs1_r_ena}} & id_inst[19 : 15];
+  assign rs1_addr = inst_putch ? 5'b01010 : {5{rs1_r_ena}} & id_inst[19 : 15];
   assign rs2_addr = {5{rs2_r_ena}} & id_inst[24 : 20];
   wire [11 : 0] id_csr_addr = id_inst[31 : 20];
   assign csr_rd_addr = id_csr_addr;
