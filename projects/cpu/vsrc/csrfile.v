@@ -18,7 +18,7 @@ module csrfile(
   input wire [`REG_BUS]                   csr_wr_data,
 
   // exception
-  input wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
+  output wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
   input wire [`EXCP_WR_WIDTH-1:0]         csr_excp_wr_bus,
   
   // exception read and write
@@ -37,11 +37,11 @@ module csrfile(
     mstatus_wr_data
   } = csr_excp_wr_bus;
 
-  assign {
-    mstatus_rd_data,
-    mtvec_rd_data,
-    mepc_rd_data
-  } = csr_excp_rd_bus;
+  assign csr_excp_rd_bus = {
+    csr_mstatus,
+    csr_mtvec,
+    csr_mepc
+  };
   
   wire excp_wr = excp_enter | excp_exit;
 
