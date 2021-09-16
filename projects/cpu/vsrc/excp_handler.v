@@ -36,19 +36,27 @@ module excp_handler (
   };
 
   // from CSRs
-  wire [`REG_BUS] mstatus_rd_data, mtvec_rd_data, mepc_rd_data;
+  wire [`REG_BUS] mstatus_rd_data, mtvec_rd_data, mepc_rd_data, mie_rd_data, mip_rd_data;
   assign {
-    mstatus_rd_data,  // 191:128
-    mtvec_rd_data,    // 127:64
-    mepc_rd_data      // 63 :0
+    mstatus_rd_data,
+    mtvec_rd_data,
+    mepc_rd_data,
+    mip_rd_data,
+    mie_rd_data
   } = csr_excp_rd_bus;
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = |itrp_info;
+  wire sp_itrp_ena = (
+       mstatus_rd_data[3] 
+    && mie_rd_data[7]
+    && mip_rd_data[7]
+    && (|itrp_info)
+  );
+
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
   
-  // generate mcause
+  /* ----------- Decode ----------- */
   // decode machine interruption
   wire soft_itrp = itrp_info[`SOFT_ITRP];
   wire timer_itrp = itrp_info[`TIMER_ITRP];
@@ -88,23 +96,25 @@ module excp_handler (
   wire inst_acc_fault = excp_inst_misal | excp_inst_acc | excp_inst_page ;
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
+  assign ex_flush = (|itrp_info);
 
+  /* -----------Write CSRs----------- */
+  // write mcause
   assign mcause_wr_data = { sp_itrp_ena ? 1'b1 : 1'b0,
     sp_itrp_ena ? itrp_idx : excp_idx
   };
-  // TODO: interruption should have higher priority here
   
-  assign mepc_wr_data = (
-      ({64{sp_itrp_ena}} & now_pc + 4)
-    | ({64{sp_excp_ena}} & now_pc)
-  );
-
+  // write mepc
+  assign mepc_wr_data = now_pc;
+  
+  // write mtval
   assign mtval_wr_data = (
       ({64{inst_acc_fault}} & now_pc)
     | ({64{excp_ilg_inst}}  & {32'b0, now_inst})
     | ({64{mem_acc_fault}}  & mem_addr)
   );
   
+  // write mstatus
   wire [63 : 8] mstatus_p1 = mstatus_rd_data[63 : 8];
   wire mstatus_mpie = mstatus_rd_data[7];  // MPIE
   wire [6 : 4] mstatus_p2 = mstatus_rd_data[6 : 4];
@@ -112,12 +122,13 @@ module excp_handler (
   wire [2 : 0] mstatus_p3 = mstatus_rd_data[2 : 0];
   wire [`REG_BUS] mstatus_excp_enter = mstatus_mie ? {mstatus_p1, mstatus_mie, mstatus_p2, 1'b0, mstatus_p3} : mstatus_rd_data;
   wire [`REG_BUS] mstatus_excp_exit = {mstatus_p1, 1'b1, mstatus_p2, mstatus_mpie, mstatus_p3};
-
   assign mstatus_wr_data = (
       ({64{excp_enter}} & mstatus_excp_enter)
     | ({64{excp_exit}} & mstatus_excp_exit)
   );
 
+  /* -----------Jump control----------- */
+  // load mtvec
   wire [1  : 0] mtvec_mode = mtvec_rd_data[1  : 0];
   wire mtvec_mode0 = (mtvec_mode == 2'b0);
   wire mtvec_mode1 = (mtvec_mode == 2'b1);
@@ -133,6 +144,7 @@ module excp_handler (
   assign excp_jmp_ena = excp_enter | excp_exit;
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
   
+  /* -----------Difftest Control-----------*/
   assign itrp_NO = itrp_idx [31:0];
   assign excp_NO = excp_idx [31:0];
 endmodule

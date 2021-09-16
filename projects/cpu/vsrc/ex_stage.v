@@ -62,7 +62,7 @@ module ex_stage(
   wire bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
-  assign ex_to_mem_valid = ex_valid && ex_ready_go;
+  assign ex_to_mem_valid = ex_valid && ex_ready_go && ~ex_flush;
   
   always @(posedge clk) begin
     if (rst) begin
@@ -70,6 +70,9 @@ module ex_stage(
     end
     else if (ex_allowin) begin
       ex_valid <= id_to_ex_valid;
+    end
+    else if (ex_flush) begin
+      ex_valid <= 1'b0;
     end
 
     if (id_to_ex_valid && ex_allowin) begin
@@ -118,7 +121,7 @@ module ex_stage(
     ex_csr_wr_ena,  // 76 :76
     ex_csr_wr_addr, // 75 :64
     ex_csr_rd_data  // 64 :0
-  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}};
+  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}} & {`ID_TO_EX_WIDTH{ex_flush}};
   
   wire                   ex_uart_out_valid;
   wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
@@ -159,14 +162,14 @@ module ex_stage(
     .rs1_forward         (rs1_forward),
     .rs2_forward         (rs2_forward),
 
-    .hazard(hazard)
+    .hazard              (hazard)
   );
   
-  assign                    excp_exit = ex_excp_exit;
-  assign                    excp_enter = ex_excp_enter;
+  assign                 excp_exit = ex_excp_exit;
+  assign                 excp_enter = ex_excp_enter;
 
-  wire [`EXCP_BUS]          ex_excp_bus;
-  wire                      ex_excp_exit, ex_excp_enter;
+  wire [`EXCP_BUS]       ex_excp_bus;
+  wire                   ex_excp_exit, ex_excp_enter;
   
   excp_handler Excp_handler(
     .excp_info           (ex_excp_bus),

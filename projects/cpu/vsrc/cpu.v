@@ -40,6 +40,7 @@ module cpu(
   // pipeline control
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
+  wire ex_to_mem_handshake;
   wire [`IF_TO_ID_WIDTH-1:0]     if_to_id_bus;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
@@ -184,6 +185,8 @@ module cpu(
     .clk                       (clock),
     .rst                       (reset),
     
+    .excp_wr_ena               (ex_to_mem_handshake),
+
     // read: id stage
     .csr_rd_ena                (csr_rd_ena),
     .csr_rd_addr               (csr_rd_addr),
@@ -213,6 +216,7 @@ module cpu(
     .ex_to_mem_valid           (ex_to_mem_valid),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
+    .ex_to_mem_handshake       (ex_to_mem_handshake),
 
     .mem_to_wb_valid           (mem_to_wb_valid),
     .mem_to_wb_bus             (mem_to_wb_bus),

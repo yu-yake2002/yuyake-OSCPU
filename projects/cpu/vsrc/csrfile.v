@@ -6,7 +6,9 @@
 module csrfile(
   input wire                              clk,
   input wire                              rst,
-
+  
+  input wire                              excp_wr_ena,
+  
   // id stage
   input wire                              csr_rd_ena,
   input wire [11 : 0]                     csr_rd_addr,
@@ -16,15 +18,15 @@ module csrfile(
   input wire                              csr_wr_ena,
   input wire [11 : 0]                     csr_wr_addr,
   input wire [`REG_BUS]                   csr_wr_data,
-
+  
   // exception
-  output wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
+  output wire [`EXCP_RD_WIDTH-1:0]        csr_excp_rd_bus,
   input wire [`EXCP_WR_WIDTH-1:0]         csr_excp_wr_bus,
   
   // exception read and write
   input wire                              excp_enter,
   input wire                              excp_exit,
-
+  
   // difftest bus
   output wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus
   );
@@ -40,10 +42,12 @@ module csrfile(
   assign csr_excp_rd_bus = {
     csr_mstatus,
     csr_mtvec,
-    csr_mepc
+    csr_mepc,
+    csr_mip,
+    csr_mie
   };
   
-  wire excp_wr = excp_enter | excp_exit;
+  wire excp_wr = (excp_enter || excp_exit) && excp_wr_ena;
 
   // 0x300 Machine Status Register
   wire sel_rd_mstatus = (csr_rd_addr == 12'h300);

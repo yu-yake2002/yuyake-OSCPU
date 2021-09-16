@@ -8,6 +8,7 @@ module mem_stage(
   input wire                               ex_to_mem_valid,
   input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
   output wire                              mem_allowin,
+  output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
@@ -40,7 +41,8 @@ module mem_stage(
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
-
+  assign ex_to_mem_handshake = ex_to_mem_valid && mem_allowin;
+  
   always @(posedge clk) begin
     if (rst) begin
       mem_valid <= 1'b0;
