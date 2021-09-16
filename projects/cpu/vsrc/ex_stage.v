@@ -55,6 +55,7 @@ module ex_stage(
   reg ex_valid;
   wire ex_ready_go;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
+  reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
   wire ex_flush;
   wire ex_done = ~hazard;
@@ -73,6 +74,7 @@ module ex_stage(
 
     if (id_to_ex_valid && ex_allowin) begin
       id_to_ex_bus_r <= id_to_ex_bus;
+      id_to_ex_diffbus_r <= id_to_ex_diffbus;
     end
   end
 
@@ -267,7 +269,7 @@ module ex_stage(
   
   wire [`INST_BUS] itrp_NO, excp_NO;
   assign ex_to_mem_diffbus = {
-    id_to_ex_diffbus,
+    id_to_ex_diffbus_r,
 
     csr_to_ex_diffbus,
     itrp_NO,
