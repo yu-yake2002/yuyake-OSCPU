@@ -13,7 +13,7 @@ module wb_stage (
   output wire                             wb_allowin,
   
   output wire [`WB_FORWARD_WIDTH-1:0]     wb_forward_bus,
-
+  
   // regfile control
   output wire                             reg_wr_ena,
   output wire [4 : 0]                     reg_wr_addr,

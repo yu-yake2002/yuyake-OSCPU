@@ -140,21 +140,21 @@ module cpu(
     .csr_wr_ena                (csr_wr_ena),
     .csr_wr_addr               (csr_wr_addr),
     .csr_wr_data               (csr_wr_data),
-
+    
     // exception
     .excp_enter                (excp_enter),
     .excp_exit                 (excp_exit),
     .csr_excp_rd_bus           (csr_excp_rd_bus),
     .csr_excp_wr_bus           (csr_excp_wr_bus),
     .clint_interupt_bus        (clint_interupt_bus),
-
-    .rs1_r_ena                 (rs1_r_ena),
-    .rs1_addr                  (rs1_r_addr),
-    .rs2_r_ena                 (rs2_r_ena),
-    .rs2_addr                  (rs2_r_addr),
-    .rs1_data                  (r_data1),
-    .rs2_data                  (r_data2),
-
+    
+    .ex_rs1_r_ena              (rs1_r_ena),
+    .ex_rs1_addr               (rs1_r_addr),
+    .ex_rs2_r_ena              (rs2_r_ena),
+    .ex_rs2_addr               (rs2_r_addr),
+    .rs1_data               (r_data1),
+    .rs2_data               (r_data2),
+    
     .csr_to_ex_diffbus         (csr_to_ex_diffbus),
     .ex_to_mem_diffbus         (ex_to_mem_diffbus)
   );
@@ -298,16 +298,20 @@ module cpu(
   reg [`REG_BUS]   cmt_pc;
   reg [`INST_BUS]  cmt_inst;
   reg              cmt_valid, cmt_skip;
+  reg [`INST_BUS]  cmt_itrp_NO, cmt_excp_NO;
   reg [`REG_BUS]   cycleCnt, instrCnt;
   
   wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
   wire [`INST_BUS] wb_inst;
   wire             wb_commit, wb_w_ena, wb_r_ena;
   wire [7 : 0]     wb_w_mask;
+  wire [`INST_BUS] wb_itrp_NO, wb_excp_NO;
   wire [`CSR_TO_EX_DIFF_WIDTH-1:0] wb_csr_diff;
   assign {
     // ex stage
     wb_csr_diff,
+    wb_itrp_NO,
+    wb_excp_NO,
     
     // mem stage
     wb_rw_addr,
@@ -324,7 +328,7 @@ module cpu(
 
   always @(posedge clock) begin
     if (reset) begin
-      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_valid, cmt_skip, cycleCnt, instrCnt} <= 0;
+      {cmt_wen, cmt_wdest, cmt_wdata, cmt_pc, cmt_inst, cmt_valid, cmt_skip, cycleCnt, instrCnt, cmt_itrp_NO, cmt_excp_NO} <= 0;
     end
     else begin
       cmt_wen <= reg_wr_ena;
@@ -338,6 +342,8 @@ module cpu(
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
       cmt_skip <= (wb_inst[6 : 0] == 7'h7b) || wb_r_ena;
+      cmt_itrp_NO <= wb_itrp_NO;
+      cmt_excp_NO <= wb_itrp_NO;
       
       cycleCnt <= cycleCnt + 1;
       instrCnt <= instrCnt + wb_commit;
@@ -359,6 +365,15 @@ module cpu(
     .wdata              (cmt_wdata)
   );
   
+  
+  DifftestArchEvent DifftestArchEvent(
+    .clock              (clock),
+    .coreid             (0),
+    .intrNO             (cmt_itrp_NO),
+    .cause              (cmt_excp_NO),
+    .exceptionPC        (cmt_pc)
+  );
+
   DifftestArchIntRegState DifftestArchIntRegState (
     .clock              (clock),
     .coreid             (0),

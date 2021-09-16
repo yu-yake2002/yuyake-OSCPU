@@ -17,7 +17,13 @@ module excp_handler (
   
   // to if_stage
   output wire                        excp_jmp_ena,
-  output wire [`REG_BUS]             excp_jmp_pc
+  output wire [`REG_BUS]             excp_jmp_pc,
+  // to ex_stage
+  output wire                        ex_flush,
+
+  // to difftest
+  output wire [`INST_BUS]            itrp_NO,
+  output wire [`INST_BUS]            excp_NO
   );
   
   // to CSRs
@@ -126,4 +132,7 @@ module excp_handler (
   wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
+  
+  assign itrp_NO = itrp_idx [31:0];
+  assign excp_NO = excp_idx [31:0];
 endmodule

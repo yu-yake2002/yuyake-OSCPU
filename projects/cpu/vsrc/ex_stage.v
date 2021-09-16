@@ -34,10 +34,10 @@ module ex_stage(
   output wire [`EXCP_WR_WIDTH-1:0]        csr_excp_wr_bus,
   input wire [`ITRP_BUS]                  clint_interupt_bus,
 
-  output wire                             rs1_r_ena,
-  output wire [4 : 0]                     rs1_addr,
-  output wire                             rs2_r_ena,
-  output wire [4 : 0]                     rs2_addr,
+  output wire                             ex_rs1_r_ena,
+  output wire [4 : 0]                     ex_rs1_addr,
+  output wire                             ex_rs2_r_ena,
+  output wire [4 : 0]                     ex_rs2_addr,
   input wire [`REG_BUS]                   rs1_data,
   input wire [`REG_BUS]                   rs2_data,
 
@@ -47,16 +47,15 @@ module ex_stage(
   );
 
   // read GPRs
-  assign rs1_r_ena = 1'b1;
-  assign rs2_r_ena = 1'b1;
-  assign rs1_addr = ex_rs1_addr;
-  assign rs2_addr = ex_rs2_addr;
+  assign ex_rs1_r_ena = 1'b1;
+  assign ex_rs2_r_ena = 1'b1;
   
   // pipeline control
   reg ex_valid;
   wire ex_ready_go;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   
+  wire ex_flush;
   wire ex_done = ~hazard;
   wire bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
@@ -115,14 +114,13 @@ module ex_stage(
     // -> csr
     ex_csr_wr_ena,  // 76 :76
     ex_csr_wr_addr, // 75 :64
-    ex_csr_rd_data     // 64 :0
+    ex_csr_rd_data  // 64 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}};
   
   wire                   ex_uart_out_valid;
   wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
   wire [`INST_BUS]       ex_inst;
   wire [`REG_BUS]        ex_pc;
-  wire [4 : 0]           ex_rs1_addr, ex_rs2_addr;
   wire [`REG_BUS]        ex_op1, ex_op2;
   wire                   ex_use_rs1, ex_use_rs2;
   wire [`REG_BUS]        ex_rs1_data, ex_rs2_data;
@@ -175,11 +173,21 @@ module ex_stage(
     .mem_addr            (ex_data),
     .excp_exit           (ex_excp_exit),
     .excp_enter          (ex_excp_enter),
-
+    
+    // to CSRs
     .csr_excp_rd_bus     (csr_excp_rd_bus),
     .csr_excp_wr_bus     (csr_excp_wr_bus),
+    
+    // to if stage
     .excp_jmp_ena        (excp_jmp_ena),
-    .excp_jmp_pc         (excp_jmp_pc)
+    .excp_jmp_pc         (excp_jmp_pc),
+    
+    // to ex stage
+    .ex_flush            (ex_flush),
+    
+    // to difftest
+    .itrp_NO             (itrp_NO),
+    .excp_NO             (excp_NO)
   );
   
   wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
@@ -245,7 +253,7 @@ module ex_stage(
   wire               ex_bj_ena, excp_jmp_ena;
   wire               ex_bj_valid; // 1: not finish the computation of branch
   
-  assign             ex_bj_valid = ~(|ex_bj_info) || ex_done;
+  assign ex_bj_valid = ~(|ex_bj_info) || ex_done;
   assign bj_ctrl_bus = {
     excp_jmp_ena ? excp_jmp_pc : ex_bj_pc,
     ex_bj_ena | excp_jmp_ena,
@@ -255,7 +263,13 @@ module ex_stage(
   assign csr_wr_ena  = ex_csr_wr_ena;
   assign csr_wr_addr = ex_csr_wr_addr;
   assign csr_wr_data = ex_data;
+  
+  wire [`INST_BUS] itrp_NO, excp_NO;
+  assign ex_to_mem_diffbus = {
+    csr_to_ex_diffbus,
 
-  assign ex_to_mem_diffbus = csr_to_ex_diffbus;
+    itrp_NO,
+    excp_NO
+  };
 
 endmodule
