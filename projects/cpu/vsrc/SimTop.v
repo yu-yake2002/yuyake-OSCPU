@@ -72,7 +72,7 @@ module SimTop # (
   input  [`AXI_USER_WIDTH-1:0]        `AXI_TOP_INTERFACE(r_bits_user)
 );
 
-  axi_2x1 axi_2x1(
+  axi_2x2 axi_2x2(
     .clock                          (clock),
     .reset                          (reset),
     
@@ -173,100 +173,148 @@ module SimTop # (
     .r_user_o_1                     (if_axi_r_user),
     
     // TOP INTERFACE
-    .top_aw_ready_i                 (`AXI_TOP_INTERFACE(aw_ready)),
-    .top_aw_valid_o                 (`AXI_TOP_INTERFACE(aw_valid)),
-    .top_aw_addr_o                  (`AXI_TOP_INTERFACE(aw_bits_addr)),
-    .top_aw_prot_o                  (`AXI_TOP_INTERFACE(aw_bits_prot)),
-    .top_aw_id_o                    (`AXI_TOP_INTERFACE(aw_bits_id)),
-    .top_aw_user_o                  (`AXI_TOP_INTERFACE(aw_bits_user)),
-    .top_aw_len_o                   (`AXI_TOP_INTERFACE(aw_bits_len)),
-    .top_aw_size_o                  (`AXI_TOP_INTERFACE(aw_bits_size)),
-    .top_aw_burst_o                 (`AXI_TOP_INTERFACE(aw_bits_burst)),
-    .top_aw_lock_o                  (`AXI_TOP_INTERFACE(aw_bits_lock)),
-    .top_aw_cache_o                 (`AXI_TOP_INTERFACE(aw_bits_cache)),
-    .top_aw_qos_o                   (`AXI_TOP_INTERFACE(aw_bits_qos)),
+    .ram_aw_ready_i                 (`AXI_TOP_INTERFACE(aw_ready)),
+    .ram_aw_valid_o                 (`AXI_TOP_INTERFACE(aw_valid)),
+    .ram_aw_addr_o                  (`AXI_TOP_INTERFACE(aw_bits_addr)),
+    .ram_aw_prot_o                  (`AXI_TOP_INTERFACE(aw_bits_prot)),
+    .ram_aw_id_o                    (`AXI_TOP_INTERFACE(aw_bits_id)),
+    .ram_aw_user_o                  (`AXI_TOP_INTERFACE(aw_bits_user)),
+    .ram_aw_len_o                   (`AXI_TOP_INTERFACE(aw_bits_len)),
+    .ram_aw_size_o                  (`AXI_TOP_INTERFACE(aw_bits_size)),
+    .ram_aw_burst_o                 (`AXI_TOP_INTERFACE(aw_bits_burst)),
+    .ram_aw_lock_o                  (`AXI_TOP_INTERFACE(aw_bits_lock)),
+    .ram_aw_cache_o                 (`AXI_TOP_INTERFACE(aw_bits_cache)),
+    .ram_aw_qos_o                   (`AXI_TOP_INTERFACE(aw_bits_qos)),
 
-    .top_w_ready_i                  (`AXI_TOP_INTERFACE(w_ready)),
-    .top_w_valid_o                  (`AXI_TOP_INTERFACE(w_valid)),
-    .top_w_data_o                   (`AXI_TOP_INTERFACE(w_bits_data)[0]),
-    .top_w_strb_o                   (`AXI_TOP_INTERFACE(w_bits_strb)),
-    .top_w_last_o                   (`AXI_TOP_INTERFACE(w_bits_last)),
-    .top_w_id_o                     (`AXI_TOP_INTERFACE(w_bits_id)),
+    .ram_w_ready_i                  (`AXI_TOP_INTERFACE(w_ready)),
+    .ram_w_valid_o                  (`AXI_TOP_INTERFACE(w_valid)),
+    .ram_w_data_o                   (`AXI_TOP_INTERFACE(w_bits_data)[0]),
+    .ram_w_strb_o                   (`AXI_TOP_INTERFACE(w_bits_strb)),
+    .ram_w_last_o                   (`AXI_TOP_INTERFACE(w_bits_last)),
+    .ram_w_id_o                     (`AXI_TOP_INTERFACE(w_bits_id)),
   
-    .top_b_ready_o                  (`AXI_TOP_INTERFACE(b_ready)),
-    .top_b_valid_i                  (`AXI_TOP_INTERFACE(b_valid)),
-    .top_b_resp_i                   (`AXI_TOP_INTERFACE(b_bits_resp)),
-    .top_b_id_i                     (`AXI_TOP_INTERFACE(b_bits_id)),
-    .top_b_user_i                   (`AXI_TOP_INTERFACE(b_bits_user)),
+    .ram_b_ready_o                  (`AXI_TOP_INTERFACE(b_ready)),
+    .ram_b_valid_i                  (`AXI_TOP_INTERFACE(b_valid)),
+    .ram_b_resp_i                   (`AXI_TOP_INTERFACE(b_bits_resp)),
+    .ram_b_id_i                     (`AXI_TOP_INTERFACE(b_bits_id)),
+    .ram_b_user_i                   (`AXI_TOP_INTERFACE(b_bits_user)),
   
-    .top_ar_ready_i                 (`AXI_TOP_INTERFACE(ar_ready)),
-    .top_ar_valid_o                 (`AXI_TOP_INTERFACE(ar_valid)),
-    .top_ar_addr_o                  (`AXI_TOP_INTERFACE(ar_bits_addr)),
-    .top_ar_prot_o                  (`AXI_TOP_INTERFACE(ar_bits_prot)),
-    .top_ar_id_o                    (`AXI_TOP_INTERFACE(ar_bits_id)),
-    .top_ar_user_o                  (`AXI_TOP_INTERFACE(ar_bits_user)),
-    .top_ar_len_o                   (`AXI_TOP_INTERFACE(ar_bits_len)),
-    .top_ar_size_o                  (`AXI_TOP_INTERFACE(ar_bits_size)),
-    .top_ar_burst_o                 (`AXI_TOP_INTERFACE(ar_bits_burst)),
-    .top_ar_lock_o                  (`AXI_TOP_INTERFACE(ar_bits_lock)),
-    .top_ar_cache_o                 (`AXI_TOP_INTERFACE(ar_bits_cache)),
-    .top_ar_qos_o                   (`AXI_TOP_INTERFACE(ar_bits_qos)),
+    .ram_ar_ready_i                 (`AXI_TOP_INTERFACE(ar_ready)),
+    .ram_ar_valid_o                 (`AXI_TOP_INTERFACE(ar_valid)),
+    .ram_ar_addr_o                  (`AXI_TOP_INTERFACE(ar_bits_addr)),
+    .ram_ar_prot_o                  (`AXI_TOP_INTERFACE(ar_bits_prot)),
+    .ram_ar_id_o                    (`AXI_TOP_INTERFACE(ar_bits_id)),
+    .ram_ar_user_o                  (`AXI_TOP_INTERFACE(ar_bits_user)),
+    .ram_ar_len_o                   (`AXI_TOP_INTERFACE(ar_bits_len)),
+    .ram_ar_size_o                  (`AXI_TOP_INTERFACE(ar_bits_size)),
+    .ram_ar_burst_o                 (`AXI_TOP_INTERFACE(ar_bits_burst)),
+    .ram_ar_lock_o                  (`AXI_TOP_INTERFACE(ar_bits_lock)),
+    .ram_ar_cache_o                 (`AXI_TOP_INTERFACE(ar_bits_cache)),
+    .ram_ar_qos_o                   (`AXI_TOP_INTERFACE(ar_bits_qos)),
   
-    .top_r_ready_o                  (`AXI_TOP_INTERFACE(r_ready)),
-    .top_r_valid_i                  (`AXI_TOP_INTERFACE(r_valid)),
-    .top_r_resp_i                   (`AXI_TOP_INTERFACE(r_bits_resp)),
-    .top_r_data_i                   (`AXI_TOP_INTERFACE(r_bits_data)[0]),
-    .top_r_last_i                   (`AXI_TOP_INTERFACE(r_bits_last)),
-    .top_r_id_i                     (`AXI_TOP_INTERFACE(r_bits_id)),
-    .top_r_user_i                   (`AXI_TOP_INTERFACE(r_bits_user))
+    .ram_r_ready_o                  (`AXI_TOP_INTERFACE(r_ready)),
+    .ram_r_valid_i                  (`AXI_TOP_INTERFACE(r_valid)),
+    .ram_r_resp_i                   (`AXI_TOP_INTERFACE(r_bits_resp)),
+    .ram_r_data_i                   (`AXI_TOP_INTERFACE(r_bits_data)[0]),
+    .ram_r_last_i                   (`AXI_TOP_INTERFACE(r_bits_last)),
+    .ram_r_id_i                     (`AXI_TOP_INTERFACE(r_bits_id)),
+    .ram_r_user_i                   (`AXI_TOP_INTERFACE(r_bits_user)),
+
+    // CLINT
+    .cli_aw_ready_i                 (cli_aw_ready),
+    .cli_aw_valid_o                 (cli_aw_valid),
+    .cli_aw_addr_o                  (cli_aw_addr),
+    .cli_aw_prot_o                  (cli_aw_prot),
+    .cli_aw_id_o                    (cli_aw_id),
+    .cli_aw_user_o                  (cli_aw_user),
+    .cli_aw_len_o                   (cli_aw_len),
+    .cli_aw_size_o                  (cli_aw_size),
+    .cli_aw_burst_o                 (cli_aw_burst),
+    .cli_aw_lock_o                  (cli_aw_lock),
+    .cli_aw_cache_o                 (cli_aw_cache),
+    .cli_aw_qos_o                   (cli_aw_qos),
+
+    .cli_w_ready_i                  (cli_w_ready),
+    .cli_w_valid_o                  (cli_w_valid),
+    .cli_w_data_o                   (cli_w_data),
+    .cli_w_strb_o                   (cli_w_strb),
+    .cli_w_last_o                   (cli_w_last),
+    .cli_w_id_o                     (cli_w_id),
+  
+    .cli_b_ready_o                  (cli_b_ready),
+    .cli_b_valid_i                  (cli_b_valid),
+    .cli_b_resp_i                   (cli_b_resp),
+    .cli_b_id_i                     (cli_b_id),
+    .cli_b_user_i                   (cli_b_user),
+  
+    .cli_ar_ready_i                 (cli_ar_ready),
+    .cli_ar_valid_o                 (cli_ar_valid),
+    .cli_ar_addr_o                  (cli_ar_addr),
+    .cli_ar_prot_o                  (cli_ar_prot),
+    .cli_ar_id_o                    (cli_ar_id),
+    .cli_ar_user_o                  (cli_ar_user),
+    .cli_ar_len_o                   (cli_ar_len),
+    .cli_ar_size_o                  (cli_ar_size),
+    .cli_ar_burst_o                 (cli_aw_burst),
+    .cli_ar_lock_o                  (cli_ar_lock),
+    .cli_ar_cache_o                 (cli_ar_cache),
+    .cli_ar_qos_o                   (cli_ar_qos),
+  
+    .cli_r_ready_o                  (cli_r_ready),
+    .cli_r_valid_i                  (cli_r_valid),
+    .cli_r_resp_i                   (cli_r_resp),
+    .cli_r_data_i                   (cli_r_data),
+    .cli_r_last_i                   (cli_r_last),
+    .cli_r_id_i                     (cli_r_id),
+    .cli_r_user_i                   (cli_r_user)
   );
   
-  wire                        mem_axi_aw_ready, if_axi_aw_ready;
-  wire                        mem_axi_aw_valid, if_axi_aw_valid;
-  wire [AXI_ADDR_WIDTH-1:0]   mem_axi_aw_addr, if_axi_aw_addr;
-  wire [2:0]                  mem_axi_aw_prot, if_axi_aw_prot;
-  wire [AXI_ID_WIDTH-1:0]     mem_axi_aw_id, if_axi_aw_id;
-  wire [AXI_USER_WIDTH-1:0]   mem_axi_aw_user, if_axi_aw_user;
-  wire [7:0]                  mem_axi_aw_len, if_axi_aw_len;
-  wire [2:0]                  mem_axi_aw_size, if_axi_aw_size;
-  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst;
-  wire                        mem_axi_aw_lock, if_axi_aw_lock;
-  wire [3:0]                  mem_axi_aw_cache, if_axi_aw_cache;
-  wire [3:0]                  mem_axi_aw_qos, if_axi_aw_qos;
+  wire                        mem_axi_aw_ready, if_axi_aw_ready, cli_aw_ready;
+  wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
+  wire [AXI_ADDR_WIDTH-1:0]   mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
+  wire [2:0]                  mem_axi_aw_prot,  if_axi_aw_prot,  cli_aw_prot;
+  wire [AXI_ID_WIDTH-1:0]     mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
+  wire [AXI_USER_WIDTH-1:0]   mem_axi_aw_user,  if_axi_aw_user,  cli_aw_user;
+  wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len,   cli_aw_len;
+  wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
+  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst, cli_aw_burst;
+  wire                        mem_axi_aw_lock,  if_axi_aw_lock,  cli_aw_lock;
+  wire [3:0]                  mem_axi_aw_cache, if_axi_aw_cache, cli_aw_cache;
+  wire [3:0]                  mem_axi_aw_qos,   if_axi_aw_qos,   cli_aw_qos;
+  
+  wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
+  wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
+  wire [AXI_DATA_WIDTH-1:0]   mem_axi_w_data,   if_axi_w_data,   cli_w_data;
+  wire [AXI_DATA_WIDTH/8-1:0] mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
+  wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
+  wire                        mem_axi_w_id,     if_axi_w_id,     cli_w_id;
 
-  wire                        mem_axi_w_ready, if_axi_w_ready;
-  wire                        mem_axi_w_valid, if_axi_w_valid;
-  wire [AXI_DATA_WIDTH-1:0]   mem_axi_w_data, if_axi_w_data;
-  wire [AXI_DATA_WIDTH/8-1:0] mem_axi_w_strb, if_axi_w_strb;
-  wire                        mem_axi_w_last, if_axi_w_last;
-  wire                        mem_axi_w_id, if_axi_w_id;
+  wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
+  wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
+  wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
+  wire [AXI_ID_WIDTH-1:0]     mem_axi_b_id,     if_axi_b_id,     cli_b_id;
+  wire [AXI_USER_WIDTH-1:0]   mem_axi_b_user,   if_axi_b_user,   cli_b_user;
 
-  wire                        mem_axi_b_ready, if_axi_b_ready;
-  wire                        mem_axi_b_valid, if_axi_b_valid;
-  wire [1:0]                  mem_axi_b_resp, if_axi_b_resp;
-  wire [AXI_ID_WIDTH-1:0]     mem_axi_b_id, if_axi_b_id;
-  wire [AXI_USER_WIDTH-1:0]   mem_axi_b_user, if_axi_b_user;
+  wire                        mem_axi_ar_ready, if_axi_ar_ready, cli_ar_ready;
+  wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
+  wire [AXI_ADDR_WIDTH-1:0]   mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
+  wire [2:0]                  mem_axi_ar_prot,  if_axi_ar_prot,  cli_ar_prot;
+  wire [AXI_ID_WIDTH-1:0]     mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
+  wire [AXI_USER_WIDTH-1:0]   mem_axi_ar_user,  if_axi_ar_user,  cli_ar_user;
+  wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len,   cli_ar_len;
+  wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
+  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst, cli_ar_burst;
+  wire                        mem_axi_ar_lock,  if_axi_ar_lock,  cli_ar_lock;
+  wire [3:0]                  mem_axi_ar_cache, if_axi_ar_cache, cli_ar_cache;
+  wire [3:0]                  mem_axi_ar_qos,   if_axi_ar_qos,   cli_ar_qos;
 
-  wire                        mem_axi_ar_ready, if_axi_ar_ready;
-  wire                        mem_axi_ar_valid, if_axi_ar_valid;
-  wire [AXI_ADDR_WIDTH-1:0]   mem_axi_ar_addr, if_axi_ar_addr;
-  wire [2:0]                  mem_axi_ar_prot, if_axi_ar_prot;
-  wire [AXI_ID_WIDTH-1:0]     mem_axi_ar_id, if_axi_ar_id;
-  wire [AXI_USER_WIDTH-1:0]   mem_axi_ar_user, if_axi_ar_user;
-  wire [7:0]                  mem_axi_ar_len, if_axi_ar_len;
-  wire [2:0]                  mem_axi_ar_size, if_axi_ar_size;
-  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst;
-  wire                        mem_axi_ar_lock, if_axi_ar_lock;
-  wire [3:0]                  mem_axi_ar_cache, if_axi_ar_cache;
-  wire [3:0]                  mem_axi_ar_qos, if_axi_ar_qos;
-
-  wire                        mem_axi_r_ready, if_axi_r_ready;
-  wire                        mem_axi_r_valid, if_axi_r_valid;
-  wire [1:0]                  mem_axi_r_resp, if_axi_r_resp;
-  wire [AXI_DATA_WIDTH-1:0]   mem_axi_r_data, if_axi_r_data;
-  wire                        mem_axi_r_last, if_axi_r_last;
-  wire [AXI_ID_WIDTH-1:0]     mem_axi_r_id, if_axi_r_id;
-  wire [AXI_USER_WIDTH-1:0]   mem_axi_r_user, if_axi_r_user;
+  wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
+  wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
+  wire [1:0]                  mem_axi_r_resp,   if_axi_r_resp,   cli_r_resp;
+  wire [AXI_DATA_WIDTH-1:0]   mem_axi_r_data,   if_axi_r_data,   cli_r_data;
+  wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
+  wire [AXI_ID_WIDTH-1:0]     mem_axi_r_id,     if_axi_r_id,     cli_r_id;
+  wire [AXI_USER_WIDTH-1:0]   mem_axi_r_user,   if_axi_r_user,   cli_r_user;
 
   axi_rw mem_axi_rw (
     .clock                          (clock),
@@ -410,6 +458,8 @@ module SimTop # (
   wire [1:0] mem_rw_size;
   wire [1:0] mem_rw_resp;
 
+  wire [`ITRP_BUS] clint_interupt_bus;
+
   cpu u_cpu(
     .clock                          (clock),
     .reset                          (reset),
@@ -434,7 +484,62 @@ module SimTop # (
 
     // serial port output
     .uart_out_valid                (io_uart_out_valid),
-    .uart_out_char                 (io_uart_out_ch)
-  );
+    .uart_out_char                 (io_uart_out_ch),
 
+    .clint_interupt                (clint_interupt_bus)
+  );
+  
+  clint Clint(
+    .clk                           (clock),
+    .rst                           (reset),
+
+    .aw_ready_o                    (cli_aw_ready),
+    .aw_valid_i                    (cli_aw_valid),
+    .aw_addr_i                     (cli_aw_addr),
+    .aw_prot_i                     (cli_aw_prot),
+    .aw_id_i                       (cli_aw_id),
+    .aw_user_i                     (cli_aw_user),
+    .aw_len_i                      (cli_aw_len),
+    .aw_size_i                     (cli_aw_size),
+    .aw_burst_i                    (cli_aw_burst),
+    .aw_lock_i                     (cli_aw_lock),
+    .aw_cache_i                    (cli_aw_cache),
+    .aw_qos_i                      (cli_aw_qos),
+    
+    .w_ready_o                     (cli_w_ready),
+    .w_valid_i                     (cli_w_valid),
+    .w_data_i                      (cli_w_data),
+    .w_strb_i                      (cli_w_strb),
+    .w_last_i                      (cli_w_last),
+    .w_id_i                        (cli_w_id),
+        
+    .b_ready_i                     (cli_b_ready),
+    .b_valid_o                     (cli_b_valid),
+    .b_resp_o                      (cli_b_resp),
+    .b_id_o                        (cli_b_id),
+    .b_user_o                      (cli_b_user),
+
+    .ar_ready_o                    (cli_ar_ready),
+    .ar_valid_i                    (cli_ar_valid),
+    .ar_addr_i                     (cli_ar_addr),
+    .ar_prot_i                     (cli_ar_prot),
+    .ar_id_i                       (cli_ar_id),
+    .ar_user_i                     (cli_ar_user),
+    .ar_len_i                      (cli_ar_len),
+    .ar_size_i                     (cli_ar_size),
+    .ar_burst_i                    (cli_ar_burst),
+    .ar_lock_i                     (cli_ar_lock),
+    .ar_cache_i                    (cli_ar_cache),
+    .ar_qos_i                      (cli_ar_qos),
+        
+    .r_ready_i                     (cli_r_ready),
+    .r_valid_o                     (cli_r_valid),
+    .r_resp_o                      (cli_r_resp),
+    .r_data_o                      (cli_r_data),
+    .r_last_o                      (cli_r_last),
+    .r_id_o                        (cli_r_id),
+    .r_user_o                      (cli_r_user),
+
+    .clint_interupt_bus            (clint_interupt_bus)
+  );
 endmodule

@@ -182,7 +182,6 @@ module axi_rw # (
     end
   end
   
-  
   // ------------------Number of transmission------------------
   reg [7:0] len;
   wire len_reset      = reset | (w_trans & w_state_idle) | (r_trans & r_state_idle);

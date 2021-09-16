@@ -32,7 +32,9 @@ module cpu(
 
   // UART serial port
   output wire                uart_out_valid,
-  output wire [7 : 0]        uart_out_char
+  output wire [7 : 0]        uart_out_char,
+
+  input wire                 clint_interupt
 );
 
   // pipeline control
