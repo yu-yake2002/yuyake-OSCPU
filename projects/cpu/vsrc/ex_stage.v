@@ -42,6 +42,7 @@ module ex_stage(
   input wire [`REG_BUS]                   rs2_data,
 
   // difftest bus
+  input wire [`ID_TO_EX_DIFF_WIDTH-1:0]   id_to_ex_diffbus,
   input wire [`CSR_TO_EX_DIFF_WIDTH-1:0]  csr_to_ex_diffbus,
   output wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus
   );
@@ -266,8 +267,9 @@ module ex_stage(
   
   wire [`INST_BUS] itrp_NO, excp_NO;
   assign ex_to_mem_diffbus = {
-    csr_to_ex_diffbus,
+    id_to_ex_diffbus,
 
+    csr_to_ex_diffbus,
     itrp_NO,
     excp_NO
   };

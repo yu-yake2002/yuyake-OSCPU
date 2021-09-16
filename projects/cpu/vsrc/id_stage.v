@@ -6,22 +6,22 @@
 `include "defines.v"
 
 module id_stage(
-  input wire                        rst,
-  input wire                        clk,
+  input wire                             rst,
+  input wire                             clk,
 
   // pipeline control
-  input wire                        if_to_id_valid,
-  input wire [`IF_TO_ID_WIDTH-1:0]  if_to_id_bus,
-  output wire                       id_allowin,
+  input wire                             if_to_id_valid,
+  input wire [`IF_TO_ID_WIDTH-1:0]       if_to_id_bus,
+  output wire                            id_allowin,
 
-  output wire                       id_to_ex_valid,
-  output wire [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus,
-  input wire                        ex_allowin,
+  output wire                            id_to_ex_valid,
+  output wire [`ID_TO_EX_WIDTH-1:0]      id_to_ex_bus,
+  input wire                             ex_allowin,
 
   // data from regfile and CSRs
 //  input wire [`REG_BUS]             r_data1,
 //  input wire [`REG_BUS]             r_data2,
-  input wire [`REG_BUS]             csr_data,
+  input wire [`REG_BUS]                  csr_data,
   
   // control reg
 //  output wire                       rs1_r_ena,
@@ -30,10 +30,12 @@ module id_stage(
 //  output wire [4 : 0]               rs2_addr,
 
   // control csr
-  output wire                       csr_rd_ena,
-  output wire [11: 0]               csr_rd_addr,
+  output wire                            csr_rd_ena,
+  output wire [11: 0]                    csr_rd_addr,
 
-  input wire [`BJ_CTRL_WIDTH-1:0]   bj_ctrl_bus
+  input wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
+
+  output wire [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus
 );
 
   wire [`REG_BUS] r_data1 = 64'b0;
@@ -423,4 +425,9 @@ module id_stage(
     csr_wr_addr,       // 75 :64
     csr_data           // 64 :0
   };
+  
+  wire id_skip_instr = inst_putch || (csr_vld && csr_rd_addr == 12'hB00) || load_vld;
+  assign id_to_ex_diffbus = (
+    id_skip_instr
+  );
 endmodule

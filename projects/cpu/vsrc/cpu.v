@@ -47,6 +47,7 @@ module cpu(
 
   // difftest bus
   wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
+  wire [`ID_TO_EX_DIFF_WIDTH-1:0]  id_to_ex_diffbus;
   wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus;
   wire [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus;
   wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus;
@@ -112,7 +113,9 @@ module cpu(
     .csr_rd_ena                (csr_rd_ena),
     .csr_rd_addr               (csr_rd_addr),
 
-    .bj_ctrl_bus               (bj_ctrl_bus)
+    .bj_ctrl_bus               (bj_ctrl_bus),
+
+    .id_to_ex_diffbus          (id_to_ex_diffbus)
   );
   
   ex_stage Ex_stage(
@@ -152,9 +155,10 @@ module cpu(
     .ex_rs1_addr               (rs1_r_addr),
     .ex_rs2_r_ena              (rs2_r_ena),
     .ex_rs2_addr               (rs2_r_addr),
-    .rs1_data               (r_data1),
-    .rs2_data               (r_data2),
+    .rs1_data                  (r_data1),
+    .rs2_data                  (r_data2),
     
+    .id_to_ex_diffbus          (id_to_ex_diffbus),
     .csr_to_ex_diffbus         (csr_to_ex_diffbus),
     .ex_to_mem_diffbus         (ex_to_mem_diffbus)
   );
@@ -303,11 +307,13 @@ module cpu(
   
   wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
   wire [`INST_BUS] wb_inst;
-  wire             wb_commit, wb_w_ena, wb_r_ena;
+  wire             wb_commit, wb_w_ena, wb_r_ena, wb_skip;
   wire [7 : 0]     wb_w_mask;
   wire [`INST_BUS] wb_itrp_NO, wb_excp_NO;
   wire [`CSR_TO_EX_DIFF_WIDTH-1:0] wb_csr_diff;
   assign {
+    wb_skip,
+
     // ex stage
     wb_csr_diff,
     wb_itrp_NO,
@@ -341,7 +347,7 @@ module cpu(
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
-      cmt_skip <= (wb_inst[6 : 0] == 7'h7b) || wb_r_ena;
+      cmt_skip <= wb_skip;
       cmt_itrp_NO <= wb_itrp_NO;
       cmt_excp_NO <= wb_itrp_NO;
       
