@@ -28,7 +28,7 @@
 `define WB_DIFFTEST_WIDTH     97+`MEM_TO_WB_DIFF_WIDTH
 
 
-`define EXCP_RD_WIDTH       192
+`define EXCP_RD_WIDTH       320
 `define EXCP_WR_WIDTH       256
 
 `define AXI_ADDR_WIDTH      64
