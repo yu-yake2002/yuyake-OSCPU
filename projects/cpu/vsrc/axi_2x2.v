@@ -426,9 +426,11 @@ module axi_2x2 # (
   always @(posedge clock) begin
     if (reset) begin
       master_r_state <= STATE_IDLE;
+      slave_r_state <= STATE_IDLE;
     end
     else begin
       master_r_state <= master_r_next_state;
+      slave_r_state <= slave_r_next_state;
     end
   end
   
