@@ -26,11 +26,13 @@ module ex_stage(
   output wire                             csr_wr_ena,
   output wire [11 : 0]                    csr_wr_addr,
   output wire [`REG_BUS]                  csr_wr_data,
+
   // exception
   output wire                             excp_enter,
   output wire                             excp_exit,
   input wire [`EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
   output wire [`EXCP_WR_WIDTH-1:0]        csr_excp_wr_bus,
+  input wire [`ITRP_BUS]                  clint_interupt_bus,
 
   output wire                             rs1_r_ena,
   output wire [4 : 0]                     rs1_addr,
@@ -167,7 +169,7 @@ module ex_stage(
   
   excp_handler Excp_handler(
     .excp_info           (ex_excp_bus),
-    .itrp_info           (0),
+    .itrp_info           (clint_interupt_bus),
     .now_pc              (ex_pc),
     .now_inst            (ex_inst),
     .mem_addr            (ex_data),

@@ -84,7 +84,7 @@ module excp_handler (
                      | excp_stor_acc | excp_load_page | excp_stor_page;
 
   assign mcause_wr_data = { sp_itrp_ena ? 1'b1 : 1'b0,
-    (itrp_idx | excp_idx)
+    sp_itrp_ena ? itrp_idx : excp_idx
   };
   // TODO: interruption should have higher priority here
   

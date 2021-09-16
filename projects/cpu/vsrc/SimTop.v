@@ -486,7 +486,7 @@ module SimTop # (
     .uart_out_valid                (io_uart_out_valid),
     .uart_out_char                 (io_uart_out_ch),
 
-    .clint_interupt                (clint_interupt_bus)
+    .clint_interupt_bus            (clint_interupt_bus)
   );
   
   clint Clint(

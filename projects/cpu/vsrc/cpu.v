@@ -7,8 +7,8 @@
 `include "defines.v"
 
 module cpu(
-  input wire            clock,
-  input wire            reset,
+  input wire                 clock,
+  input wire                 reset,
   
   // Custom interface
 
@@ -34,7 +34,7 @@ module cpu(
   output wire                uart_out_valid,
   output wire [7 : 0]        uart_out_char,
 
-  input wire                 clint_interupt
+  input wire                 clint_interupt_bus
 );
 
   // pipeline control
@@ -146,6 +146,7 @@ module cpu(
     .excp_exit                 (excp_exit),
     .csr_excp_rd_bus           (csr_excp_rd_bus),
     .csr_excp_wr_bus           (csr_excp_wr_bus),
+    .clint_interupt_bus        (clint_interupt_bus),
 
     .rs1_r_ena                 (rs1_r_ena),
     .rs1_addr                  (rs1_r_addr),
