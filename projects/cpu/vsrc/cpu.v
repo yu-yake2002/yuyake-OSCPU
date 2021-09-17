@@ -34,7 +34,7 @@ module cpu(
   output wire                uart_out_valid,
   output wire [7 : 0]        uart_out_char,
 
-  input wire                 clint_interupt_bus
+  input wire [`ITRP_BUS]     clint_interupt_bus
 );
 
   // pipeline control
