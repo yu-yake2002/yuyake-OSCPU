@@ -78,6 +78,7 @@ module ex_stage(
     if (id_to_ex_valid && ex_allowin) begin
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
+      ex_itrp_bus <= clint_interupt_bus;
     end
   end
 
@@ -169,11 +170,12 @@ module ex_stage(
   assign                 excp_enter = ex_excp_enter;
 
   wire [`EXCP_BUS]       ex_excp_bus;
+  reg  [`ITRP_BUS]       ex_itrp_bus;
   wire                   ex_excp_exit, ex_excp_enter;
   
   excp_handler Excp_handler(
     .excp_info           (ex_excp_bus),
-    .itrp_info           (clint_interupt_bus),
+    .itrp_info           (ex_itrp_bus),
     .now_pc              (ex_pc),
     .now_inst            (ex_inst),
     .mem_addr            (ex_data),
