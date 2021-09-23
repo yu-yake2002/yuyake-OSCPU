@@ -150,8 +150,7 @@ module cpu(
     .excp_exit                 (excp_exit),
     .csr_excp_rd_bus           (csr_excp_rd_bus),
     .csr_excp_wr_bus           (csr_excp_wr_bus),
-    //.clint_interupt_bus        (clint_interupt_bus),
-    .clint_interupt_bus        (0),
+    .clint_interupt_bus        (clint_interupt_bus),
 
     .ex_rs1_r_ena              (rs1_r_ena),
     .ex_rs1_addr               (rs1_r_addr),
