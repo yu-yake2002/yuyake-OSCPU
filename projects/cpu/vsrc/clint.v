@@ -168,7 +168,7 @@ module clint # (
     if (rst) begin
       {wr_addr_reg, wr_id_reg, wr_user_reg} <= `ZERO_WORD;
     end
-    else if (ar_hs) begin
+    else if (aw_hs) begin
       wr_addr_reg <= aw_addr_i;
       wr_id_reg   <= aw_id_i;
       wr_user_reg <= aw_user_i;
