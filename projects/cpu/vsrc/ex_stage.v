@@ -127,7 +127,7 @@ module ex_stage(
     ex_csr_wr_ena,  // 76 :76
     ex_csr_wr_addr, // 75 :64
     ex_csr_rd_data  // 64 :0
-  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~(|ex_itrp_bus)}};
+  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~itrp_valid}};
   
   wire                   ex_uart_out_valid;
   wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
