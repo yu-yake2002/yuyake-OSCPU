@@ -363,7 +363,7 @@ module cpu(
       // Maybe you can avoid it in pipeline
       cmt_skip <= wb_skip;
       cmt_itrp_NO <= wb_itrp_NO;
-      cmt_excp_NO <= wb_itrp_NO;
+      cmt_excp_NO <= wb_excp_NO;
       
       cycleCnt <= cycleCnt + 1;
       instrCnt <= instrCnt + wb_commit;
