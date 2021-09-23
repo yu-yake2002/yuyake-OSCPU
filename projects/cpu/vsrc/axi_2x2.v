@@ -311,8 +311,8 @@ module axi_2x2 # (
   wire r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
   wire r_finish_cli = mid_r_ready && cli_r_valid_i && cli_r_last_i && r_state_cli;
   wire r_finish_ram = mid_r_ready && ram_r_valid_i && ram_r_last_i && r_state_ram;
-  wire w_finish_0 = mid_b_valid && b_ready_i_0 && w_state_0;
-  wire w_finish_1 = mid_b_valid && b_ready_i_1 && w_state_1;
+  wire w_finish_0 = b_valid_o_0 && b_ready_i_0 && w_state_0;
+  wire w_finish_1 = b_valid_o_1 && b_ready_i_1 && w_state_1;
   wire w_finish_cli = cli_b_ready_o && cli_b_valid_i && w_state_cli;
   wire w_finish_ram = ram_b_ready_o && ram_b_valid_i && w_state_ram;
 
