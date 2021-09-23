@@ -9,7 +9,7 @@ module wb_stage (
   
   // pipeline control
   input wire                              mem_to_wb_valid,
-  input wire                              mem_to_wb_pc,
+  input wire [`REG_BUS]                   mem_to_wb_pc,
   input wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   output wire                             wb_allowin,
   
