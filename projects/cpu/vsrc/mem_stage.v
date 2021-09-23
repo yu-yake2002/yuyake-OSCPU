@@ -12,7 +12,7 @@ module mem_stage(
   output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
-  output wire                              mem_to_wb_pc,
+  output wire [`REG_BUS]                   mem_to_wb_pc,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   input wire                               wb_allowin,
   
