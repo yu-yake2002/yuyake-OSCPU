@@ -146,6 +146,6 @@ module excp_handler (
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
   
   /* -----------Difftest Control-----------*/
-  assign itrp_NO = itrp_idx [31:0];
-  assign excp_NO = excp_idx [31:0];
+  assign itrp_NO = {32{sp_itrp_ena}} & itrp_idx [31:0];
+  assign excp_NO = {32{sp_excp_ena}} & excp_idx [31:0];
 endmodule
