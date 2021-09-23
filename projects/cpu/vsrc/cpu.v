@@ -554,7 +554,7 @@ module cpu(
       cmt_r_ena   <= buf_r_ena;
     end
   end
-  
+  /*
   DifftestStoreEvent DifftestStoreEvent(
     .clock              (clock),
     .coreid             (0),
@@ -564,5 +564,5 @@ module cpu(
     .storeData          (cmt_w_data),
     .storeMask          (cmt_w_mask)
   );
-  
+  */
 endmodule
