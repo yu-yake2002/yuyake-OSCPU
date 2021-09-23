@@ -383,10 +383,10 @@ module axi_2x2 # (
     // slave side
     case (slave_w_state)
       STATE_IDLE: begin
-        if (master_w_next_state == STATE_0) begin
+        if ((master_w_next_state == STATE_0) && aw_valid_i_0) begin
           slave_w_next_state = w_0_to_ram ? STATE_RAM : STATE_CLINT;
         end
-        else if (master_w_next_state == STATE_1) begin
+        else if ((master_w_next_state == STATE_1) && aw_valid_i_1) begin
           slave_w_next_state = w_1_to_ram ? STATE_RAM : STATE_CLINT;
         end
         else begin
@@ -474,10 +474,10 @@ module axi_2x2 # (
     // slave side
     case (slave_r_state)
       STATE_IDLE: begin
-        if (master_r_next_state == STATE_0) begin
+        if ((master_r_next_state == STATE_0) && ar_valid_i_0) begin
           slave_r_next_state = r_0_to_ram ? STATE_RAM : STATE_CLINT;
         end
-        else if (master_r_next_state == STATE_1) begin
+        else if ((master_r_next_state == STATE_1) && ar_valid_i_1) begin
           slave_r_next_state = r_1_to_ram ? STATE_RAM : STATE_CLINT;
         end
         else begin
