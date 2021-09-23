@@ -664,7 +664,7 @@ module axi_2x2 # (
   assign cli_w_last_o = w_state_cli & mid_w_last;
   assign cli_w_id_o = {AXI_ID_WIDTH{w_state_cli}} & mid_w_id;
   
-  assign cli_b_ready_o = r_state_cli & mid_b_ready;
+  assign cli_b_ready_o = w_state_cli & mid_b_ready;
 
   // Read Output
   wire r_state_0 = (master_r_state == STATE_0);
