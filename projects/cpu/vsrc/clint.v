@@ -225,8 +225,7 @@ module clint # (
   end
   
   // b bus
-  //assign b_valid_o = w_state_resp;
-  assign b_valid_o = 1'b0;
+  assign b_valid_o = w_state_resp;
   assign b_resp_o  = 2'b0;
   assign b_id_o    = wr_id_reg;
   assign b_user_o  = wr_user_reg;
