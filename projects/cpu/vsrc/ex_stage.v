@@ -71,9 +71,6 @@ module ex_stage(
     else if (ex_allowin) begin
       ex_valid <= id_to_ex_valid;
     end
-    else if (ex_flush) begin
-      ex_valid <= 1'b0;
-    end
 
     if (id_to_ex_valid && ex_allowin) begin
       id_to_ex_bus_r <= id_to_ex_bus;
@@ -122,7 +119,7 @@ module ex_stage(
     ex_csr_wr_ena,  // 76 :76
     ex_csr_wr_addr, // 75 :64
     ex_csr_rd_data  // 64 :0
-  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid}} & {`ID_TO_EX_WIDTH{~ex_flush}};
+  } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~(|ex_itrp_bus)}};
   
   wire                   ex_uart_out_valid;
   wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
