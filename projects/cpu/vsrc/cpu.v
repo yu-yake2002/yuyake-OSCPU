@@ -362,7 +362,7 @@ module cpu(
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
       // Maybe you can avoid it in pipeline
       cmt_skip <= wb_skip;
-      cmt_itrp_NO <= {32{cmt_mstatus[7]}} & wb_itrp_NO;
+      cmt_itrp_NO <= {32{cmt_mstatus[3]}} & wb_itrp_NO;
       cmt_excp_NO <= wb_excp_NO;
       
       cycleCnt <= cycleCnt + 1;
