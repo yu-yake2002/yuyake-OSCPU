@@ -6,11 +6,13 @@ module mem_stage(
   
   // pipeline control
   input wire                               ex_to_mem_valid,
+  input wire [`REG_BUS]                    ex_to_mem_pc,
   input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
   output wire                              mem_allowin,
   output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
+  output wire                              mem_to_wb_pc,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   input wire                               wb_allowin,
   
@@ -35,6 +37,7 @@ module mem_stage(
   // pipeline control
   reg mem_valid;
   wire mem_ready_go;
+  reg [`REG_BUS] ex_to_mem_pc_r;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
   reg [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus_r;
   
@@ -42,7 +45,7 @@ module mem_stage(
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
   assign ex_to_mem_handshake = ex_to_mem_valid && mem_allowin;
-  
+
   always @(posedge clk) begin
     if (rst) begin
       mem_valid <= 1'b0;
@@ -52,6 +55,7 @@ module mem_stage(
     end
 
     if (ex_to_mem_valid && mem_allowin) begin
+      ex_to_mem_pc_r <= ex_to_mem_pc;
       ex_to_mem_bus_r <= ex_to_mem_bus;
       ex_to_mem_diffbus_r <= ex_to_mem_diffbus;
     end
@@ -76,12 +80,12 @@ module mem_stage(
   wire [2  : 0]    mem_reg_wr_ctrl;
   wire [4  : 0]    mem_reg_wr_addr;
   wire             mem_reg_wr_ena, mem_csr_wr_ena;
-
+  
+  assign mem_pc = ex_to_mem_pc_r;
   assign {
     mem_uart_out_valid, // 319:319
     mem_uart_out_char,  // 318:311
 
-    mem_pc,          // 310:247
     mem_inst,        // 246:215
 
     // mem
@@ -243,13 +247,13 @@ module mem_stage(
     difftest_l_valid    // 0  :0
   };
 
+  assign mem_to_wb_pc = mem_pc;
   assign mem_to_wb_bus = {
     // serial port output
     mem_uart_out_valid, // 305:305
     mem_uart_out_char,  // 304:297
 
     // wb stage
-    mem_pc,          // 296:233
     mem_inst,        // 232:201
     mem_reg_wr_ena,  // 200:200
     mem_reg_wr_addr, // 199:195

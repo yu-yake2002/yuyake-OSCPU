@@ -9,6 +9,7 @@ module wb_stage (
   
   // pipeline control
   input wire                              mem_to_wb_valid,
+  input wire                              mem_to_wb_pc,
   input wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   output wire                             wb_allowin,
   
@@ -30,6 +31,7 @@ module wb_stage (
   
   // pipeline control
   reg wb_valid;
+  reg [`REG_BUS] mem_to_wb_pc_r;
   reg [`MEM_TO_WB_WIDTH-1:0] mem_to_wb_bus_r;
   reg [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus_r;
   assign wb_allowin = 1'b1;
@@ -43,6 +45,7 @@ module wb_stage (
     end
 
     if (mem_to_wb_valid && wb_allowin) begin
+      mem_to_wb_pc_r <= mem_to_wb_pc;
       mem_to_wb_bus_r <= mem_to_wb_bus;
       mem_to_wb_diffbus_r <= mem_to_wb_diffbus;
     end
@@ -53,12 +56,12 @@ module wb_stage (
   wire            wb_wen;
   wire [4  : 0]   wb_wdest;
   
+  assign wb_pc = mem_to_wb_pc_r;
   assign {
     // serial port output
     wb_uart_out_valid, // 305:305
     wb_uart_out_char,  // 304:297
     
-    wb_pc,          // 296:233
     wb_inst,        // 232:201
     wb_wen,         // 200:200
     wb_wdest,       // 199:195

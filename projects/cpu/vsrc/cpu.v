@@ -41,6 +41,7 @@ module cpu(
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
+  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc, mem_to_wb_pc;
   wire [`IF_TO_ID_WIDTH-1:0]     if_to_id_bus;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
@@ -68,6 +69,7 @@ module cpu(
     
     // pipeline control
     .if_to_id_valid            (if_to_id_valid),
+    .if_to_id_pc               (if_to_id_pc),
     .if_to_id_bus              (if_to_id_bus),
     .id_allowin                (id_allowin),
     
@@ -93,9 +95,12 @@ module cpu(
   
     // pipeline control
     .if_to_id_valid            (if_to_id_valid),
+    .if_to_id_pc               (if_to_id_pc),
     .if_to_id_bus              (if_to_id_bus),
     .id_allowin                (id_allowin),
+
     .id_to_ex_valid            (id_to_ex_valid),
+    .id_to_ex_pc               (id_to_ex_pc),
     .id_to_ex_bus              (id_to_ex_bus),
     .ex_allowin                (ex_allowin),
 
@@ -125,10 +130,12 @@ module cpu(
     
     // pipeline control
     .id_to_ex_valid            (id_to_ex_valid),
+    .id_to_ex_pc               (id_to_ex_pc),
     .id_to_ex_bus              (id_to_ex_bus),
     .ex_allowin                (ex_allowin),
 
     .ex_to_mem_valid           (ex_to_mem_valid),
+    .ex_to_mem_pc              (ex_to_mem_pc),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     
@@ -214,11 +221,13 @@ module cpu(
   
     // pipeline control
     .ex_to_mem_valid           (ex_to_mem_valid),
+    .ex_to_mem_pc              (ex_to_mem_pc),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     .ex_to_mem_handshake       (ex_to_mem_handshake),
 
     .mem_to_wb_valid           (mem_to_wb_valid),
+    .mem_to_wb_pc              (mem_to_wb_pc),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
     
@@ -247,6 +256,7 @@ module cpu(
     
     // pipeline control
     .mem_to_wb_valid           (mem_to_wb_valid),
+    .mem_to_wb_pc              (mem_to_wb_pc),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
 
