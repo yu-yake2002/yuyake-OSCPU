@@ -57,13 +57,15 @@ module ex_stage(
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
-  wire ex_flush;
+  wire itrp_valid;
   wire ex_done = ~hazard;
   wire bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
-  assign ex_to_mem_valid = ex_valid && ex_ready_go && ~ex_flush;
-  
+  //assign ex_to_mem_valid = ex_valid && ex_ready_go && ~ex_flush;
+  assign ex_to_mem_valid = (ex_valid || itrp_valid) && ex_ready_go;
+
+
   always @(posedge clk) begin
     if (rst) begin
       ex_valid <= 1'b0;
@@ -188,7 +190,7 @@ module ex_stage(
     .excp_jmp_pc         (excp_jmp_pc),
     
     // to ex stage
-    .ex_flush            (ex_flush),
+    .itrp_valid          (itrp_valid),
     
     // to difftest
     .itrp_NO             (itrp_NO),
@@ -271,7 +273,7 @@ module ex_stage(
   
   wire [`INST_BUS] itrp_NO, excp_NO;
   assign ex_to_mem_diffbus = {
-    id_to_ex_diffbus_r,
+    id_to_ex_diffbus_r || itrp_valid,
 
     csr_to_ex_diffbus,
     itrp_NO,

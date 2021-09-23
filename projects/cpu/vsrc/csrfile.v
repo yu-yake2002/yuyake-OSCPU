@@ -47,6 +47,8 @@ module csrfile(
     csr_mie
   };
   
+  wire excp_enter_wr = excp_enter && excp_wr_ena;
+  wire excp_exit_wr  = excp_exit  && excp_wr_ena;
   wire excp_wr = (excp_enter || excp_exit) && excp_wr_ena;
 
   // 0x300 Machine Status Register
@@ -175,7 +177,7 @@ module csrfile(
     if (rst == 1'b1) begin
       csr_mepc <= `ZERO_WORD;
     end
-    else if (excp_enter) begin
+    else if (excp_enter_wr) begin
       csr_mepc <=  mepc_wr_data;
     end
     else if (mepc_wr_ena) begin
@@ -200,7 +202,7 @@ module csrfile(
     if (rst == 1'b1) begin
       csr_mcause <= `ZERO_WORD;
     end
-    else if (excp_enter) begin
+    else if (excp_enter_wr) begin
       csr_mcause <=  mcause_wr_data;
     end
     else if (mcause_wr_ena) begin
@@ -225,7 +227,7 @@ module csrfile(
     if (rst == 1'b1) begin
       csr_mtval <= 64'b0;
     end
-    else if (excp_enter) begin
+    else if (excp_enter_wr) begin
       csr_mtval <= mtval_wr_data;
     end
     else if (mtval_wr_ena) begin

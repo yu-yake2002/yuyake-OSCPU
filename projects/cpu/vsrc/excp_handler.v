@@ -18,8 +18,9 @@ module excp_handler (
   // to if_stage
   output wire                        excp_jmp_ena,
   output wire [`REG_BUS]             excp_jmp_pc,
+
   // to ex_stage
-  output wire                        ex_flush,
+  output wire                        itrp_valid,
 
   // to difftest
   output wire [`INST_BUS]            itrp_NO,
@@ -55,6 +56,7 @@ module excp_handler (
   );
 
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
+  assign itrp_valid = sp_itrp_ena;
   
   /* ----------- Decode ----------- */
   // decode machine interruption
@@ -96,7 +98,6 @@ module excp_handler (
   wire inst_acc_fault = excp_inst_misal | excp_inst_acc | excp_inst_page ;
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
-  assign ex_flush = (|itrp_info);
 
   /* -----------Write CSRs----------- */
   // write mcause
