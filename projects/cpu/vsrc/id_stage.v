@@ -94,6 +94,7 @@ module id_stage(
   wire [2  : 0] func3  = id_inst[14 : 12];
   wire [5  : 0] func6  = id_inst[31 : 26];
   wire [6  : 0] func7  = id_inst[31 : 25];
+  wire [4  : 0] zimm = id_inst[19 : 15];
   
   assign rs1_addr = inst_putch ? 5'b01010 : {5{rs1_r_ena}} & id_inst[19 : 15];
   assign rs2_addr = {5{rs2_r_ena}} & id_inst[24 : 20];
@@ -101,7 +102,6 @@ module id_stage(
   assign csr_rd_addr = id_csr_addr;
   wire [4  : 0] rd_addr = id_inst[11 : 7];
   
-  wire [4  : 0] zimm = rs1_addr;
   wire [11 : 0] immI = id_csr_addr;
   wire [11 : 0] immS = {func7, id_inst[11 :  7]};
   wire [12 : 0] immB = {id_inst[31], id_inst[7], id_inst[30 : 25], id_inst[11 : 8], 1'b0};

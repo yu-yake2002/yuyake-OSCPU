@@ -149,8 +149,8 @@ module csrfile(
   wire [`REG_BUS] mtvec_rd_data = mtvec_wr_ena ? csr_wr_data : csr_mtvec;
   
   // 0x340 Machine Scratch Register
-  wire sel_rd_mscratch = (csr_rd_addr == 12'h430);
-  wire sel_wr_mscratch = (csr_wr_addr == 12'h430);
+  wire sel_rd_mscratch = (csr_rd_addr == 12'h340);
+  wire sel_wr_mscratch = (csr_wr_addr == 12'h340);
   wire mscratch_rd_ena = (csr_rd_ena & sel_rd_mscratch);
   wire mscratch_wr_ena = (csr_wr_ena & sel_wr_mscratch);
   reg [`REG_BUS] csr_mscratch;
