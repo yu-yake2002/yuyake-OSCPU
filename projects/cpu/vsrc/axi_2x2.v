@@ -259,8 +259,8 @@ module axi_2x2 # (
   input  wire [AXI_USER_WIDTH-1:0]        cli_r_user_i
 );
   
-  wire debug_oc_w = ~(ram_aw_addr_o[63:8] ^ 56'h00000000_801cc68);
-  wire debug_oc_r = ~(ram_ar_addr_o[63:8] ^ 56'h00000000_801cc68);
+  wire debug_oc_w = ~|(ram_aw_addr_o[63:8] ^ 56'h00000000_801cc68);
+  wire debug_oc_r = ~|(ram_ar_addr_o[63:8] ^ 56'h00000000_801cc68);
 
   // bridge between master and slave
   wire                             mid_aw_ready;
