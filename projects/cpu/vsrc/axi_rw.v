@@ -267,10 +267,10 @@ module axi_rw # (
   assign axi_aw_valid_o   = w_state_addr;
   assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
   assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
-  assign axi_aw_id_o      = axi_id;
-  assign axi_aw_user_o    = axi_user;
+  assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
+  assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
   assign axi_aw_len_o     = axi_len;
-  assign axi_aw_size_o    = axi_size;
+  assign axi_aw_size_o    = {3{w_state_addr}} & axi_size;
   assign axi_aw_burst_o   = `AXI_BURST_TYPE_INCR;
   assign axi_aw_lock_o    = 1'b0;
   assign axi_aw_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
