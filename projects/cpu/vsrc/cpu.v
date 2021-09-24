@@ -554,15 +554,14 @@ module cpu(
       cmt_r_ena   <= buf_r_ena;
     end
   end
-  /*
+  
   DifftestStoreEvent DifftestStoreEvent(
     .clock              (clock),
     .coreid             (0),
     .index              (0),
-    .valid              (cmt_w_ena),
+    .valid              (cmt_w_ena && ~(wb_rw_addr[63:16] == 48'h00000000_0200)),
     .storeAddr          (cmt_rw_addr),
     .storeData          (cmt_w_data),
     .storeMask          (cmt_w_mask)
   );
-  */
 endmodule
