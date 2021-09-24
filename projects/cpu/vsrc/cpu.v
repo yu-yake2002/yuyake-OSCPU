@@ -390,7 +390,7 @@ module cpu(
     .clock              (clock),
     .coreid             (0),
     .intrNO             (cmt_itrp_NO),
-    .cause              (cmt_excp_NO),
+    .cause              (cmt_excp_NO & {32{cmt_valid}}),
     .exceptionPC        (cmt_pc)
   );
 
