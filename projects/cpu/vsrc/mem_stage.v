@@ -36,6 +36,9 @@ module mem_stage(
   input  wire [1 : 0]                      mem_rw_resp
   );
   
+  // debug
+  wire debug_overclock = mem_rw_addr == 64'h801cc68c;
+
   // pipeline control
   reg mem_valid;
   wire mem_ready_go;
