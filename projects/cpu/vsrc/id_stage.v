@@ -429,7 +429,7 @@ module id_stage(
     csr_data           // 64 :0
   };
   
-  wire id_skip_instr = inst_putch || (csr_vld && csr_rd_addr == 12'hB00) || load_vld;
+  wire id_skip_instr = inst_putch || (csr_vld && csr_rd_addr == 12'hB00);
   assign id_to_ex_diffbus = (
     id_skip_instr
   );
