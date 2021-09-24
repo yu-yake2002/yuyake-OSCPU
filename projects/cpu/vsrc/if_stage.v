@@ -11,7 +11,7 @@ module if_stage(
   // pipeline control
   output wire                         if_to_id_valid,
   output wire [`REG_BUS]              if_to_id_pc,
-  output wire [`IF_TO_ID_WIDTH-1:0]   if_to_id_bus,
+  output wire [`INST_BUS]             if_to_id_inst,
   input wire                          id_allowin,
   
   // branch and jump control
@@ -123,7 +123,5 @@ module if_stage(
   end
 
   assign if_to_id_pc = if_pc;
-  assign if_to_id_bus = {
-    if_inst
-  };
+  assign if_to_id_inst = if_inst;
 endmodule

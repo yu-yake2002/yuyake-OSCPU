@@ -7,12 +7,14 @@ module mem_stage(
   // pipeline control
   input wire                               ex_to_mem_valid,
   input wire [`REG_BUS]                    ex_to_mem_pc,
+  input wire [`INST_BUS]                   ex_to_mem_inst,
   input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
   output wire                              mem_allowin,
   output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
   output wire [`REG_BUS]                   mem_to_wb_pc,
+  output wire [`INST_BUS]                  mem_to_wb_inst,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   input wire                               wb_allowin,
   
@@ -38,6 +40,7 @@ module mem_stage(
   reg mem_valid;
   wire mem_ready_go;
   reg [`REG_BUS] ex_to_mem_pc_r;
+  reg [`INST_BUS] ex_to_mem_inst_r;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
   reg [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus_r;
   
@@ -56,6 +59,7 @@ module mem_stage(
 
     if (ex_to_mem_valid && mem_allowin) begin
       ex_to_mem_pc_r <= ex_to_mem_pc;
+      ex_to_mem_inst_r <= ex_to_mem_inst;
       ex_to_mem_bus_r <= ex_to_mem_bus;
       ex_to_mem_diffbus_r <= ex_to_mem_diffbus;
     end
@@ -82,11 +86,10 @@ module mem_stage(
   wire             mem_reg_wr_ena, mem_csr_wr_ena;
   
   assign mem_pc = ex_to_mem_pc_r;
+  assign mem_inst = ex_to_mem_inst_r;
   assign {
     mem_uart_out_valid, // 319:319
     mem_uart_out_char,  // 318:311
-
-    mem_inst,        // 246:215
 
     // mem
     mem_load_info,   // 214:208
@@ -248,13 +251,13 @@ module mem_stage(
   };
 
   assign mem_to_wb_pc = mem_pc;
+  assign mem_to_wb_inst = mem_inst;
   assign mem_to_wb_bus = {
     // serial port output
     mem_uart_out_valid, // 305:305
     mem_uart_out_char,  // 304:297
 
     // wb stage
-    mem_inst,        // 232:201
     mem_reg_wr_ena,  // 200:200
     mem_reg_wr_addr, // 199:195
     mem_reg_wr_ctrl, // 194:192

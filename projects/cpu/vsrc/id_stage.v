@@ -12,11 +12,12 @@ module id_stage(
   // pipeline control
   input wire                             if_to_id_valid,
   input wire [`REG_BUS]                  if_to_id_pc,
-  input wire [`IF_TO_ID_WIDTH-1:0]       if_to_id_bus,
+  input wire [`INST_BUS]                 if_to_id_inst,
   output wire                            id_allowin,
 
   output wire                            id_to_ex_valid,
   output wire [`REG_BUS]                 id_to_ex_pc,
+  output wire [`INST_BUS]                id_to_ex_inst,
   output wire [`ID_TO_EX_WIDTH-1:0]      id_to_ex_bus,
   input wire                             ex_allowin,
 
@@ -60,7 +61,7 @@ module id_stage(
   wire id_ready_go;
   wire id_flush = bj_ena;
   reg [`REG_BUS] if_to_id_pc_r;
-  reg [`IF_TO_ID_WIDTH-1:0] if_to_id_bus_r;
+  reg [`INST_BUS] if_to_id_inst_r;
 
   assign id_ready_go = 1'b1;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
@@ -79,15 +80,13 @@ module id_stage(
     
     if (if_to_id_valid && id_allowin) begin
       if_to_id_pc_r <= if_to_id_pc;
-      if_to_id_bus_r <= if_to_id_bus;
+      if_to_id_inst_r <= if_to_id_inst;
     end
   end
   
-  wire [31:0] id_inst;
-  wire [`REG_BUS] id_pc = if_to_id_pc_r;
-  assign {
-    id_inst
-  } = if_to_id_bus_r & {`IF_TO_ID_WIDTH{id_valid}};
+  
+  wire [`REG_BUS]  id_pc   = if_to_id_pc_r;
+  wire [`INST_BUS] id_inst = if_to_id_inst_r;
   
   // decode
   wire [6  : 0] opcode = id_inst[6 : 0];
@@ -390,6 +389,7 @@ module id_stage(
   wire id_uart_out_valid = inst_putch;
  
   assign id_to_ex_pc = id_pc;
+  assign id_to_ex_inst = id_inst;
   assign id_to_ex_bus = {
     // serial port output
     id_uart_out_valid, // 567:567
@@ -397,8 +397,6 @@ module id_stage(
     // exception
     id_excp_exit,      // 566:566
     id_excp_bus,       // 565:550
-
-    id_inst,           // 549:517
 
     // -> ex
     rs1_addr,          // 451:447

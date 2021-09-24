@@ -10,11 +10,13 @@ module ex_stage(
   // pipeline control
   input wire                              id_to_ex_valid,
   input wire [`REG_BUS]                   id_to_ex_pc,
+  input wire [`INST_BUS]                  id_to_ex_inst,
   input wire [`ID_TO_EX_WIDTH-1:0]        id_to_ex_bus,
   output wire                             ex_allowin,
 
   output wire                             ex_to_mem_valid,
   output wire [`REG_BUS]                  ex_to_mem_pc,
+  output wire [`INST_BUS]                 ex_to_mem_inst,
   output wire [`EX_TO_MEM_WIDTH-1:0]      ex_to_mem_bus,
   input wire                              mem_allowin,
   
@@ -58,6 +60,7 @@ module ex_stage(
   wire ex_ready_go;
 
   reg [`REG_BUS] id_to_ex_pc_r;
+  reg [`INST_BUS] id_to_ex_inst_r;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
@@ -80,6 +83,7 @@ module ex_stage(
 
     if (id_to_ex_valid && ex_allowin) begin
       id_to_ex_pc_r <= id_to_ex_pc;
+      id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
       ex_itrp_bus <= clint_interupt_bus;
@@ -87,7 +91,7 @@ module ex_stage(
   end
   
   assign ex_pc = id_to_ex_pc_r;
-
+  assign ex_inst = id_to_ex_inst_r;
   assign {
     // serial port output
     ex_uart_out_valid, // 575:575
@@ -95,8 +99,6 @@ module ex_stage(
     // exception
     ex_excp_exit,   // 566:566
     ex_excp_bus,    // 565:550
-
-    ex_inst,        // 549:517
 
     // -> ex
     ex_rs1_addr,    // 451:447
@@ -239,12 +241,11 @@ module ex_stage(
   wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
   wire [`REG_BUS] ex_data;
   assign ex_to_mem_pc = ex_pc;
+  assign ex_to_mem_inst = ex_inst;
   assign ex_to_mem_bus = {
     // serial port output
     ex_uart_out_valid, // 319:319
     ex_uart_out_char,  // 318:311
-
-    ex_inst,        // 246:215
 
     // mem
     ex_load_info,   // 214:208

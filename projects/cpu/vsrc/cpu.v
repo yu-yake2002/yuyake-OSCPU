@@ -42,7 +42,7 @@ module cpu(
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
   wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc, mem_to_wb_pc;
-  wire [`IF_TO_ID_WIDTH-1:0]     if_to_id_bus;
+  wire [`INST_BUS] if_to_id_inst, id_to_ex_inst, ex_to_mem_inst, mem_to_wb_inst;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
   wire [`MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
@@ -70,7 +70,7 @@ module cpu(
     // pipeline control
     .if_to_id_valid            (if_to_id_valid),
     .if_to_id_pc               (if_to_id_pc),
-    .if_to_id_bus              (if_to_id_bus),
+    .if_to_id_inst             (if_to_id_inst),
     .id_allowin                (id_allowin),
     
     // branch and jump control
@@ -96,11 +96,12 @@ module cpu(
     // pipeline control
     .if_to_id_valid            (if_to_id_valid),
     .if_to_id_pc               (if_to_id_pc),
-    .if_to_id_bus              (if_to_id_bus),
+    .if_to_id_inst             (if_to_id_inst),
     .id_allowin                (id_allowin),
 
     .id_to_ex_valid            (id_to_ex_valid),
     .id_to_ex_pc               (id_to_ex_pc),
+    .id_to_ex_inst             (id_to_ex_inst),
     .id_to_ex_bus              (id_to_ex_bus),
     .ex_allowin                (ex_allowin),
 
@@ -131,11 +132,13 @@ module cpu(
     // pipeline control
     .id_to_ex_valid            (id_to_ex_valid),
     .id_to_ex_pc               (id_to_ex_pc),
+    .id_to_ex_inst             (id_to_ex_inst),
     .id_to_ex_bus              (id_to_ex_bus),
     .ex_allowin                (ex_allowin),
 
     .ex_to_mem_valid           (ex_to_mem_valid),
     .ex_to_mem_pc              (ex_to_mem_pc),
+    .ex_to_mem_inst            (ex_to_mem_inst),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     
@@ -222,12 +225,14 @@ module cpu(
     // pipeline control
     .ex_to_mem_valid           (ex_to_mem_valid),
     .ex_to_mem_pc              (ex_to_mem_pc),
+    .ex_to_mem_inst            (ex_to_mem_inst),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     .ex_to_mem_handshake       (ex_to_mem_handshake),
 
     .mem_to_wb_valid           (mem_to_wb_valid),
     .mem_to_wb_pc              (mem_to_wb_pc),
+    .mem_to_wb_inst            (mem_to_wb_inst),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
     
@@ -257,6 +262,7 @@ module cpu(
     // pipeline control
     .mem_to_wb_valid           (mem_to_wb_valid),
     .mem_to_wb_pc              (mem_to_wb_pc),
+    .mem_to_wb_inst            (mem_to_wb_inst),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
 
@@ -391,7 +397,8 @@ module cpu(
     .coreid             (0),
     .intrNO             (cmt_itrp_NO),
     .cause              (cmt_excp_NO & {32{cmt_valid}}),
-    .exceptionPC        (cmt_pc)
+    .exceptionPC        (cmt_pc),
+    .exceptionInst      (cmt_inst)
   );
 
   DifftestArchIntRegState DifftestArchIntRegState (
