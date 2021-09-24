@@ -36,7 +36,7 @@ module mem_stage(
   input  wire [1 : 0]                      mem_rw_resp
   );
   
-  wire debug = mem_rw_addr[63:8] == 56'h00000000_801cc68;
+  wire debug = mem_rw_addr[63:4] == 56'h00000000_801cc68;
 
   // pipeline control
   reg mem_valid;
