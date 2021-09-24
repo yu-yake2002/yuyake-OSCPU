@@ -60,7 +60,7 @@ module csrfile(
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mstatus <= 64'h1888;
+      csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
       csr_mstatus <= mstatus_wr_data;
