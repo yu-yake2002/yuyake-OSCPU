@@ -269,7 +269,7 @@ module axi_rw # (
   assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
   assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
-  assign axi_aw_len_o     = axi_len;
+  assign axi_aw_len_o     = {8{r_state_addr}} & axi_len;
   assign axi_aw_size_o    = {3{w_state_addr}} & axi_size;
   assign axi_aw_burst_o   = `AXI_BURST_TYPE_INCR;
   assign axi_aw_lock_o    = 1'b0;
@@ -310,10 +310,10 @@ module axi_rw # (
   assign axi_ar_valid_o   = r_state_addr;
   assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
   assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
-  assign axi_ar_id_o      = axi_id;
-  assign axi_ar_user_o    = axi_user;
-  assign axi_ar_len_o     = axi_len;
-  assign axi_ar_size_o    = axi_size;
+  assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
+  assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
+  assign axi_ar_len_o     = {8{r_state_addr}} & axi_len;
+  assign axi_ar_size_o    = {3{r_state_addr}} & axi_size;
   assign axi_ar_burst_o   = `AXI_BURST_TYPE_INCR;
   assign axi_ar_lock_o    = 1'b0;
   assign axi_ar_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
