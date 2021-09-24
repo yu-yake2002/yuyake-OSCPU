@@ -204,7 +204,7 @@ module clint # (
   // mtimecmp
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtimecmp <= 64'h0080000;
+      csr_mtimecmp <= `ZERO_WORD;
     end
     else if (w_hs && mtimecmp_wr_ena) begin
         csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & w_data_i);
@@ -214,7 +214,7 @@ module clint # (
   // mtime
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtime <= 64'b0;
+      csr_mtime <= `ZERO_WORD;
     end
     else if (w_hs && mtime_wr_ena) begin
       csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & w_data_i);
