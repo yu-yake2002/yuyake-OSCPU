@@ -56,6 +56,15 @@ module csrfile(
   wire sel_wr_mstatus = (csr_wr_addr == 12'h300);
   wire mstatus_rd_ena = sel_rd_mstatus & csr_rd_ena;
   wire mstatus_wr_ena = sel_wr_mstatus & csr_wr_ena;
+  wire [`REG_BUS] mstatus_wr_data_full = {
+    (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11),
+    mstatus_wr_data[62:0]
+  };
+  wire [`REG_BUS] csr_wr_data_full = {
+    (csr_wr_data[14:13] == 2'b11) || (csr_wr_data[16:15] == 2'b11),
+    csr_wr_data[62:0]
+  };
+
   reg [`REG_BUS] csr_mstatus;
 
   always @(posedge clk) begin
@@ -63,18 +72,16 @@ module csrfile(
       csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
-      csr_mstatus[62:0] <= mstatus_wr_data[62:0];
-      csr_mstatus[63]   <= (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11);
+      csr_mstatus <= mstatus_wr_data_full;
     end
     else if (mstatus_wr_ena) begin
-      csr_mstatus[62:0] <= csr_wr_data[62:0];
-      csr_mstatus[63]   <= (csr_wr_data[14:13] == 2'b11) || (csr_wr_data[16:15] == 2'b11);
+      csr_mstatus <= csr_wr_data_full;
     end
   end
 
   wire [`REG_BUS] mstatus_rd_data = (
-    excp_wr        ? mstatus_wr_data :
-    mstatus_wr_ena ? csr_wr_data :
+    excp_wr        ? mstatus_wr_data_full :
+    mstatus_wr_ena ? csr_wr_data_full :
                      csr_mstatus
   );
   
