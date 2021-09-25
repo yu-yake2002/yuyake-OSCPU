@@ -484,7 +484,7 @@ module cpu(
     .coreid             (0),
     .priviledgeMode     (`RISCV_PRIV_MODE_M),
     .mstatus            (cmt_mstatus),
-    .sstatus            (0),
+    .sstatus            (cmt_mstatus & 64'h80000003000de122),
     .mepc               (cmt_mepc),
     .sepc               (0),
     .mtval              (cmt_mtval),
