@@ -265,7 +265,9 @@ module axi_rw # (
   
   // Write address channel signals
   assign axi_aw_valid_o   = w_state_addr;
-  assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
+  //assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
+  assign axi_aw_addr_o    = axi_addr;
+
   assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
   assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
@@ -310,7 +312,7 @@ module axi_rw # (
   assign axi_ar_valid_o   = r_state_addr;
   //assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
   assign axi_ar_addr_o    = axi_addr;
-  
+
   assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
   assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
