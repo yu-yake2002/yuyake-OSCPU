@@ -233,7 +233,7 @@ module clint # (
     end 
     else begin
       //csr_mtime <= csr_mtime + add_ctime;
-      csr_mtime <= csr_mtime + 2;
+      csr_mtime <= csr_mtime + 4;
     end
   end
   
