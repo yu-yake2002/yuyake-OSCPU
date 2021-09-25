@@ -212,7 +212,7 @@ module clint # (
   end
   
   // decelerate
-  reg [1:0] decelerate_reg;
+  reg decelerate_reg;
   always @(posedge clk) begin
     if (rst) begin
       decelerate_reg <= 0;
