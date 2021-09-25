@@ -86,7 +86,7 @@ module ex_stage(
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
-      ex_itrp_bus <= clint_interupt_bus;
+      ex_itrp_bus <= clint_interupt_bus & {12{itrp_allowin}};
     end
   end
   
@@ -178,6 +178,7 @@ module ex_stage(
 
   wire [`EXCP_BUS]       ex_excp_bus;
   reg  [`ITRP_BUS]       ex_itrp_bus;
+  wire                   itrp_allowin;
   wire                   ex_excp_exit, ex_excp_enter;
   
   excp_handler Excp_handler(
@@ -188,6 +189,7 @@ module ex_stage(
     .mem_addr            (ex_data),
     .excp_exit           (ex_excp_exit),
     .excp_enter          (ex_excp_enter),
+    .itrp_allowin        (itrp_allowin),
     
     // to CSRs
     .csr_excp_rd_bus     (csr_excp_rd_bus),

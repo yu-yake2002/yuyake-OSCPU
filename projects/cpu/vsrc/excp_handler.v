@@ -10,6 +10,7 @@ module excp_handler (
   input wire [`REG_BUS]              mem_addr,
   input wire                         excp_exit,
   output wire                        excp_enter,
+  output wire                        itrp_allowin,
   
   // to CSRs
   input wire [`EXCP_RD_WIDTH-1:0]    csr_excp_rd_bus,
@@ -48,12 +49,8 @@ module excp_handler (
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = (
-       mstatus_rd_data[3] 
-    && mie_rd_data[7]
-    && mip_rd_data[7]
-    && (|itrp_info)
-  );
+  wire sp_itrp_ena = itrp_allowin && (|itrp_info);
+  assign itrp_allowin = mstatus_rd_data[3] && mie_rd_data[7] && mip_rd_data[7];
 
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
   assign itrp_valid = sp_itrp_ena;
