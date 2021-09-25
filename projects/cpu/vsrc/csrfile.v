@@ -63,10 +63,12 @@ module csrfile(
       csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
-      csr_mstatus <= mstatus_wr_data;
+      csr_mstatus[62:0] <= mstatus_wr_data[62:0];
+      csr_mstatus[63]   <= (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11);
     end
     else if (mstatus_wr_ena) begin
-      csr_mstatus <= csr_wr_data;
+      csr_mstatus[62:0] <= csr_wr_data[62:0];
+      csr_mstatus[63]   <= (csr_wr_data[14:13] == 2'b11) || (csr_wr_data[16:15] == 2'b11);
     end
   end
 
