@@ -66,6 +66,9 @@ module clint # (
   output wire [`ITRP_BUS]                 clint_interupt_bus
 );
 
+  wire debug_wr = msip_wr_ena || mtime_wr_ena || mtimecmp_wr_ena;
+  wire debug_rd = msip_rd_ena || mtime_rd_ena || mtimecmp_rd_ena;
+
   // CLINT CSRs
   reg [31 : 0]   csr_msip;
   reg [`REG_BUS] csr_mtime, csr_mtimecmp;
