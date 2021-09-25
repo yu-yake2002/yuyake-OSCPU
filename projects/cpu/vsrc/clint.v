@@ -210,6 +210,18 @@ module clint # (
         csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & w_data_i);
     end
   end
+  
+  // decelerate
+  reg [2:0] decelerate_reg;
+  always @(posedge clk) begin
+    if (rst) begin
+      decelerate_reg <= 0;
+    end
+    else begin
+      decelerate_reg <= decelerate_reg + 1;
+    end
+  end
+  wire add_ctime = (&decelerate_reg);
 
   // mtime
   always @(posedge clk) begin
@@ -220,7 +232,7 @@ module clint # (
       csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & w_data_i);
     end 
     else begin
-      csr_mtime <= csr_mtime + 1;
+      csr_mtime <= csr_mtime + add_ctime;
     end
   end
   
