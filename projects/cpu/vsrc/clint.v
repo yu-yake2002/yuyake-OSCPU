@@ -113,6 +113,9 @@ module clint # (
       rd_id_reg   <= ar_id_i;
       rd_user_reg <= ar_user_i;
     end
+    else if (r_hs) begin
+      rd_addr_reg <= 0;
+    end
   end
 
   // r bus
@@ -175,6 +178,9 @@ module clint # (
       wr_addr_reg <= aw_addr_i;
       wr_id_reg   <= aw_id_i;
       wr_user_reg <= aw_user_i;
+    end
+    else if (w_hs) begin
+      wr_addr_reg <= 0;
     end
   end
 
