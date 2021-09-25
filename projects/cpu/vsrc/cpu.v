@@ -362,7 +362,7 @@ module cpu(
       cmt_wdata <= reg_wr_data;
       cmt_pc <= wb_pc;
       cmt_inst <= wb_inst;
-      cmt_valid <= wb_commit & ~(|wb_itrp_NO);
+      cmt_valid <= wb_commit && ~(|wb_itrp_NO);
   
       // Skip comparison of the first instruction
       // Because the result required to commit cannot be calculated in time before first InstrCommit during verilator simulation
