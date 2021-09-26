@@ -29,8 +29,10 @@ module excp_handler (
   );
   
   // to CSRs
-  wire [`REG_BUS] mcause_wr_data, mepc_wr_data, mtval_wr_data, mstatus_wr_data;
+  wire [`REG_BUS] mip_wr_data, mcause_wr_data, mepc_wr_data,
+                  mtval_wr_data, mstatus_wr_data;
   assign csr_excp_wr_bus = {
+    mip_wr_data,      // 319:256
     mcause_wr_data,   // 255:192
     mepc_wr_data,     // 191:128
     mtval_wr_data,    // 127:64
@@ -49,7 +51,7 @@ module excp_handler (
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = itrp_allowin && (|itrp_info);
+  wire sp_itrp_ena = itrp_allowin;
   assign itrp_allowin = mstatus_rd_data[3] && mie_rd_data[7] && mip_rd_data[7];
 
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
@@ -95,6 +97,8 @@ module excp_handler (
   wire inst_acc_fault = excp_inst_misal | excp_inst_acc | excp_inst_page ;
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
+  
+  assign mip_wr_data = {64{itrp_info[`TIMER_ITRP]}} & 64'h80;
 
   /* -----------Write CSRs----------- */
   // write mcause

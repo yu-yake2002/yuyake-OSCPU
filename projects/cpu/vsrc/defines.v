@@ -28,7 +28,7 @@
 
 
 `define EXCP_RD_WIDTH       320
-`define EXCP_WR_WIDTH       256
+`define EXCP_WR_WIDTH       320
 
 `define AXI_ADDR_WIDTH      64
 `define AXI_DATA_WIDTH      64

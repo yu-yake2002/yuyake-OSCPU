@@ -31,8 +31,10 @@ module csrfile(
   output wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus
   );
   
-  wire [`REG_BUS] mstatus_wr_data, mepc_wr_data, mcause_wr_data, mtval_wr_data;
+  wire [`REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
+                  mcause_wr_data, mtval_wr_data;
   assign {
+    mip_wr_data,
     mcause_wr_data,
     mepc_wr_data,
     mtval_wr_data,
@@ -256,7 +258,7 @@ module csrfile(
   wire mip_rd_ena = (csr_rd_ena & sel_rd_mip);
   wire mip_wr_ena = (csr_wr_ena & sel_wr_mip);
   reg [`REG_BUS] csr_mip;
-
+  /*
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mip <= 64'h80;
@@ -266,8 +268,17 @@ module csrfile(
     end
     // TODO: when interruption pending, mip should flip corresponding bit
   end
+  */
+  always @(posedge clk) begin
+    if (rst == 1'b1) begin
+      csr_mip <= 64'h80;
+    end
+    else begin
+      csr_mip <= mip_wr_data;
+    end
+  end
 
-  wire [`REG_BUS] mip_rd_data = mip_wr_ena ? csr_wr_data : csr_mip;
+  wire [`REG_BUS] mip_rd_data = mip_wr_data;
 
   // 0xB00 Cycle Counter
   wire sel_rd_mcycle = (csr_rd_addr == 12'hb00);
