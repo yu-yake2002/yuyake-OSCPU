@@ -74,10 +74,10 @@ module csrfile(
       csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
-      csr_mstatus <= 64'h80000000_007ff9ea & mstatus_wr_data_full;
+      csr_mstatus <= 64'h80000000_0001F888 & mstatus_wr_data_full;
     end
     else if (mstatus_wr_ena) begin
-      csr_mstatus <= 64'h80000000_007ff9ea & csr_wr_data_full;
+      csr_mstatus <= 64'h80000000_0001F888 & csr_wr_data_full;
     end
   end
 
