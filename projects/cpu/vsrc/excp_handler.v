@@ -3,6 +3,7 @@
 `include "defines.v"
 
 module excp_handler (
+  input wire [`ITRP_BUS]             clint_bus,
   input wire [`EXCP_BUS]             excp_info,
   input wire [`ITRP_BUS]             itrp_info,
   input wire [`REG_BUS]              now_pc,
@@ -98,7 +99,7 @@ module excp_handler (
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
   
-  assign mip_wr_data = {64{itrp_info[`TIMER_ITRP]}} & 64'h80;
+  assign mip_wr_data = {64{clint_bus[`TIMER_ITRP]}} & 64'h80;
 
   /* -----------Write CSRs----------- */
   // write mcause

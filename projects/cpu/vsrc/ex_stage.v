@@ -182,6 +182,7 @@ module ex_stage(
   wire                   ex_excp_exit, ex_excp_enter;
   
   excp_handler Excp_handler(
+    .clint_bus           (clint_interupt_bus),
     .excp_info           (ex_excp_bus),
     .itrp_info           (ex_itrp_bus),
     .now_pc              (ex_pc),
