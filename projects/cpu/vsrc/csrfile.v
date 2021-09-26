@@ -56,8 +56,8 @@ module csrfile(
   // 0x300 Machine Status Register
   wire sel_rd_mstatus = (csr_rd_addr == 12'h300);
   wire sel_wr_mstatus = (csr_wr_addr == 12'h300);
-  wire mstatus_rd_ena = sel_rd_mstatus & csr_rd_ena;
-  wire mstatus_wr_ena = sel_wr_mstatus & csr_wr_ena;
+  wire mstatus_rd_ena = sel_rd_mstatus && csr_rd_ena;
+  wire mstatus_wr_ena = sel_wr_mstatus && csr_wr_ena && csr_wr_clk;
   wire [`REG_BUS] mstatus_wr_data_full = {
     (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11),
     mstatus_wr_data[62:0]
@@ -124,10 +124,10 @@ module csrfile(
   wire [`REG_BUS] misa_rd_data = csr_misa;
 
   // 0x304 Machine Interrupt Enable Register
-  wire sel_rd_mie = (csr_rd_addr == 12'h304);
-  wire sel_wr_mie = (csr_wr_addr == 12'h304);
-  wire mie_rd_ena = (csr_rd_ena & sel_rd_mie);
-  wire mie_wr_ena = (csr_wr_ena & sel_wr_mie);
+  wire sel_rd_mie = csr_rd_addr == 12'h304;
+  wire sel_wr_mie = csr_wr_addr == 12'h304;
+  wire mie_rd_ena = csr_rd_ena && sel_rd_mie;
+  wire mie_wr_ena = csr_wr_ena && sel_wr_mie && csr_wr_clk;
   reg [`REG_BUS] csr_mie;
 
   always @(posedge clk) begin
@@ -144,8 +144,8 @@ module csrfile(
   // 0x305 Machine Trap-Vector Base-Address Register
   wire sel_rd_mtvec = (csr_rd_addr == 12'h305);
   wire sel_wr_mtvec = (csr_wr_addr == 12'h305);
-  wire mtvec_rd_ena = (csr_rd_ena & sel_rd_mtvec);
-  wire mtvec_wr_ena = (csr_wr_ena & sel_wr_mtvec);
+  wire mtvec_rd_ena = csr_rd_ena && sel_rd_mtvec;
+  wire mtvec_wr_ena = csr_wr_ena && sel_wr_mtvec && csr_wr_clk;
   reg [`REG_BUS] csr_mtvec;
 
   always @(posedge clk) begin
@@ -162,8 +162,8 @@ module csrfile(
   // 0x340 Machine Scratch Register
   wire sel_rd_mscratch = (csr_rd_addr == 12'h340);
   wire sel_wr_mscratch = (csr_wr_addr == 12'h340);
-  wire mscratch_rd_ena = (csr_rd_ena & sel_rd_mscratch);
-  wire mscratch_wr_ena = (csr_wr_ena & sel_wr_mscratch);
+  wire mscratch_rd_ena = csr_rd_ena && sel_rd_mscratch;
+  wire mscratch_wr_ena = csr_wr_ena && sel_wr_mscratch && csr_wr_clk;
   reg [`REG_BUS] csr_mscratch;
 
   always @(posedge clk) begin
@@ -180,8 +180,8 @@ module csrfile(
   // 0x341 Machine Exception Program Counter
   wire sel_rd_mepc = (csr_rd_addr == 12'h341);
   wire sel_wr_mepc = (csr_wr_addr == 12'h341);
-  wire mepc_rd_ena = (csr_rd_ena & sel_rd_mepc);
-  wire mepc_wr_ena = (csr_wr_ena & sel_wr_mepc);
+  wire mepc_rd_ena = csr_rd_ena && sel_rd_mepc;
+  wire mepc_wr_ena = csr_wr_ena && sel_wr_mepc && csr_wr_clk;
   reg [`REG_BUS] csr_mepc;
 
   always @(posedge clk) begin
@@ -205,8 +205,8 @@ module csrfile(
   // 0x342 Machine Cause Register
   wire sel_rd_mcause = (csr_rd_addr == 12'h342);
   wire sel_wr_mcause = (csr_wr_addr == 12'h342);
-  wire mcause_rd_ena = (csr_rd_ena & sel_rd_mcause);
-  wire mcause_wr_ena = (csr_wr_ena & sel_wr_mcause);
+  wire mcause_rd_ena = csr_rd_ena && sel_rd_mcause;
+  wire mcause_wr_ena = csr_wr_ena && sel_wr_mcause && csr_wr_clk;
   reg [`REG_BUS] csr_mcause;
 
   always @(posedge clk) begin
@@ -230,8 +230,8 @@ module csrfile(
   // 0x343 Machine Trap Value Register
   wire sel_rd_mtval = (csr_rd_addr == 12'h343);
   wire sel_wr_mtval = (csr_wr_addr == 12'h343);
-  wire mtval_rd_ena = (csr_rd_ena & sel_rd_mtval);
-  wire mtval_wr_ena = (csr_wr_ena & sel_wr_mtval);
+  wire mtval_rd_ena = csr_rd_ena && sel_rd_mtval;
+  wire mtval_wr_ena = csr_wr_ena && sel_wr_mtval && csr_wr_clk;
   reg [`REG_BUS] csr_mtval;
   
   always @(posedge clk) begin
@@ -255,8 +255,8 @@ module csrfile(
   // 0x344 Machine Interrupt Pending Register
   wire sel_rd_mip = (csr_rd_addr == 12'h344);
   wire sel_wr_mip = (csr_wr_addr == 12'h344);
-  wire mip_rd_ena = (csr_rd_ena & sel_rd_mip);
-  wire mip_wr_ena = (csr_wr_ena & sel_wr_mip);
+  wire mip_rd_ena = csr_rd_ena && sel_rd_mip;
+  wire mip_wr_ena = csr_wr_ena && sel_wr_mip && csr_wr_clk;
   reg [`REG_BUS] csr_mip;
   /*
   always @(posedge clk) begin
@@ -283,8 +283,8 @@ module csrfile(
   // 0xB00 Cycle Counter
   wire sel_rd_mcycle = (csr_rd_addr == 12'hb00);
   wire sel_wr_mcycle = (csr_wr_addr == 12'hb00);
-  wire mcycle_rd_ena = (csr_rd_ena & sel_rd_mcycle);
-  wire mcycle_wr_ena = (csr_wr_ena & sel_wr_mcycle);
+  wire mcycle_rd_ena = csr_rd_ena && sel_rd_mcycle;
+  wire mcycle_wr_ena = csr_wr_ena && sel_wr_mcycle && csr_wr_clk;
   reg [`REG_BUS] csr_mcycle;
 
   always @(posedge clk) begin
