@@ -7,7 +7,7 @@ module csrfile(
   input wire                              clk,
   input wire                              rst,
   
-  input wire                              excp_wr_ena,
+  input wire                              csr_wr_clk,
   
   // id stage
   input wire                              csr_rd_ena,
@@ -49,9 +49,9 @@ module csrfile(
     csr_mie
   };
   
-  wire excp_enter_wr = excp_enter && excp_wr_ena;
-  wire excp_exit_wr  = excp_exit  && excp_wr_ena;
-  wire excp_wr = (excp_enter || excp_exit) && excp_wr_ena;
+  wire excp_enter_wr = excp_enter && csr_wr_clk;
+  wire excp_exit_wr  = excp_exit  && csr_wr_clk;
+  wire excp_wr = (excp_enter || excp_exit) && csr_wr_clk;
 
   // 0x300 Machine Status Register
   wire sel_rd_mstatus = (csr_rd_addr == 12'h300);

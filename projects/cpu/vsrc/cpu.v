@@ -195,7 +195,7 @@ module cpu(
     .clk                       (clock),
     .rst                       (reset),
     
-    .excp_wr_ena               (ex_to_mem_handshake),
+    .csr_wr_clk                (ex_to_mem_handshake),
 
     // read: id stage
     .csr_rd_ena                (csr_rd_ena),
