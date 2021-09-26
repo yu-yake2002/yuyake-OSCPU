@@ -52,7 +52,7 @@ module excp_handler (
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = itrp_allowin;
+  wire sp_itrp_ena = itrp_allowin && (|itrp_info);
   assign itrp_allowin = mstatus_rd_data[3] && mie_rd_data[7] && mip_rd_data[7];
 
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
