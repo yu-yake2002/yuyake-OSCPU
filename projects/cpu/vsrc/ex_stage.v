@@ -86,7 +86,7 @@ module ex_stage(
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
-      ex_itrp_bus <= clint_interupt_bus;
+      ex_itrp_bus <= clint_interupt_bus && {12{itrp_valid}};
     end
   end
   
