@@ -1,4 +1,7 @@
+
 //--Sun Jiru, Nanjing University--
+
+`timescale 1ns / 1ps
 
 `define RISCV_PRIV_MODE_U   0
 `define RISCV_PRIV_MODE_S   1
@@ -25,7 +28,7 @@
 
 
 `define EXCP_RD_WIDTH       320
-`define EXCP_WR_WIDTH       256
+`define EXCP_WR_WIDTH       320
 
 `define AXI_ADDR_WIDTH      64
 `define AXI_DATA_WIDTH      64
@@ -168,7 +171,6 @@ module ysyx_210611(
   input                               io_master_rlast,
   input  [3:0]                        io_master_rid,
 
-  // slave
   output                              io_slave_awready,
   input                               io_slave_awvalid,
   input  [31:0]                       io_slave_awaddr,
@@ -202,7 +204,6 @@ module ysyx_210611(
   output [63:0]                       io_slave_rdata,
   output                              io_slave_rlast,
   output [3:0]                        io_slave_rid
-  
 );
 
   ysyx_210611_axi_2x2 ysyx_210611_axi_2x2(
@@ -330,7 +331,7 @@ module ysyx_210611(
     .ram_b_valid_i                  (io_master_bvalid),
     .ram_b_resp_i                   (io_master_bresp),
     .ram_b_id_i                     (io_master_bid),
-    .ram_b_user_i                   (0),
+    .ram_b_user_i                   (),
   
     .ram_ar_ready_i                 (io_master_arready),
     .ram_ar_valid_o                 (io_master_arvalid),
@@ -351,7 +352,7 @@ module ysyx_210611(
     .ram_r_data_i                   (io_master_rdata),
     .ram_r_last_i                   (io_master_rlast),
     .ram_r_id_i                     (io_master_rid),
-    .ram_r_user_i                   (0),
+    .ram_r_user_i                   (),
 
     // CLINT
     .cli_aw_ready_i                 (cli_aw_ready),
@@ -404,10 +405,10 @@ module ysyx_210611(
   
   wire                        mem_axi_aw_ready, if_axi_aw_ready, cli_aw_ready;
   wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
-  wire [`AXI_ADDR_WIDTH-1:0]   mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
+  wire [31:0]                 mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
   wire [2:0]                  mem_axi_aw_prot,  if_axi_aw_prot,  cli_aw_prot;
-  wire [`AXI_ID_WIDTH-1:0]     mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
-  wire [`AXI_USER_WIDTH-1:0]   mem_axi_aw_user,  if_axi_aw_user,  cli_aw_user;
+  wire [3:0]                  mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
+  wire                        mem_axi_aw_user,  if_axi_aw_user,  cli_aw_user;
   wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len,   cli_aw_len;
   wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
   wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst, cli_aw_burst;
@@ -417,23 +418,23 @@ module ysyx_210611(
   
   wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
   wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
-  wire [`AXI_DATA_WIDTH-1:0]   mem_axi_w_data,   if_axi_w_data,   cli_w_data;
-  wire [`AXI_DATA_WIDTH/8-1:0] mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
+  wire [63:0]                 mem_axi_w_data,   if_axi_w_data,   cli_w_data;
+  wire [7:0]                  mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
   wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
   wire                        mem_axi_w_id,     if_axi_w_id,     cli_w_id;
 
   wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
   wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
   wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
-  wire [`AXI_ID_WIDTH-1:0]     mem_axi_b_id,     if_axi_b_id,     cli_b_id;
-  wire [`AXI_USER_WIDTH-1:0]   mem_axi_b_user,   if_axi_b_user,   cli_b_user;
+  wire [3:0]                  mem_axi_b_id,     if_axi_b_id,     cli_b_id;
+  wire                        mem_axi_b_user,   if_axi_b_user,   cli_b_user;
 
   wire                        mem_axi_ar_ready, if_axi_ar_ready, cli_ar_ready;
   wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
-  wire [`AXI_ADDR_WIDTH-1:0]   mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
+  wire [31:0]                 mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
   wire [2:0]                  mem_axi_ar_prot,  if_axi_ar_prot,  cli_ar_prot;
-  wire [`AXI_ID_WIDTH-1:0]     mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
-  wire [`AXI_USER_WIDTH-1:0]   mem_axi_ar_user,  if_axi_ar_user,  cli_ar_user;
+  wire [3:0]                  mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
+  wire                        mem_axi_ar_user,  if_axi_ar_user,  cli_ar_user;
   wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len,   cli_ar_len;
   wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
   wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst, cli_ar_burst;
@@ -444,10 +445,10 @@ module ysyx_210611(
   wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
   wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
   wire [1:0]                  mem_axi_r_resp,   if_axi_r_resp,   cli_r_resp;
-  wire [`AXI_DATA_WIDTH-1:0]   mem_axi_r_data,   if_axi_r_data,   cli_r_data;
+  wire [63:0]                 mem_axi_r_data,   if_axi_r_data,   cli_r_data;
   wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
-  wire [`AXI_ID_WIDTH-1:0]     mem_axi_r_id,     if_axi_r_id,     cli_r_id;
-  wire [`AXI_USER_WIDTH-1:0]   mem_axi_r_user,   if_axi_r_user,   cli_r_user;
+  wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
+  wire                        mem_axi_r_user,   if_axi_r_user,   cli_r_user;
 
   ysyx_210611_axi_rw ysyx_210611_mem_axi_rw (
     .clock                          (clock),
@@ -576,28 +577,28 @@ module ysyx_210611(
   wire if_rw_valid;
   wire if_rw_ready;
   wire if_rw_req = `REQ_READ;
-  wire [63:0] if_r_data;
-  wire [63:0] if_w_data = 64'h0;
-  wire [63:0] if_rw_addr;
+  wire [`REG_BUS] if_r_data;
+  wire [`REG_BUS] if_w_data = 64'h0;
+  wire [`REG_BUS] if_rw_addr;
   wire [1:0] if_rw_size;
   wire [1:0] if_rw_resp;
   
   wire mem_rw_valid;
   wire mem_rw_ready;
   wire mem_rw_req;
-  wire [63:0] mem_r_data;
-  wire [63:0] mem_w_data;
-  wire [63:0] mem_rw_addr;
+  wire [`REG_BUS] mem_r_data;
+  wire [`REG_BUS] mem_w_data;
+  wire [`REG_BUS] mem_rw_addr;
   wire [1:0] mem_rw_size;
   wire [1:0] mem_rw_resp;
 
+  wire io_uart_out_valid;
+  wire [7:0] io_uart_out_ch;
   wire [`ITRP_BUS] clint_interupt_bus;
-  
-  wire             io_uart_out_valid;
-  wire [7:0]       io_uart_out_ch;
+
   ysyx_210611_cpu ysyx_210611_u_cpu(
-    .clock                          (clock),
-    .reset                          (reset),
+    .clock                         (clock),
+    .reset                         (reset),
     
     // if stage
     .if_rw_valid                   (if_rw_valid),
@@ -678,7 +679,6 @@ module ysyx_210611(
     .clint_interupt_bus            (clint_interupt_bus)
   );
 endmodule
-//--Sun Jiru, Nanjing University--
 
 // Burst types
 `define AXI_BURST_TYPE_FIXED                                2'b00
@@ -1478,7 +1478,6 @@ module ysyx_210611_axi_2x2 # (
   
   assign cli_r_ready_o = r_state_cli & mid_r_ready;
 endmodule
-//--Sun Jiru, Nanjing University--
 
 // Burst types
 `define AXI_BURST_TYPE_FIXED                                2'b00
@@ -1742,7 +1741,9 @@ module ysyx_210611_axi_rw # (
   
   // Write address channel signals
   assign axi_aw_valid_o   = w_state_addr;
-  assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
+  //assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
+  assign axi_aw_addr_o    = axi_addr;
+
   assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
   assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
@@ -1757,7 +1758,7 @@ module ysyx_210611_axi_rw # (
   assign axi_w_valid_o    = w_state_write;
   always @(posedge clock) begin
     if (reset) begin
-      axi_w_data_o <= 64'h0;
+      axi_w_data_o <= `ZERO_WORD;
       axi_w_strb_o <= 8'b0;
     end
     else if (aw_hs) begin
@@ -1785,7 +1786,9 @@ module ysyx_210611_axi_rw # (
   
   // Read address channel signals
   assign axi_ar_valid_o   = r_state_addr;
-  assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
+  //assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
+  assign axi_ar_addr_o    = axi_addr;
+
   assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
   assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
@@ -1826,8 +1829,6 @@ module ysyx_210611_axi_rw # (
   endgenerate
 
 endmodule
-
-// Sun Jiru, Nanjing University
 
 module ysyx_210611_clint # (
   parameter RW_DATA_WIDTH     = 64,
@@ -1892,9 +1893,12 @@ module ysyx_210611_clint # (
   output wire [`ITRP_BUS]                 clint_interupt_bus
 );
 
+  wire debug_wr = msip_wr_ena || mtime_wr_ena || mtimecmp_wr_ena;
+  wire debug_rd = msip_rd_ena || mtime_rd_ena || mtimecmp_rd_ena;
+
   // CLINT CSRs
   reg [31 : 0]   csr_msip;
-  reg [63:0] csr_mtime, csr_mtimecmp;
+  reg [`REG_BUS] csr_mtime, csr_mtimecmp;
 
   wire ar_hs  = ar_valid_i && ar_ready_o;
   wire r_hs   = r_valid_o  && r_ready_i;
@@ -1924,17 +1928,20 @@ module ysyx_210611_clint # (
   
   // ar bus
   assign ar_ready_o = r_state_idle && ar_valid_i;
-  reg [63:0]           rd_addr_reg;
+  reg [`REG_BUS]           rd_addr_reg;
   reg [AXI_ID_WIDTH-1:0]   rd_id_reg;
   reg [AXI_USER_WIDTH-1:0] rd_user_reg;
   always @(posedge clk) begin
     if (rst) begin
-      {rd_addr_reg, rd_id_reg, rd_user_reg} <= 64'h0;
+      {rd_addr_reg, rd_id_reg, rd_user_reg} <= `ZERO_WORD;
     end
     else if (ar_hs) begin
       rd_addr_reg <= ar_addr_i;
       rd_id_reg   <= ar_id_i;
       rd_user_reg <= ar_user_i;
+    end
+    else if (r_hs) begin
+      rd_addr_reg <= 0;
     end
   end
 
@@ -1987,24 +1994,27 @@ module ysyx_210611_clint # (
 
   // aw bus
   assign aw_ready_o = w_state_idle && aw_valid_i;
-  reg [63:0]           wr_addr_reg;
+  reg [`REG_BUS]           wr_addr_reg;
   reg [AXI_ID_WIDTH-1:0]   wr_id_reg;
   reg [AXI_USER_WIDTH-1:0] wr_user_reg;
   always @(posedge clk) begin
     if (rst) begin
-      {wr_addr_reg, wr_id_reg, wr_user_reg} <= 64'h0;
+      {wr_addr_reg, wr_id_reg, wr_user_reg} <= `ZERO_WORD;
     end
     else if (aw_hs) begin
       wr_addr_reg <= aw_addr_i;
       wr_id_reg   <= aw_id_i;
       wr_user_reg <= aw_user_i;
     end
+    else if (w_hs) begin
+      wr_addr_reg <= 0;
+    end
   end
 
   // w bus
   assign w_ready_o = W_STATE_WRITE && w_valid_i;
   
-  wire [63:0] wr_mask = {
+  wire [`REG_BUS] wr_mask = {
     {8{w_strb_i[7]}},
     {8{w_strb_i[6]}},
     {8{w_strb_i[5]}},
@@ -2030,30 +2040,41 @@ module ysyx_210611_clint # (
   // mtimecmp
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtimecmp <= 64'h0;
+      csr_mtimecmp <= `ZERO_WORD;
     end
     else if (w_hs && mtimecmp_wr_ena) begin
         csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & w_data_i);
     end
   end
-
+  /*
+  // decelerate
+  reg [3:0] decelerate_reg;
+  always @(posedge clk) begin
+    if (rst) begin
+      decelerate_reg <= 0;
+    end
+    else begin
+      decelerate_reg <= decelerate_reg + 1;
+    end
+  end
+  wire add_ctime = (&decelerate_reg);
+  */
   // mtime
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtime <= 64'h0;
+      csr_mtime <= `ZERO_WORD;
     end
     else if (w_hs && mtime_wr_ena) begin
       csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & w_data_i);
     end 
     else begin
+      //csr_mtime <= csr_mtime + add_ctime;
       csr_mtime <= csr_mtime + 1;
     end
   end
   
   // b bus
-  assign b_valid_o = w_state_resp;
-  //assign b_valid_o = 1'b0;
- 
+  assign b_valid_o = w_state_resp; 
   assign b_resp_o  = 2'b0;
   assign b_id_o    = wr_id_reg;
   assign b_user_o  = wr_user_reg;
@@ -2062,10 +2083,6 @@ module ysyx_210611_clint # (
   assign clint_interupt_bus [`SOFT_ITRP]  = csr_msip == 32'b1;
   assign clint_interupt_bus [`TIMER_ITRP] = csr_mtime >= csr_mtimecmp;
 endmodule
-/* verilator lint_off UNUSED */
-//--Sun Jiru, Nanjing University--
-
-`timescale 1ns / 1ps
 
 module ysyx_210611_cpu(
   input wire                 clock,
@@ -2076,8 +2093,8 @@ module ysyx_210611_cpu(
   // if stage
   output wire                if_rw_valid,
   input wire                 if_rw_ready,
-  input wire [63:0]      if_r_data,
-  output wire [63:0]     if_rw_addr,
+  input wire [`REG_BUS]      if_r_data,
+  output wire [`REG_BUS]     if_rw_addr,
   output wire [1 : 0]        if_rw_size,
   input wire [1 : 0]         if_rw_resp,
   
@@ -2085,9 +2102,9 @@ module ysyx_210611_cpu(
   output wire                mem_rw_valid,
   input wire                 mem_rw_ready,
   output wire                mem_rw_req,
-  input wire [63:0]      mem_r_data,
-  output wire [63:0]     mem_w_data,
-  output wire [63:0]     mem_rw_addr,
+  input wire [`REG_BUS]      mem_r_data,
+  output wire [`REG_BUS]     mem_w_data,
+  output wire [`REG_BUS]     mem_rw_addr,
   output wire [1 : 0]        mem_rw_size,
   input wire [1 : 0]         mem_rw_resp,
 
@@ -2102,7 +2119,7 @@ module ysyx_210611_cpu(
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
-  wire [63:0] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc, mem_to_wb_pc;
+  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc, mem_to_wb_pc;
   wire [`INST_BUS] if_to_id_inst, id_to_ex_inst, ex_to_mem_inst, mem_to_wb_inst;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
@@ -2212,6 +2229,7 @@ module ysyx_210611_cpu(
     .bj_ctrl_bus               (bj_ctrl_bus),
     
     // csr control
+    .csr_wr_clk                (ex_to_mem_handshake),
     .csr_wr_ena                (csr_wr_ena),
     .csr_wr_addr               (csr_wr_addr),
     .csr_wr_data               (csr_wr_data),
@@ -2239,11 +2257,11 @@ module ysyx_210611_cpu(
   // id stage <-> csrfile
   wire            csr_rd_ena;
   wire [11 : 0]   csr_rd_addr;
-  wire [63:0] csr_rd_data;
+  wire [`REG_BUS] csr_rd_data;
   // ex stage <=> csrfile
   wire            csr_wr_ena;
   wire [11 : 0]   csr_wr_addr;
-  wire [63:0] csr_wr_data;
+  wire [`REG_BUS] csr_wr_data;
   // excption control
   wire                      excp_enter, excp_exit;
   wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
@@ -2256,7 +2274,7 @@ module ysyx_210611_cpu(
     .clk                       (clock),
     .rst                       (reset),
     
-    .excp_wr_ena               (ex_to_mem_handshake),
+    .csr_wr_clk                (ex_to_mem_handshake),
 
     // read: id stage
     .csr_rd_ena                (csr_rd_ena),
@@ -2347,17 +2365,17 @@ module ysyx_210611_cpu(
   // id_stage <-> regfile
   wire rs1_r_ena;
   wire [4 : 0]rs1_r_addr;
-  wire [63:0] r_data1;
+  wire [`REG_BUS] r_data1;
   wire rs2_r_ena;
   wire [4 : 0]rs2_r_addr;
-  wire [63:0] r_data2;
+  wire [`REG_BUS] r_data2;
   // wb_stage <-> regfile
   wire reg_wr_ena;
   wire [4 : 0] reg_wr_addr;
-  wire [63:0] reg_wr_data;
+  wire [`REG_BUS] reg_wr_data;
   
   // difftest
-  wire [63:0] regs[0 : 31];
+  wire [`REG_BUS] regs[0 : 31];
 
   ysyx_210611_regfile ysyx_210611_Regfile(
     .clk                       (clock),
@@ -2379,14 +2397,14 @@ module ysyx_210611_cpu(
   // Difftest
   reg              cmt_wen;
   reg [7:0]        cmt_wdest;
-  reg [63:0]   cmt_wdata;
-  reg [63:0]   cmt_pc;
+  reg [`REG_BUS]   cmt_wdata;
+  reg [`REG_BUS]   cmt_pc;
   reg [`INST_BUS]  cmt_inst;
   reg              cmt_valid, cmt_skip;
   reg [`INST_BUS]  cmt_itrp_NO, cmt_excp_NO;
-  reg [63:0]   cycleCnt, instrCnt;
+  reg [`REG_BUS]   cycleCnt, instrCnt;
   
-  wire [63:0]  wb_pc, wb_rw_addr, wb_w_data;
+  wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
   wire [`INST_BUS] wb_inst;
   wire             wb_commit, wb_w_ena, wb_r_ena, wb_skip;
   wire [7 : 0]     wb_w_mask;
@@ -2412,27 +2430,23 @@ module ysyx_210611_cpu(
     wb_inst,     // 32 :1
     wb_commit    // 0  :0
   } = difftest_bus;
-
-  
 endmodule
-
-//--Sun Jiru, Nanjing Univeristy--
 
 module ysyx_210611_csrfile(
   input wire                              clk,
   input wire                              rst,
   
-  input wire                              excp_wr_ena,
+  input wire                              csr_wr_clk,
   
   // id stage
   input wire                              csr_rd_ena,
   input wire [11 : 0]                     csr_rd_addr,
-  output wire [63:0]                  csr_rd_data,
+  output wire [`REG_BUS]                  csr_rd_data,
   
   // wb stage
   input wire                              csr_wr_ena,
   input wire [11 : 0]                     csr_wr_addr,
-  input wire [63:0]                   csr_wr_data,
+  input wire [`REG_BUS]                   csr_wr_data,
   
   // exception
   output wire [`EXCP_RD_WIDTH-1:0]        csr_excp_rd_bus,
@@ -2446,8 +2460,10 @@ module ysyx_210611_csrfile(
   output wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus
   );
   
-  wire [63:0] mstatus_wr_data, mepc_wr_data, mcause_wr_data, mtval_wr_data;
+  wire [`REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
+                  mcause_wr_data, mtval_wr_data;
   assign {
+    mip_wr_data,
     mcause_wr_data,
     mepc_wr_data,
     mtval_wr_data,
@@ -2462,39 +2478,48 @@ module ysyx_210611_csrfile(
     csr_mie
   };
   
-  wire excp_enter_wr = excp_enter && excp_wr_ena;
-  wire excp_exit_wr  = excp_exit  && excp_wr_ena;
-  wire excp_wr = (excp_enter || excp_exit) && excp_wr_ena;
+  wire excp_enter_wr = excp_enter && csr_wr_clk;
+  wire excp_exit_wr  = excp_exit  && csr_wr_clk;
+  wire excp_wr = (excp_enter || excp_exit) && csr_wr_clk;
 
   // 0x300 Machine Status Register
   wire sel_rd_mstatus = (csr_rd_addr == 12'h300);
   wire sel_wr_mstatus = (csr_wr_addr == 12'h300);
-  wire mstatus_rd_ena = sel_rd_mstatus & csr_rd_ena;
-  wire mstatus_wr_ena = sel_wr_mstatus & csr_wr_ena;
-  reg [63:0] csr_mstatus;
+  wire mstatus_rd_ena = sel_rd_mstatus && csr_rd_ena;
+  wire mstatus_wr_ena = sel_wr_mstatus && csr_wr_ena && csr_wr_clk;
+  wire [`REG_BUS] mstatus_wr_data_full = {
+    (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11),
+    mstatus_wr_data[62:0]
+  };
+  wire [`REG_BUS] csr_wr_data_full = {
+    (csr_wr_data[14:13] == 2'b11) || (csr_wr_data[16:15] == 2'b11),
+    csr_wr_data[62:0]
+  };
+
+  reg [`REG_BUS] csr_mstatus;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
-      csr_mstatus <= mstatus_wr_data;
+      csr_mstatus <= 64'h80000000_0001F888 & mstatus_wr_data_full;
     end
     else if (mstatus_wr_ena) begin
-      csr_mstatus <= csr_wr_data;
+      csr_mstatus <= 64'h80000000_0001F888 & csr_wr_data_full;
     end
   end
 
-  wire [63:0] mstatus_rd_data = (
-    excp_wr        ? mstatus_wr_data :
-    mstatus_wr_ena ? csr_wr_data :
+  wire [`REG_BUS] mstatus_rd_data = (
+    excp_wr        ? mstatus_wr_data_full :
+    mstatus_wr_ena ? csr_wr_data_full :
                      csr_mstatus
   );
   
   // 0x301 Machine ISA Register
   wire sel_misa = (csr_rd_addr == 12'h301);
   wire misa_rd_ena = sel_misa & csr_rd_ena;
-  wire [63:0] csr_misa = {
+  wire [`REG_BUS] csr_misa = {
     2'b10
     ,4'b0 //WIRI
     ,1'b0 //              25 Z Reserved
@@ -2525,14 +2550,14 @@ module ysyx_210611_csrfile(
     ,1'b0 //              0 A Atomic extension
   };
 
-  wire [63:0] misa_rd_data = csr_misa;
+  wire [`REG_BUS] misa_rd_data = csr_misa;
 
   // 0x304 Machine Interrupt Enable Register
-  wire sel_rd_mie = (csr_rd_addr == 12'h304);
-  wire sel_wr_mie = (csr_wr_addr == 12'h304);
-  wire mie_rd_ena = (csr_rd_ena & sel_rd_mie);
-  wire mie_wr_ena = (csr_wr_ena & sel_wr_mie);
-  reg [63:0] csr_mie;
+  wire sel_rd_mie = csr_rd_addr == 12'h304;
+  wire sel_wr_mie = csr_wr_addr == 12'h304;
+  wire mie_rd_ena = csr_rd_ena && sel_rd_mie;
+  wire mie_wr_ena = csr_wr_ena && sel_wr_mie && csr_wr_clk;
+  reg [`REG_BUS] csr_mie;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
@@ -2543,54 +2568,54 @@ module ysyx_210611_csrfile(
     end
   end
 
-  wire [63:0] mie_rd_data = mie_wr_ena ? csr_wr_data : csr_mie;
+  wire [`REG_BUS] mie_rd_data = mie_wr_ena ? csr_wr_data : csr_mie;
 
   // 0x305 Machine Trap-Vector Base-Address Register
   wire sel_rd_mtvec = (csr_rd_addr == 12'h305);
   wire sel_wr_mtvec = (csr_wr_addr == 12'h305);
-  wire mtvec_rd_ena = (csr_rd_ena & sel_rd_mtvec);
-  wire mtvec_wr_ena = (csr_wr_ena & sel_wr_mtvec);
-  reg [63:0] csr_mtvec;
+  wire mtvec_rd_ena = csr_rd_ena && sel_rd_mtvec;
+  wire mtvec_wr_ena = csr_wr_ena && sel_wr_mtvec && csr_wr_clk;
+  reg [`REG_BUS] csr_mtvec;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mtvec <= 64'h0;
+      csr_mtvec <= `ZERO_WORD;
     end
     else if (mtvec_wr_ena) begin
       csr_mtvec <= csr_wr_data;
     end
   end
 
-  wire [63:0] mtvec_rd_data = mtvec_wr_ena ? csr_wr_data : csr_mtvec;
+  wire [`REG_BUS] mtvec_rd_data = mtvec_wr_ena ? csr_wr_data : csr_mtvec;
   
   // 0x340 Machine Scratch Register
   wire sel_rd_mscratch = (csr_rd_addr == 12'h340);
   wire sel_wr_mscratch = (csr_wr_addr == 12'h340);
-  wire mscratch_rd_ena = (csr_rd_ena & sel_rd_mscratch);
-  wire mscratch_wr_ena = (csr_wr_ena & sel_wr_mscratch);
-  reg [63:0] csr_mscratch;
+  wire mscratch_rd_ena = csr_rd_ena && sel_rd_mscratch;
+  wire mscratch_wr_ena = csr_wr_ena && sel_wr_mscratch && csr_wr_clk;
+  reg [`REG_BUS] csr_mscratch;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mscratch <= 64'h0;
+      csr_mscratch <= `ZERO_WORD;
     end
     else if (mscratch_wr_ena) begin
       csr_mscratch <= csr_wr_data;
     end
   end
 
-  wire [63:0] mscratch_rd_data = mscratch_wr_ena ? csr_wr_data : csr_mscratch;
+  wire [`REG_BUS] mscratch_rd_data = mscratch_wr_ena ? csr_wr_data : csr_mscratch;
 
   // 0x341 Machine Exception Program Counter
   wire sel_rd_mepc = (csr_rd_addr == 12'h341);
   wire sel_wr_mepc = (csr_wr_addr == 12'h341);
-  wire mepc_rd_ena = (csr_rd_ena & sel_rd_mepc);
-  wire mepc_wr_ena = (csr_wr_ena & sel_wr_mepc);
-  reg [63:0] csr_mepc;
+  wire mepc_rd_ena = csr_rd_ena && sel_rd_mepc;
+  wire mepc_wr_ena = csr_wr_ena && sel_wr_mepc && csr_wr_clk;
+  reg [`REG_BUS] csr_mepc;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mepc <= 64'h0;
+      csr_mepc <= `ZERO_WORD;
     end
     else if (excp_enter_wr) begin
       csr_mepc <=  mepc_wr_data;
@@ -2600,7 +2625,7 @@ module ysyx_210611_csrfile(
     end
   end
   
-  wire [63:0] mepc_rd_data = (
+  wire [`REG_BUS] mepc_rd_data = (
     excp_enter  ? mepc_wr_data :
     mepc_wr_ena ? csr_wr_data :
                   csr_mepc
@@ -2609,13 +2634,13 @@ module ysyx_210611_csrfile(
   // 0x342 Machine Cause Register
   wire sel_rd_mcause = (csr_rd_addr == 12'h342);
   wire sel_wr_mcause = (csr_wr_addr == 12'h342);
-  wire mcause_rd_ena = (csr_rd_ena & sel_rd_mcause);
-  wire mcause_wr_ena = (csr_wr_ena & sel_wr_mcause);
-  reg [63:0] csr_mcause;
+  wire mcause_rd_ena = csr_rd_ena && sel_rd_mcause;
+  wire mcause_wr_ena = csr_wr_ena && sel_wr_mcause && csr_wr_clk;
+  reg [`REG_BUS] csr_mcause;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mcause <= 64'h0;
+      csr_mcause <= `ZERO_WORD;
     end
     else if (excp_enter_wr) begin
       csr_mcause <=  mcause_wr_data;
@@ -2625,7 +2650,7 @@ module ysyx_210611_csrfile(
     end
   end
   
-  wire [63:0] mcause_rd_data = (
+  wire [`REG_BUS] mcause_rd_data = (
     excp_enter    ? mcause_wr_data :
     mcause_wr_ena ? csr_wr_data :
                     csr_mcause
@@ -2634,9 +2659,9 @@ module ysyx_210611_csrfile(
   // 0x343 Machine Trap Value Register
   wire sel_rd_mtval = (csr_rd_addr == 12'h343);
   wire sel_wr_mtval = (csr_wr_addr == 12'h343);
-  wire mtval_rd_ena = (csr_rd_ena & sel_rd_mtval);
-  wire mtval_wr_ena = (csr_wr_ena & sel_wr_mtval);
-  reg [63:0] csr_mtval;
+  wire mtval_rd_ena = csr_rd_ena && sel_rd_mtval;
+  wire mtval_wr_ena = csr_wr_ena && sel_wr_mtval && csr_wr_clk;
+  reg [`REG_BUS] csr_mtval;
   
   always @(posedge clk) begin
     if (rst == 1'b1) begin
@@ -2650,7 +2675,7 @@ module ysyx_210611_csrfile(
     end
   end
 
-  wire [63:0] mtval_rd_data = (
+  wire [`REG_BUS] mtval_rd_data = (
     excp_enter   ? mtval_wr_data :
     mtval_wr_ena ? csr_wr_data :
                    csr_mtval
@@ -2659,10 +2684,10 @@ module ysyx_210611_csrfile(
   // 0x344 Machine Interrupt Pending Register
   wire sel_rd_mip = (csr_rd_addr == 12'h344);
   wire sel_wr_mip = (csr_wr_addr == 12'h344);
-  wire mip_rd_ena = (csr_rd_ena & sel_rd_mip);
-  wire mip_wr_ena = (csr_wr_ena & sel_wr_mip);
-  reg [63:0] csr_mip;
-
+  wire mip_rd_ena = csr_rd_ena && sel_rd_mip;
+  wire mip_wr_ena = csr_wr_ena && sel_wr_mip && csr_wr_clk;
+  reg [`REG_BUS] csr_mip;
+  /*
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       csr_mip <= 64'h80;
@@ -2672,19 +2697,28 @@ module ysyx_210611_csrfile(
     end
     // TODO: when interruption pending, mip should flip corresponding bit
   end
+  */
+  always @(posedge clk) begin
+    if (rst == 1'b1) begin
+      csr_mip <= 64'h80;
+    end
+    else begin
+      csr_mip <= mip_wr_data;
+    end
+  end
 
-  wire [63:0] mip_rd_data = mip_wr_ena ? csr_wr_data : csr_mip;
+  wire [`REG_BUS] mip_rd_data = mip_wr_data;
 
   // 0xB00 Cycle Counter
   wire sel_rd_mcycle = (csr_rd_addr == 12'hb00);
   wire sel_wr_mcycle = (csr_wr_addr == 12'hb00);
-  wire mcycle_rd_ena = (csr_rd_ena & sel_rd_mcycle);
-  wire mcycle_wr_ena = (csr_wr_ena & sel_wr_mcycle);
-  reg [63:0] csr_mcycle;
+  wire mcycle_rd_ena = csr_rd_ena && sel_rd_mcycle;
+  wire mcycle_wr_ena = csr_wr_ena && sel_wr_mcycle && csr_wr_clk;
+  reg [`REG_BUS] csr_mcycle;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mcycle <= 64'h0;
+      csr_mcycle <= `ZERO_WORD;
     end
     else if (mcycle_wr_ena) begin
       csr_mcycle <= csr_wr_data;
@@ -2694,31 +2728,31 @@ module ysyx_210611_csrfile(
     end
   end
 
-  wire [63:0] mcycle_rd_data = mcycle_wr_ena ? csr_wr_data : (csr_mcycle + 64'b1);
+  wire [`REG_BUS] mcycle_rd_data = mcycle_wr_ena ? csr_wr_data : (csr_mcycle + 64'b1);
 
   // 0xF11 Machine Vendor ID Register
   wire sel_mvendorid = (csr_rd_addr == 12'hf11);
   wire mvendorid_rd_ena = (csr_rd_ena & sel_mvendorid);
-  wire [63:0] csr_mvendorid = 64'h0;
-  wire [63:0] mvendorid_rd_data = csr_mvendorid;
+  wire [`REG_BUS] csr_mvendorid = `ZERO_WORD;
+  wire [`REG_BUS] mvendorid_rd_data = csr_mvendorid;
   
   // 0xF12 Machine Architecture ID Register
   wire sel_marchid= (csr_rd_addr == 12'hf12);
   wire marchid_rd_ena = (csr_rd_ena & sel_marchid);
-  wire [63:0] csr_marchid = 64'h0;
-  wire [63:0] marchid_rd_data = csr_marchid;
+  wire [`REG_BUS] csr_marchid = `ZERO_WORD;
+  wire [`REG_BUS] marchid_rd_data = csr_marchid;
   
   // 0xF13 Machine Implementation ID Register
   wire sel_mimpid= (csr_rd_addr == 12'hf13);
   wire mimpid_rd_ena = (csr_rd_ena & sel_mimpid);
-  wire [63:0] csr_mimpid = 64'h0;
-  wire [63:0] mimpid_rd_data = csr_mimpid;
+  wire [`REG_BUS] csr_mimpid = `ZERO_WORD;
+  wire [`REG_BUS] mimpid_rd_data = csr_mimpid;
 
   // 0xF14 Hart ID Register
   wire sel_mhartid= (csr_rd_addr == 12'hf14);
   wire mhartid_rd_ena = (csr_rd_ena & sel_mhartid);
-  wire [63:0] csr_mhartid = 64'h0;
-  wire [63:0] mhartid_rd_data = csr_mhartid;
+  wire [`REG_BUS] csr_mhartid = `ZERO_WORD;
+  wire [`REG_BUS] mhartid_rd_data = csr_mhartid;
 
   assign csr_rd_data = {64{~rst}} & (
       ({64{mstatus_rd_ena}}   & mstatus_rd_data)
@@ -2744,16 +2778,14 @@ module ysyx_210611_csrfile(
 
 endmodule
 
-//--Sun Jiru, Nanjing University--
-
 module ysyx_210611_ex_stage_alu(
   input wire rst,
-  input wire [63:0] op1,
-  input wire [63:0] op2,
+  input wire [`REG_BUS] op1,
+  input wire [`REG_BUS] op2,
   input wire [`ALU_BUS] alu_info,
   input wire is_word_opt,
 
-  output wire [63:0] alu_output,
+  output wire [`REG_BUS] alu_output,
   output wire [`BJ_BUS] bj_data
   );
   
@@ -2772,8 +2804,8 @@ module ysyx_210611_ex_stage_alu(
 
   // left-shifter and right-shifter
   wire op_shift = op_sll | op_srl | op_sra;
-  wire [63:0] shifter_op1 = op1;
-  wire [63:0] shifter_in1 = {64{op_shift}} &
+  wire [`REG_BUS] shifter_op1 = op1;
+  wire [`REG_BUS] shifter_in1 = {64{op_shift}} &
           //   In order to save area and just use one left-shifter, we
           //   convert the right-shift op into left-shift operation
           (
@@ -2799,10 +2831,10 @@ module ysyx_210611_ex_stage_alu(
           );
   wire [5 : 0] shifter_in2 = {6{op_shift}} & (is_word_opt ? {1'b0, op2[4 : 0]} : op2[5 : 0]);
 
-  wire [63:0] shifter_res = (shifter_in1 << shifter_in2);
+  wire [`REG_BUS] shifter_res = (shifter_in1 << shifter_in2);
 
-  wire [63:0] sll_res = shifter_res;
-  wire [63:0] srl_res =  
+  wire [`REG_BUS] sll_res = shifter_res;
+  wire [`REG_BUS] srl_res =  
                  {
     shifter_res[00],shifter_res[01],shifter_res[02],shifter_res[03],
     shifter_res[04],shifter_res[05],shifter_res[06],shifter_res[07],
@@ -2821,8 +2853,8 @@ module ysyx_210611_ex_stage_alu(
     shifter_res[56],shifter_res[57],shifter_res[58],shifter_res[59],
     shifter_res[60],shifter_res[61],shifter_res[62],shifter_res[63]
                  };
-  wire [63:0] eff_mask = (is_word_opt ? 64'hffffffff : ~(64'b0)) >> shifter_in2;
-  wire [63:0] sra_res = (srl_res & eff_mask) | (
+  wire [`REG_BUS] eff_mask = (is_word_opt ? 64'hffffffff : ~(64'b0)) >> shifter_in2;
+  wire [`REG_BUS] sra_res = (srl_res & eff_mask) | (
     ((is_word_opt ? {32'b0, {32{op1[31]}}} : {64{op1[63]}}) & (~eff_mask))
   );
 
@@ -2837,17 +2869,17 @@ module ysyx_210611_ex_stage_alu(
   wire [64 : 0] adder_in2 = {65{op_addsub}} & (temp_sub ? (~adder_op2) : (adder_op2));
   wire [64 : 0] adder_cin = temp_sub ? 65'b1 : 65'b0;
   wire [64 : 0] add_res   = adder_in1 + adder_in2 + adder_cin;
-  wire [63:0] slt_res   = {{63{1'b0}}, (op_slt | op_sltu) & add_res[64]};
-  wire [63:0] sltu_res  = slt_res;
+  wire [`REG_BUS] slt_res   = {{63{1'b0}}, (op_slt | op_sltu) & add_res[64]};
+  wire [`REG_BUS] sltu_res  = slt_res;
 
   // logic operation
-  wire [63:0] xor_res = op1 ^ op2;
-  wire [63:0] or_res  = op1 | op2;
-  wire [63:0] and_res = op1 & op2;
-  wire [63:0] andn_res = ~op1 & op2;
-  wire [63:0] wri_res = op1;
+  wire [`REG_BUS] xor_res = op1 ^ op2;
+  wire [`REG_BUS] or_res  = op1 | op2;
+  wire [`REG_BUS] and_res = op1 & op2;
+  wire [`REG_BUS] andn_res = ~op1 & op2;
+  wire [`REG_BUS] wri_res = op1;
 
-  wire [63:0] temp_output = {64{~rst}} & ( 
+  wire [`REG_BUS] temp_output = {64{~rst}} & ( 
                       ({64{op_sll}}    & sll_res)
                     | ({64{op_srl}}    & srl_res)
                     | ({64{op_sra}}    & sra_res)
@@ -2871,26 +2903,24 @@ module ysyx_210611_ex_stage_alu(
   assign bj_data[`BJ_BGEU] = ~sltu_res[0];
   assign bj_data[`BJ_JALR] = 1'b1;
   assign bj_data[`BJ_JAL]  = 1'b1;
-endmodule//branch and jump
-//--Sun Jiru, Nanjing University--
+endmodule
 
 module ysyx_210611_ex_stage_bj (
   input wire rst,
   input wire ex_valid,
   input wire [`BJ_BUS] bj_info,
   input wire [`BJ_BUS] bj_data,
-  input wire [63:0] jmp_imm,
-  input wire [63:0] rs1_data,
-  input wire [63:0] ex_pc,
+  input wire [`REG_BUS] jmp_imm,
+  input wire [`REG_BUS] rs1_data,
+  input wire [`REG_BUS] ex_pc,
   
   output wire bj_ena,
-  output wire [63:0] new_pc
+  output wire [`REG_BUS] new_pc
   );
   
   assign new_pc = jmp_imm + (bj_info[`BJ_JALR] ? rs1_data : ex_pc);
   assign bj_ena = ~rst & ex_valid & (|(bj_info & bj_data));
 endmodule
-//--Sun Jiru, Nanjing University--
 
 module ysyx_210611_ex_stage(
   input wire                              clk,
@@ -2898,13 +2928,13 @@ module ysyx_210611_ex_stage(
   
   // pipeline control
   input wire                              id_to_ex_valid,
-  input wire [63:0]                   id_to_ex_pc,
+  input wire [`REG_BUS]                   id_to_ex_pc,
   input wire [`INST_BUS]                  id_to_ex_inst,
   input wire [`ID_TO_EX_WIDTH-1:0]        id_to_ex_bus,
   output wire                             ex_allowin,
 
   output wire                             ex_to_mem_valid,
-  output wire [63:0]                  ex_to_mem_pc,
+  output wire [`REG_BUS]                  ex_to_mem_pc,
   output wire [`INST_BUS]                 ex_to_mem_inst,
   output wire [`EX_TO_MEM_WIDTH-1:0]      ex_to_mem_bus,
   input wire                              mem_allowin,
@@ -2916,9 +2946,10 @@ module ysyx_210611_ex_stage(
   output wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
 
   // csr control
+  input wire                              csr_wr_clk,
   output wire                             csr_wr_ena,
   output wire [11 : 0]                    csr_wr_addr,
-  output wire [63:0]                  csr_wr_data,
+  output wire [`REG_BUS]                  csr_wr_data,
 
   // exception
   output wire                             excp_enter,
@@ -2931,8 +2962,8 @@ module ysyx_210611_ex_stage(
   output wire [4 : 0]                     ex_rs1_addr,
   output wire                             ex_rs2_r_ena,
   output wire [4 : 0]                     ex_rs2_addr,
-  input wire [63:0]                   rs1_data,
-  input wire [63:0]                   rs2_data,
+  input wire [`REG_BUS]                   rs1_data,
+  input wire [`REG_BUS]                   rs2_data,
 
   // difftest bus
   input wire [`ID_TO_EX_DIFF_WIDTH-1:0]   id_to_ex_diffbus,
@@ -2948,12 +2979,12 @@ module ysyx_210611_ex_stage(
   reg ex_valid;
   wire ex_ready_go;
 
-  reg [63:0] id_to_ex_pc_r;
+  reg [`REG_BUS] id_to_ex_pc_r;
   reg [`INST_BUS] id_to_ex_inst_r;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
-  wire itrp_valid;
+  reg itrp_valid;
   wire ex_done = ~hazard;
   wire bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
@@ -2975,10 +3006,23 @@ module ysyx_210611_ex_stage(
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
-      ex_itrp_bus <= clint_interupt_bus;
     end
   end
   
+  always @(posedge clk) begin
+    if (rst) begin
+      itrp_valid <= 1'b0;
+    end
+    else begin
+      if (itrp_valid && csr_wr_clk) begin
+        itrp_valid <= 1'b0;
+      end
+      else if (id_to_ex_valid && ex_allowin) begin
+        itrp_valid <= itrp_allowin;
+      end
+    end
+  end
+
   assign ex_pc = id_to_ex_pc_r;
   assign ex_inst = id_to_ex_inst_r;
   assign {
@@ -3023,14 +3067,14 @@ module ysyx_210611_ex_stage(
   wire                   ex_uart_out_valid;
   wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
   wire [`INST_BUS]       ex_inst;
-  wire [63:0]        ex_pc;
-  wire [63:0]        ex_op1, ex_op2;
+  wire [`REG_BUS]        ex_pc;
+  wire [`REG_BUS]        ex_op1, ex_op2;
   wire                   ex_use_rs1, ex_use_rs2;
-  wire [63:0]        ex_rs1_data, ex_rs2_data;
+  wire [`REG_BUS]        ex_rs1_data, ex_rs2_data;
   wire                   ex_is_word_opt;
   wire [`ALU_BUS]        ex_alu_info;
   wire [`BJ_BUS]         ex_bj_info;
-  wire [63:0]        ex_jmp_imm;
+  wire [`REG_BUS]        ex_jmp_imm;
 
   wire [`LOAD_BUS]       ex_load_info;
   wire [`SAVE_BUS]       ex_save_info;
@@ -3040,7 +3084,7 @@ module ysyx_210611_ex_stage(
   wire                   ex_reg_wr_ena, ex_csr_wr_ena;
   wire [4 : 0]           ex_reg_wr_addr;
   wire [11: 0]           ex_csr_wr_addr;
-  wire [63:0]        ex_csr_rd_data;
+  wire [`REG_BUS]        ex_csr_rd_data;
   
   wire hazard;
   ysyx_210611_forward ysyx_210611_Forward(
@@ -3066,17 +3110,18 @@ module ysyx_210611_ex_stage(
   assign                 excp_enter = ex_excp_enter;
 
   wire [`EXCP_BUS]       ex_excp_bus;
-  reg  [`ITRP_BUS]       ex_itrp_bus;
+  wire                   itrp_allowin;
   wire                   ex_excp_exit, ex_excp_enter;
   
   ysyx_210611_excp_handler ysyx_210611_Excp_handler(
     .excp_info           (ex_excp_bus),
-    .itrp_info           (ex_itrp_bus),
+    .itrp_info           (clint_interupt_bus),
     .now_pc              (ex_pc),
     .now_inst            (ex_inst),
     .mem_addr            (ex_data),
     .excp_exit           (ex_excp_exit),
     .excp_enter          (ex_excp_enter),
+    .itrp_allowin        (itrp_allowin),
     
     // to CSRs
     .csr_excp_rd_bus     (csr_excp_rd_bus),
@@ -3094,11 +3139,11 @@ module ysyx_210611_ex_stage(
     .excp_NO             (excp_NO)
   );
   
-  wire [63:0] rs1_forward, rs2_forward, true_op1, true_op2;
+  wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
   assign true_op1 = ex_use_rs1 ? rs1_forward : ex_op1;
   assign true_op2 = ex_use_rs2 ? rs2_forward : ex_op2;
-  wire [63:0] op1 = {{32{~ex_is_word_opt}} & true_op1[63 : 32], true_op1[31 : 0]};
-  wire [63:0] op2 = {{32{~ex_is_word_opt}} & true_op2[63 : 32], true_op2[31 : 0]};
+  wire [`REG_BUS] op1 = {{32{~ex_is_word_opt}} & true_op1[63 : 32], true_op1[31 : 0]};
+  wire [`REG_BUS] op2 = {{32{~ex_is_word_opt}} & true_op2[63 : 32], true_op2[31 : 0]};
   
   // alu -> bj
   wire [`BJ_BUS] ex_bj_data;
@@ -3127,8 +3172,8 @@ module ysyx_210611_ex_stage(
     .new_pc              (ex_bj_pc)
   );
   
-  wire [63:0] ex_ram_wr_src = rs2_forward;
-  wire [63:0] ex_data;
+  wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
+  wire [`REG_BUS] ex_data;
   assign ex_to_mem_pc = ex_pc;
   assign ex_to_mem_inst = ex_inst;
   assign ex_to_mem_bus = {
@@ -3152,7 +3197,7 @@ module ysyx_210611_ex_stage(
     ex_csr_wr_ena   // 0  :0
   };
 
-  wire [63:0]    ex_bj_pc, excp_jmp_pc;
+  wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;
   wire               ex_bj_ena, excp_jmp_ena;
   wire               ex_bj_valid; // 1: not finish the computation of branch
   
@@ -3177,16 +3222,16 @@ module ysyx_210611_ex_stage(
   };
 
 endmodule
-//--Sun Jiru, Nanjing Uniersity--
 
 module ysyx_210611_excp_handler (
   input wire [`EXCP_BUS]             excp_info,
   input wire [`ITRP_BUS]             itrp_info,
-  input wire [63:0]              now_pc,
+  input wire [`REG_BUS]              now_pc,
   input wire [31 : 0]                now_inst,
-  input wire [63:0]              mem_addr,
+  input wire [`REG_BUS]              mem_addr,
   input wire                         excp_exit,
   output wire                        excp_enter,
+  output wire                        itrp_allowin,
   
   // to CSRs
   input wire [`EXCP_RD_WIDTH-1:0]    csr_excp_rd_bus,
@@ -3194,10 +3239,10 @@ module ysyx_210611_excp_handler (
   
   // to if_stage
   output wire                        excp_jmp_ena,
-  output wire [63:0]             excp_jmp_pc,
+  output wire [`REG_BUS]             excp_jmp_pc,
 
   // to ex_stage
-  output wire                        itrp_valid,
+  input wire                         itrp_valid,
 
   // to difftest
   output wire [`INST_BUS]            itrp_NO,
@@ -3205,8 +3250,10 @@ module ysyx_210611_excp_handler (
   );
   
   // to CSRs
-  wire [63:0] mcause_wr_data, mepc_wr_data, mtval_wr_data, mstatus_wr_data;
+  wire [`REG_BUS] mip_wr_data, mcause_wr_data, mepc_wr_data,
+                  mtval_wr_data, mstatus_wr_data;
   assign csr_excp_wr_bus = {
+    mip_wr_data,      // 319:256
     mcause_wr_data,   // 255:192
     mepc_wr_data,     // 191:128
     mtval_wr_data,    // 127:64
@@ -3214,7 +3261,7 @@ module ysyx_210611_excp_handler (
   };
 
   // from CSRs
-  wire [63:0] mstatus_rd_data, mtvec_rd_data, mepc_rd_data, mie_rd_data, mip_rd_data;
+  wire [`REG_BUS] mstatus_rd_data, mtvec_rd_data, mepc_rd_data, mie_rd_data, mip_rd_data;
   assign {
     mstatus_rd_data,
     mtvec_rd_data,
@@ -3225,21 +3272,20 @@ module ysyx_210611_excp_handler (
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = (
-       mstatus_rd_data[3] 
-    && mie_rd_data[7]
-    && mip_rd_data[7]
-    && (|itrp_info)
-  );
-
+  wire sp_itrp_ena = itrp_valid;
+  
+  wire msie_allowin = mstatus_rd_data[3] && mie_rd_data[3]  && mip_rd_data[3];
+  wire mtie_allowin = mstatus_rd_data[3] && mie_rd_data[7]  && mip_rd_data[7];
+  wire meie_allowin = mstatus_rd_data[3] && mie_rd_data[11] && mip_rd_data[11];
+  assign itrp_allowin = meie_allowin || mtie_allowin || msie_allowin;
+  
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
-  assign itrp_valid = sp_itrp_ena;
   
   /* ----------- Decode ----------- */
   // decode machine interruption
-  wire soft_itrp = itrp_info[`SOFT_ITRP];
-  wire timer_itrp = itrp_info[`TIMER_ITRP];
-  wire exter_itrp = itrp_info[`EXTER_ITRP];
+  wire soft_itrp  = msie_allowin && itrp_valid;
+  wire timer_itrp = mtie_allowin && itrp_valid;
+  wire exter_itrp = meie_allowin && itrp_valid;
   wire [62 : 0] itrp_idx = (
       ({63{soft_itrp}}       & 63'd3)
     | ({63{timer_itrp}}      & 63'd7)
@@ -3275,6 +3321,8 @@ module ysyx_210611_excp_handler (
   wire inst_acc_fault = excp_inst_misal | excp_inst_acc | excp_inst_page ;
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
+  
+  assign mip_wr_data = {64{itrp_info[`TIMER_ITRP]}} & 64'h80;
 
   /* -----------Write CSRs----------- */
   // write mcause
@@ -3298,8 +3346,8 @@ module ysyx_210611_excp_handler (
   wire [6 : 4] mstatus_p2 = mstatus_rd_data[6 : 4];
   wire mstatus_mie = mstatus_rd_data[3];   // MIE
   wire [2 : 0] mstatus_p3 = mstatus_rd_data[2 : 0];
-  wire [63:0] mstatus_excp_enter = mstatus_mie ? {mstatus_p1, mstatus_mie, mstatus_p2, 1'b0, mstatus_p3} : mstatus_rd_data;
-  wire [63:0] mstatus_excp_exit = {mstatus_p1, 1'b1, mstatus_p2, mstatus_mpie, mstatus_p3};
+  wire [`REG_BUS] mstatus_excp_enter = {mstatus_p1, mstatus_mie, mstatus_p2, 1'b0, mstatus_p3};
+  wire [`REG_BUS] mstatus_excp_exit = {mstatus_p1, 1'b1, mstatus_p2, mstatus_mpie, mstatus_p3};
   assign mstatus_wr_data = (
       ({64{excp_enter}} & mstatus_excp_enter)
     | ({64{excp_exit}} & mstatus_excp_exit)
@@ -3311,44 +3359,44 @@ module ysyx_210611_excp_handler (
   wire mtvec_mode0 = (mtvec_mode == 2'b0);
   wire mtvec_mode1 = (mtvec_mode == 2'b1);
   wire [61 : 0] mtvec_base = mtvec_rd_data[63 : 2];
-  wire [63:0] excp_enter_pc = 
+  wire [`REG_BUS] excp_enter_pc = 
       ({64{mtvec_mode0}} & {mtvec_base, 2'b0}) // mode0, jump to base
     | ({64{mtvec_mode1}} & { // mode1
            ({60{sp_excp_ena}} & mtvec_base) // when exception, jump to base
          | ({60{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
         , 2'b0
       });
-  wire [63:0] excp_exit_pc = mepc_rd_data;
+  wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
   
   /* -----------Difftest Control-----------*/
   assign itrp_NO = {32{sp_itrp_ena}} & itrp_idx [31:0];
   assign excp_NO = {32{sp_excp_ena}} & excp_idx [31:0];
-endmodule//--Sun Jiru, Nanjing University--
+endmodule
 
 module ysyx_210611_forward (
   // forward control
   input wire [4 : 0]                  ex_rs1_addr,
   input wire [4 : 0]                  ex_rs2_addr,
   //input wire [12: 0] csr_addr,
-  input wire [63:0]               ex_rs1_data,
-  input wire [63:0]               ex_rs2_data,
+  input wire [`REG_BUS]               ex_rs1_data,
+  input wire [`REG_BUS]               ex_rs2_data,
   input wire                          ex_use_rs1,
   input wire                          ex_use_rs2,
 
   input wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
   input wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus,
 
-  output wire [63:0]              rs1_forward,
-  output wire [63:0]              rs2_forward,
+  output wire [`REG_BUS]              rs1_forward,
+  output wire [`REG_BUS]              rs2_forward,
 
   output wire                         hazard
 );
   
   wire [4:0] mem_reg_wr_addr, wb_reg_wr_addr;
   wire mem_reg_wr_ena, wb_reg_wr_ena;
-  wire [63:0] mem_ex_data, wb_ex_data, wb_mem_data;
+  wire [`REG_BUS] mem_ex_data, wb_ex_data, wb_mem_data;
   wire [`REG_CTRL_BUS] mem_reg_wr_ctrl, wb_reg_wr_ctrl;
 
   assign {
@@ -3417,7 +3465,6 @@ module ysyx_210611_forward (
   
   assign hazard = mem_op1_src_mem || mem_op2_src_mem;
 endmodule
-//--Sun Jiru, Nanjing University--
 
 module ysyx_210611_id_stage(
   input wire                             rst,
@@ -3425,20 +3472,20 @@ module ysyx_210611_id_stage(
 
   // pipeline control
   input wire                             if_to_id_valid,
-  input wire [63:0]                  if_to_id_pc,
+  input wire [`REG_BUS]                  if_to_id_pc,
   input wire [`INST_BUS]                 if_to_id_inst,
   output wire                            id_allowin,
 
   output wire                            id_to_ex_valid,
-  output wire [63:0]                 id_to_ex_pc,
+  output wire [`REG_BUS]                 id_to_ex_pc,
   output wire [`INST_BUS]                id_to_ex_inst,
   output wire [`ID_TO_EX_WIDTH-1:0]      id_to_ex_bus,
   input wire                             ex_allowin,
 
   // data from regfile and CSRs
-//  input wire [63:0]             r_data1,
-//  input wire [63:0]             r_data2,
-  input wire [63:0]                  csr_data,
+//  input wire [`REG_BUS]             r_data1,
+//  input wire [`REG_BUS]             r_data2,
+  input wire [`REG_BUS]                  csr_data,
   
   // control reg
 //  output wire                       rs1_r_ena,
@@ -3455,14 +3502,14 @@ module ysyx_210611_id_stage(
   output wire [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus
 );
 
-  wire [63:0] r_data1 = 64'b0;
-  wire [63:0] r_data2 = 64'b0;
+  wire [`REG_BUS] r_data1 = 64'b0;
+  wire [`REG_BUS] r_data2 = 64'b0;
   wire                       rs1_r_ena;
   wire [4 : 0]               rs1_addr;
   wire                       rs2_r_ena;
   wire [4 : 0]               rs2_addr;
 
-  wire [63:0] bj_pc;
+  wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;
   assign {
     bj_pc,    // 65:2
@@ -3474,7 +3521,7 @@ module ysyx_210611_id_stage(
   reg id_valid;
   wire id_ready_go;
   wire id_flush = bj_ena;
-  reg [63:0] if_to_id_pc_r;
+  reg [`REG_BUS] if_to_id_pc_r;
   reg [`INST_BUS] if_to_id_inst_r;
 
   assign id_ready_go = 1'b1;
@@ -3499,7 +3546,7 @@ module ysyx_210611_id_stage(
   end
   
   
-  wire [63:0]  id_pc   = if_to_id_pc_r;
+  wire [`REG_BUS]  id_pc   = if_to_id_pc_r;
   wire [`INST_BUS] id_inst = if_to_id_inst_r;
   
   // decode
@@ -3725,7 +3772,7 @@ module ysyx_210611_id_stage(
   wire mem_wr_ena = ~rst & inst_s;
   wire mem_rd_ena = ~rst & inst_i_load;
   
-  wire [63:0] id_op1 = {64{~rst}} & (
+  wire [`REG_BUS] id_op1 = {64{~rst}} & (
                   ({64{inst_i_load}}        & r_data1)
                 | ({64{inst_i_fence}}       & r_data1)
                 | ({64{inst_i_arith_dword}} & r_data1)
@@ -3744,9 +3791,9 @@ module ysyx_210611_id_stage(
   wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                   | inst_i_arith_word | inst_s | inst_r_dword
                   | inst_r_word | inst_b | inst_i_csr_reg;
-  wire [63:0] id_rs1_data = r_data1;
+  wire [`REG_BUS] id_rs1_data = r_data1;
   
-  wire [63:0] id_op2 = {64{~rst}} & (
+  wire [`REG_BUS] id_op2 = {64{~rst}} & (
                   ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
                 | ({64{inst_i_fence}}       & {{52{immI[11]}}, immI})
                 | ({64{inst_i_arith_dword}} & {{52{immI[11]}}, immI})
@@ -3764,9 +3811,9 @@ module ysyx_210611_id_stage(
                );
   wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
   wire id_use_csr = inst_i_csr_imm | inst_i_csr_reg;
-  wire [63:0] id_rs2_data = r_data2;
+  wire [`REG_BUS] id_rs2_data = r_data2;
   
-  wire [63:0] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
+  wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
                  | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
                  | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
   //               | ({64{inst_t}}       & 64'b0);
@@ -3841,14 +3888,11 @@ module ysyx_210611_id_stage(
     csr_data           // 64 :0
   };
   
-  wire id_skip_instr = inst_putch || (csr_vld && csr_rd_addr == 12'hB00);
+  wire id_skip_instr = inst_putch || (csr_vld && (csr_rd_addr == 12'hB00 || csr_rd_addr == 12'h344));
   assign id_to_ex_diffbus = (
     id_skip_instr
   );
 endmodule
-
-/* verilator lint_off UNUSED */
-//--Sun Jiru, Nanjing University--
 
 module ysyx_210611_if_stage(
   input wire                          clk,
@@ -3856,7 +3900,7 @@ module ysyx_210611_if_stage(
   
   // pipeline control
   output wire                         if_to_id_valid,
-  output wire [63:0]              if_to_id_pc,
+  output wire [`REG_BUS]              if_to_id_pc,
   output wire [`INST_BUS]             if_to_id_inst,
   input wire                          id_allowin,
   
@@ -3864,18 +3908,18 @@ module ysyx_210611_if_stage(
   output wire                         if_bj_ready,
   input wire [`BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus,
   //input wire                          excp_jmp_ena,
-  //input wire [63:0]               excp_pc,
+  //input wire [`REG_BUS]               excp_pc,
 
   // AXI4
   output wire                         if_axi_valid, // master is valid
   input wire                          if_axi_ready, // slave is ready
-  input wire [63:0]               if_axi_data_read,
-  output reg [63:0]               if_axi_addr,
+  input wire [`REG_BUS]               if_axi_data_read,
+  output reg [`REG_BUS]               if_axi_addr,
   output wire [1:0]                   if_axi_size,
   input wire [1:0]                    if_axi_resp
   );
   
-  wire [63:0] bj_pc;
+  wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;
   assign {
     bj_pc,    // 65:2
@@ -3887,7 +3931,7 @@ module ysyx_210611_if_stage(
   wire pre_valid = 1'b1;
   wire pre_ready_go = if_state == RETN;
   wire pre_to_if_valid = pre_valid && pre_ready_go;
-  wire [63:0] next_pc = /*excp_jmp_ena ? excp_pc :*/
+  wire [`REG_BUS] next_pc = /*excp_jmp_ena ? excp_pc :*/
                             bj_ena       ? bj_pc   :
                             (if_pc + 4);
   
@@ -3955,7 +3999,7 @@ module ysyx_210611_if_stage(
     end
   end
   
-  reg [63:0] if_pc;
+  reg [`REG_BUS] if_pc;
   reg [31 : 0]   if_inst;
   
   always @(posedge clk) begin
@@ -3978,14 +4022,14 @@ module ysyx_210611_mem_stage(
   
   // pipeline control
   input wire                               ex_to_mem_valid,
-  input wire [63:0]                    ex_to_mem_pc,
+  input wire [`REG_BUS]                    ex_to_mem_pc,
   input wire [`INST_BUS]                   ex_to_mem_inst,
   input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
   output wire                              mem_allowin,
   output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
-  output wire [63:0]                   mem_to_wb_pc,
+  output wire [`REG_BUS]                   mem_to_wb_pc,
   output wire [`INST_BUS]                  mem_to_wb_inst,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   input wire                               wb_allowin,
@@ -4001,9 +4045,9 @@ module ysyx_210611_mem_stage(
   output wire                              mem_rw_valid,
   input  wire                              mem_rw_ready,
   output wire                              mem_rw_req,
-  input  wire [63:0]                   mem_r_data,
-  output wire [63:0]                   mem_w_data,
-  output wire [63:0]                   mem_rw_addr,
+  input  wire [`REG_BUS]                   mem_r_data,
+  output wire [`REG_BUS]                   mem_w_data,
+  output wire [`REG_BUS]                   mem_rw_addr,
   output wire [1 : 0]                      mem_rw_size,
   input  wire [1 : 0]                      mem_rw_resp
   );
@@ -4013,7 +4057,7 @@ module ysyx_210611_mem_stage(
   // pipeline control
   reg mem_valid;
   wire mem_ready_go;
-  reg [63:0] ex_to_mem_pc_r;
+  reg [`REG_BUS] ex_to_mem_pc_r;
   reg [`INST_BUS] ex_to_mem_inst_r;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
   reg [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus_r;
@@ -4043,14 +4087,14 @@ module ysyx_210611_mem_stage(
   wire             mem_uart_out_valid;
   wire [7 : 0]     mem_uart_out_char;
   
-  wire [63:0]  mem_pc;
+  wire [`REG_BUS]  mem_pc;
   wire [31 : 0]    mem_inst;
   
   // ram control
   wire [`LOAD_BUS] mem_load_info;
   wire [`SAVE_BUS] mem_save_info;
-  wire [63:0]  mem_ram_wr_src;
-  wire [63:0]  mem_addr, mem_csr_rd_data;
+  wire [`REG_BUS]  mem_ram_wr_src;
+  wire [`REG_BUS]  mem_addr, mem_csr_rd_data;
   wire             mem_ram_rd_ena;
   wire             mem_ram_wr_ena;
   
@@ -4152,7 +4196,7 @@ module ysyx_210611_mem_stage(
   );
   
 
-  reg[63:0] mem_data;
+  reg[`REG_BUS] mem_data;
   always @(posedge clk) begin
     if (mem_handshake) begin
       mem_data <= (
@@ -4168,7 +4212,7 @@ module ysyx_210611_mem_stage(
   end
 
   wire mem_finish = mem_state == RETN;
-  wire [63:0] mem_ex_data = mem_addr;
+  wire [`REG_BUS] mem_ex_data = mem_addr;
   
   // difftest
   wire size_b = mem_rw_size == `SIZE_B;
@@ -4185,8 +4229,8 @@ module ysyx_210611_mem_stage(
   wire addr7 = mem_rw_addr[2:0] == 3'b111;
   wire            difftest_s_valid = |mem_save_info;
   wire            difftest_l_valid = |mem_load_info;
-  wire [63:0] difftest_addr = {mem_addr[63:3], 3'b0};
-  wire [63:0] difftest_data = (
+  wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
+  wire [`REG_BUS] difftest_data = (
       ({64{size_b}} & {8{mem_w_data[7 :0]}})
     | ({64{size_h}} & {4{mem_w_data[15:0]}})
     | ({64{size_w}} & {2{mem_w_data[31:0]}})
@@ -4247,66 +4291,65 @@ module ysyx_210611_mem_stage(
     mem_reg_wr_ctrl  // 2  :0
   };
 endmodule
-//--Sun Jiru, Nanjing University--
 
 module ysyx_210611_regfile(
   input  wire clk,
   input  wire rst,
 	
 	input  wire [4  : 0] w_addr,
-	input  wire [63:0] w_data,
+	input  wire [`REG_BUS] w_data,
   input  wire w_ena,
 	
 	input  wire [4  : 0] r_addr1,
-	output wire [63:0] r_data1,
+	output wire [`REG_BUS] r_data1,
 	input  wire r_ena1,
 	
 	input  wire [4  : 0] r_addr2,
-	output wire [63:0] r_data2,
+	output wire [`REG_BUS] r_data2,
 	input  wire r_ena2,
 
-	output wire [63:0] regs_o[0:31]
+	output wire [`REG_BUS] regs_o[0:31]
   );
 
     // 32 registers
-	reg [63:0] 	regs[0 : 31];
+	reg [`REG_BUS] 	regs[0 : 31];
 
 	always @(posedge clk) 
 	begin
 		if ( rst == 1'b1 ) 
 		begin
-			regs[ 0] <= 64'h0;
-			regs[ 1] <= 64'h0;
-			regs[ 2] <= 64'h0;
-			regs[ 3] <= 64'h0;
-			regs[ 4] <= 64'h0;
-			regs[ 5] <= 64'h0;
-			regs[ 6] <= 64'h0;
-			regs[ 7] <= 64'h0;
-			regs[ 8] <= 64'h0;
-			regs[ 9] <= 64'h0;
-			regs[10] <= 64'h0;
-			regs[11] <= 64'h0;
-			regs[12] <= 64'h0;
-			regs[13] <= 64'h0;
-			regs[14] <= 64'h0;
-			regs[15] <= 64'h0;
-			regs[16] <= 64'h0;
-			regs[17] <= 64'h0;
-			regs[18] <= 64'h0;
-			regs[19] <= 64'h0;
-			regs[20] <= 64'h0;
-			regs[21] <= 64'h0;
-			regs[22] <= 64'h0;
-			regs[23] <= 64'h0;
-			regs[24] <= 64'h0;
-			regs[25] <= 64'h0;
-			regs[26] <= 64'h0;
-			regs[27] <= 64'h0;
-			regs[28] <= 64'h0;
-			regs[29] <= 64'h0;
-			regs[30] <= 64'h0;
-			regs[31] <= 64'h0;
+			regs[ 0] <= `ZERO_WORD;
+			regs[ 1] <= `ZERO_WORD;
+			regs[ 2] <= `ZERO_WORD;
+			regs[ 3] <= `ZERO_WORD;
+			regs[ 4] <= `ZERO_WORD;
+			regs[ 5] <= `ZERO_WORD;
+			regs[ 6] <= `ZERO_WORD;
+			regs[ 7] <= `ZERO_WORD;
+			regs[ 8] <= `ZERO_WORD;
+			regs[ 9] <= `ZERO_WORD;
+			regs[10] <= `ZERO_WORD;
+			regs[11] <= `ZERO_WORD;
+			regs[12] <= `ZERO_WORD;
+			regs[13] <= `ZERO_WORD;
+			regs[14] <= `ZERO_WORD;
+			regs[15] <= `ZERO_WORD;
+			regs[16] <= `ZERO_WORD;
+			regs[17] <= `ZERO_WORD;
+			regs[18] <= `ZERO_WORD;
+			regs[19] <= `ZERO_WORD;
+			regs[20] <= `ZERO_WORD;
+			regs[21] <= `ZERO_WORD;
+			regs[22] <= `ZERO_WORD;
+			regs[23] <= `ZERO_WORD;
+			regs[24] <= `ZERO_WORD;
+			regs[25] <= `ZERO_WORD;
+			regs[26] <= `ZERO_WORD;
+			regs[27] <= `ZERO_WORD;
+			regs[28] <= `ZERO_WORD;
+			regs[29] <= `ZERO_WORD;
+			regs[30] <= `ZERO_WORD;
+			regs[31] <= `ZERO_WORD;
 		end
 		else 
 		begin
@@ -4324,15 +4367,13 @@ module ysyx_210611_regfile(
   assign regs_o = regs;
 endmodule
 
-//--Sun Jiru, Nanjing University--
-
 module ysyx_210611_wb_stage (
   input wire                              clk,
   input wire                              rst,
   
   // pipeline control
   input wire                              mem_to_wb_valid,
-  input wire [63:0]                   mem_to_wb_pc,
+  input wire [`REG_BUS]                   mem_to_wb_pc,
   input wire [`INST_BUS]                  mem_to_wb_inst,
   input wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   output wire                             wb_allowin,
@@ -4342,7 +4383,7 @@ module ysyx_210611_wb_stage (
   // regfile control
   output wire                             reg_wr_ena,
   output wire [4 : 0]                     reg_wr_addr,
-  output wire [63:0]                  reg_wr_data,
+  output wire [`REG_BUS]                  reg_wr_data,
 
   // difftest
   input wire [`MEM_TO_WB_DIFF_WIDTH-1:0]  mem_to_wb_diffbus,
@@ -4355,7 +4396,7 @@ module ysyx_210611_wb_stage (
   
   // pipeline control
   reg wb_valid;
-  reg [63:0] mem_to_wb_pc_r;
+  reg [`REG_BUS] mem_to_wb_pc_r;
   reg [`INST_BUS] mem_to_wb_inst_r;
   reg [`MEM_TO_WB_WIDTH-1:0] mem_to_wb_bus_r;
   reg [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus_r;
@@ -4377,7 +4418,7 @@ module ysyx_210611_wb_stage (
     end
   end
   
-  wire [63:0] wb_pc;
+  wire [`REG_BUS] wb_pc;
   wire [31 : 0]   wb_inst;
   wire            wb_wen;
   wire [4  : 0]   wb_wdest;
@@ -4401,7 +4442,7 @@ module ysyx_210611_wb_stage (
   assign reg_wr_ena = wb_wen && wb_valid;
   assign reg_wr_addr = wb_wdest;
   wire [`REG_CTRL_BUS] wb_reg_wr_ctrl;
-  wire [63:0] wb_ex_data, wb_mem_rd_data, wb_csr_rd_data;
+  wire [`REG_BUS] wb_ex_data, wb_mem_rd_data, wb_csr_rd_data;
 
   wire mem_to_reg = wb_reg_wr_ctrl[`MEM_TO_REG];
   wire ex_to_reg  = wb_reg_wr_ctrl[`EXE_TO_REG];
