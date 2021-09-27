@@ -421,7 +421,7 @@ module ysyx_210611(
   wire [63:0]                 mem_axi_w_data,   if_axi_w_data,   cli_w_data;
   wire [7:0]                  mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
   wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
-  wire                        mem_axi_w_id,     if_axi_w_id,     cli_w_id;
+  wire [3:0]                  mem_axi_w_id,     if_axi_w_id,     cli_w_id;
 
   wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
   wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
@@ -728,16 +728,14 @@ endmodule
 `define AXI_SIZE_BYTES_128                                  3'b111
 
 module ysyx_210611_axi_2x2 # (
-  parameter RW_DATA_WIDTH     = 64,
-  parameter RW_ADDR_WIDTH     = 64,
   parameter AXI_DATA_WIDTH    = 64,
-  parameter AXI_ADDR_WIDTH    = 64,
+  parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
   parameter AXI_USER_WIDTH    = 1
 )(
   input  wire               clock,
   input  wire               reset,
-
+  
   // Advanced eXtensible Interface
   // mem stage (master) -> 2x2 interconnect (slave)
   // id: 0001
@@ -935,8 +933,6 @@ module ysyx_210611_axi_2x2 # (
   input  wire [AXI_ID_WIDTH-1:0]          cli_r_id_i,
   input  wire [AXI_USER_WIDTH-1:0]        cli_r_user_i
 );
-  wire debug_oc_r = ram_ar_addr_o[63:4] == 56'h00000000_801cc68;
-  wire debug_oc_w = ram_aw_addr_o[63:4] == 56'h00000000_801cc68;
 
   // bridge between master and slave
   wire                             mid_aw_ready;
@@ -1097,9 +1093,9 @@ module ysyx_210611_axi_2x2 # (
   // Read State Machine
   reg [1:0] master_r_state, slave_r_state;
   wire r_0_to_cli = ~r_0_to_ram;
-  wire r_0_to_ram = ar_addr_i_0[63:16] != 48'h00000000_0200;
+  wire r_0_to_ram = ar_addr_i_0[31:16] != 48'h0200;
   wire r_1_to_cli = ~r_1_to_ram;
-  wire r_1_to_ram = ar_addr_i_1[63:16] != 48'h00000000_0200;
+  wire r_1_to_ram = ar_addr_i_1[31:16] != 48'h0200;
 
   // Current Stage
   always @(posedge clock) begin
@@ -1724,7 +1720,7 @@ module ysyx_210611_axi_rw # (
   assign rw_ready_o     = rw_ready;
   
   reg [1:0] rw_resp;
-  wire rw_resp_nxt = w_trans ? axi_b_resp_i : axi_r_resp_i;
+  wire [1:0] rw_resp_nxt = w_trans ? axi_b_resp_i : axi_r_resp_i;
   wire resp_en = trans_done;
   always @(posedge clock) begin
     if (reset) begin
@@ -1831,10 +1827,8 @@ module ysyx_210611_axi_rw # (
 endmodule
 
 module ysyx_210611_clint # (
-  parameter RW_DATA_WIDTH     = 64,
-  parameter RW_ADDR_WIDTH     = 64,
   parameter AXI_DATA_WIDTH    = 64,
-  parameter AXI_ADDR_WIDTH    = 64,
+  parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
   parameter AXI_USER_WIDTH    = 1
 )(
@@ -1844,10 +1838,10 @@ module ysyx_210611_clint # (
   // AXI bus
   output wire                             aw_ready_o,
   input  wire                             aw_valid_i,
-  input  wire [AXI_ADDR_WIDTH-1:0]        aw_addr_i,
+  input  wire [31:0]                      aw_addr_i,
   input  wire [2:0]                       aw_prot_i,
-  input  wire [AXI_ID_WIDTH-1:0]          aw_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        aw_user_i,
+  input  wire [3:0]                       aw_id_i,
+  input  wire                             aw_user_i,
   input  wire [7:0]                       aw_len_i,
   input  wire [2:0]                       aw_size_i,
   input  wire [1:0]                       aw_burst_i,
@@ -1857,23 +1851,23 @@ module ysyx_210611_clint # (
   
   output wire                             w_ready_o,
   input  wire                             w_valid_i,
-  input  wire [AXI_DATA_WIDTH-1:0]        w_data_i,
-  input  wire [AXI_DATA_WIDTH/8-1:0]      w_strb_i,
+  input  wire [63:0]                      w_data_i,
+  input  wire [7:0]                       w_strb_i,
   input  wire                             w_last_i,
-  input  wire [AXI_ID_WIDTH-1:0]          w_id_i,
+  input  wire [3:0]                       w_id_i,
    
   input  wire                             b_ready_i,
   output wire                             b_valid_o,
   output wire [1:0]                       b_resp_o,
-  output wire [AXI_ID_WIDTH-1:0]          b_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        b_user_o,
+  output wire [3:0]                       b_id_o,
+  output wire                             b_user_o,
   
   output wire                             ar_ready_o,
   input  wire                             ar_valid_i,
-  input  wire [AXI_ADDR_WIDTH-1:0]        ar_addr_i,
+  input  wire [31:0]                      ar_addr_i,
   input  wire [2:0]                       ar_prot_i,
-  input  wire [AXI_ID_WIDTH-1:0]          ar_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        ar_user_i,
+  input  wire [3:0]                       ar_id_i,
+  input  wire                             ar_user_i,
   input  wire [7:0]                       ar_len_i,
   input  wire [2:0]                       ar_size_i,
   input  wire [1:0]                       ar_burst_i,
@@ -1884,10 +1878,10 @@ module ysyx_210611_clint # (
   input  wire                             r_ready_i,
   output wire                             r_valid_o,
   output wire [1:0]                       r_resp_o,
-  output wire [AXI_DATA_WIDTH-1:0]        r_data_o,
+  output wire [63:0]                      r_data_o,
   output wire                             r_last_o,
-  output wire [AXI_ID_WIDTH-1:0]          r_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        r_user_o,
+  output wire [3:0]                       r_id_o,
+  output wire                             r_user_o,
 
   // interupt bus to core
   output wire [`ITRP_BUS]                 clint_interupt_bus
@@ -1933,7 +1927,9 @@ module ysyx_210611_clint # (
   reg [AXI_USER_WIDTH-1:0] rd_user_reg;
   always @(posedge clk) begin
     if (rst) begin
-      {rd_addr_reg, rd_id_reg, rd_user_reg} <= `ZERO_WORD;
+      rd_addr_reg <= 64'b0; 
+      rd_id_reg   <= 4'b0;
+      rd_user_reg <= 1'b0;
     end
     else if (ar_hs) begin
       rd_addr_reg <= ar_addr_i;
@@ -1949,9 +1945,9 @@ module ysyx_210611_clint # (
   assign r_valid_o = R_STATE_READ;
   assign r_resp_o  = 2'b0;
 
-  wire msip_rd_ena     = (rd_addr_reg == 64'h00000000_02000000);
-  wire mtimecmp_rd_ena = (rd_addr_reg == 64'h00000000_02004000);
-  wire mtime_rd_ena    = (rd_addr_reg == 64'h00000000_0200BFF8);
+  wire msip_rd_ena     = (rd_addr_reg == 32'h02000000);
+  wire mtimecmp_rd_ena = (rd_addr_reg == 32'h02004000);
+  wire mtime_rd_ena    = (rd_addr_reg == 32'h0200BFF8);
   assign r_data_o  = (
       ({64{msip_rd_ena}}     & {{32{csr_msip[31]}}, csr_msip})
     | ({64{mtimecmp_rd_ena}} & csr_mtimecmp)
@@ -2012,7 +2008,7 @@ module ysyx_210611_clint # (
   end
 
   // w bus
-  assign w_ready_o = W_STATE_WRITE && w_valid_i;
+  assign w_ready_o = w_state_write && w_valid_i;
   
   wire [`REG_BUS] wr_mask = {
     {8{w_strb_i[7]}},
@@ -2520,7 +2516,8 @@ module ysyx_210611_csrfile(
   wire sel_misa = (csr_rd_addr == 12'h301);
   wire misa_rd_ena = sel_misa & csr_rd_ena;
   wire [`REG_BUS] csr_misa = {
-    2'b10
+     32'b0
+    ,2'b10
     ,4'b0 //WIRI
     ,1'b0 //              25 Z Reserved
     ,1'b0 //              24 Y Reserved
@@ -3362,8 +3359,8 @@ module ysyx_210611_excp_handler (
   wire [`REG_BUS] excp_enter_pc = 
       ({64{mtvec_mode0}} & {mtvec_base, 2'b0}) // mode0, jump to base
     | ({64{mtvec_mode1}} & { // mode1
-           ({60{sp_excp_ena}} & mtvec_base) // when exception, jump to base
-         | ({60{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
+           ({62{sp_excp_ena}} & mtvec_base) // when exception, jump to base
+         | ({62{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
         , 2'b0
       });
   wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
@@ -4051,8 +4048,6 @@ module ysyx_210611_mem_stage(
   output wire [1 : 0]                      mem_rw_size,
   input  wire [1 : 0]                      mem_rw_resp
   );
-  
-  wire debug = mem_rw_addr[63:4] == 56'h00000000_801cc68;
 
   // pipeline control
   reg mem_valid;
