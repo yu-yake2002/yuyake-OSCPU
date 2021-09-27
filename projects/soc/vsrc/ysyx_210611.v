@@ -1990,12 +1990,14 @@ module ysyx_210611_clint # (
 
   // aw bus
   assign aw_ready_o = w_state_idle && aw_valid_i;
-  reg [`REG_BUS]           wr_addr_reg;
+  reg [31:0]               wr_addr_reg;
   reg [AXI_ID_WIDTH-1:0]   wr_id_reg;
   reg [AXI_USER_WIDTH-1:0] wr_user_reg;
   always @(posedge clk) begin
     if (rst) begin
-      {wr_addr_reg, wr_id_reg, wr_user_reg} <= `ZERO_WORD;
+      wr_addr_reg <= 32'b0;
+      wr_id_reg   <= 4'b0;
+      wr_user_reg <= 1'b0;
     end
     else if (aw_hs) begin
       wr_addr_reg <= aw_addr_i;
