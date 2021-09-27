@@ -3356,13 +3356,14 @@ module ysyx_210611_excp_handler (
   wire mtvec_mode0 = (mtvec_mode == 2'b0);
   wire mtvec_mode1 = (mtvec_mode == 2'b1);
   wire [61 : 0] mtvec_base = mtvec_rd_data[63 : 2];
-  wire [`REG_BUS] excp_enter_pc = 
-      ({64{mtvec_mode0}} & {mtvec_base, 2'b0}) // mode0, jump to base
-    | ({64{mtvec_mode1}} & { // mode1
+  wire [`REG_BUS] mode0_addr = {mtvec_base, 2'b0};
+  wire [`REG_BUS] mode1_addr = {
            ({62{sp_excp_ena}} & mtvec_base) // when exception, jump to base
          | ({62{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
-        , 2'b00
-      });
+        , 2'b00};
+  wire [`REG_BUS] excp_enter_pc = 
+      ({64{mtvec_mode0}} & mode0_addr) // mode0, jump to base
+    | ({64{mtvec_mode1}} & mode1_addr); // mode 1
   wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
