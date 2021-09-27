@@ -2022,9 +2022,9 @@ module ysyx_210611_clint # (
     {8{w_strb_i[1]}},
     {8{w_strb_i[0]}}
   };
-  wire msip_wr_ena     = (wr_addr_reg == 64'h00000000_02000000);
-  wire mtimecmp_wr_ena = (wr_addr_reg == 64'h00000000_02004000);
-  wire mtime_wr_ena    = (wr_addr_reg == 64'h00000000_0200BFF8);
+  wire msip_wr_ena     = (wr_addr_reg == 32'h02000000);
+  wire mtimecmp_wr_ena = (wr_addr_reg == 32'h02004000);
+  wire mtime_wr_ena    = (wr_addr_reg == 32'h0200BFF8);
   // msip
   always @(posedge clk) begin
     if (rst) begin
