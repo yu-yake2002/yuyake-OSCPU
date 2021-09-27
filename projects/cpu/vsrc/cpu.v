@@ -372,7 +372,7 @@ module cpu(
       cmt_excp_NO <= wb_excp_NO;
       
       cycleCnt <= cycleCnt + 1;
-      instrCnt <= instrCnt + wb_commit;
+      instrCnt <= instrCnt + (wb_commit && ~(|wb_itrp_NO));
     end
   end
   
