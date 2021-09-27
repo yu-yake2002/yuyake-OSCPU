@@ -1922,12 +1922,12 @@ module ysyx_210611_clint # (
   
   // ar bus
   assign ar_ready_o = r_state_idle && ar_valid_i;
-  reg [`REG_BUS]           rd_addr_reg;
-  reg [AXI_ID_WIDTH-1:0]   rd_id_reg;
-  reg [AXI_USER_WIDTH-1:0] rd_user_reg;
+  reg [31:0] rd_addr_reg;
+  reg [3:0]  rd_id_reg;
+  reg        rd_user_reg;
   always @(posedge clk) begin
     if (rst) begin
-      rd_addr_reg <= 64'b0; 
+      rd_addr_reg <= 32'b0; 
       rd_id_reg   <= 4'b0;
       rd_user_reg <= 1'b0;
     end
@@ -3361,7 +3361,7 @@ module ysyx_210611_excp_handler (
     | ({64{mtvec_mode1}} & { // mode1
            ({62{sp_excp_ena}} & mtvec_base) // when exception, jump to base
          | ({62{sp_itrp_ena}} & (mtvec_base + itrp_idx)) // when interruption, jump to base + code
-        , 2'b0
+        , 2'b00
       });
   wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
