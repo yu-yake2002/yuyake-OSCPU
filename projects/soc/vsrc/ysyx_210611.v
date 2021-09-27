@@ -3960,9 +3960,8 @@ module ysyx_210611_if_stage(
   
   always @(*) begin
     case (if_state)
-      IDLE: begin
+      IDLE:
         if_next_state = bj_handshake ? ADDR : IDLE;
-      end
       ADDR:
         if_next_state = if_handshake ? RETN : ADDR;
       RETN:
@@ -4161,9 +4160,15 @@ module ysyx_210611_mem_stage(
         if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
           mem_next_state = ADDR;
         end
+        else begin
+          mem_next_state = mem_state;
+        end
       ADDR:
         if (mem_handshake) begin
           mem_next_state = RETN;
+        end
+        else begin
+          mem_next_state = mem_state;
         end
       RETN:
         if (refresh) begin
