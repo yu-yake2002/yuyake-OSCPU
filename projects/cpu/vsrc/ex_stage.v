@@ -27,6 +27,7 @@ module ex_stage(
   output wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
 
   // csr control
+  input wire                              csr_wr_clk,
   output wire                             csr_wr_ena,
   output wire [11 : 0]                    csr_wr_addr,
   output wire [`REG_BUS]                  csr_wr_data,
@@ -86,10 +87,23 @@ module ex_stage(
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
-      itrp_valid <= itrp_allowin;
     end
   end
   
+  always @(posedge clk) begin
+    if (rst) begin
+      itrp_valid <= 1'b0;
+    end
+    else begin
+      if (itrp_valid && csr_wr_clk) begin
+        itrp_valid <= 1'b0;
+      end
+      else if (id_to_ex_valid && ex_allowin) begin
+        itrp_valid <= itrp_allowin;
+      end
+    end
+  end
+
   assign ex_pc = id_to_ex_pc_r;
   assign ex_inst = id_to_ex_inst_r;
   assign {

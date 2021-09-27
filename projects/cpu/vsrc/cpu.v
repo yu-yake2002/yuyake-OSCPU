@@ -151,6 +151,7 @@ module cpu(
     .bj_ctrl_bus               (bj_ctrl_bus),
     
     // csr control
+    .csr_wr_clk                (ex_to_mem_handshake),
     .csr_wr_ena                (csr_wr_ena),
     .csr_wr_addr               (csr_wr_addr),
     .csr_wr_data               (csr_wr_data),
