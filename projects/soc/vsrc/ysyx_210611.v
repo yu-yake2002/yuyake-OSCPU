@@ -20,13 +20,6 @@
 `define MEM_FORWARD_WIDTH     73
 `define WB_FORWARD_WIDTH      137
 
-`define ID_TO_EX_DIFF_WIDTH   1
-`define CSR_TO_EX_DIFF_WIDTH  512
-`define EX_TO_MEM_DIFF_WIDTH  64+`CSR_TO_EX_DIFF_WIDTH+`ID_TO_EX_DIFF_WIDTH
-`define MEM_TO_WB_DIFF_WIDTH  138+`EX_TO_MEM_DIFF_WIDTH
-`define WB_DIFFTEST_WIDTH     97+`MEM_TO_WB_DIFF_WIDTH
-
-
 `define EXCP_RD_WIDTH       320
 `define EXCP_WR_WIDTH       320
 
@@ -2122,13 +2115,6 @@ module ysyx_210611_cpu(
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
   wire [`MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
-
-  // difftest bus
-  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
-  wire [`ID_TO_EX_DIFF_WIDTH-1:0]  id_to_ex_diffbus;
-  wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus;
-  wire [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus;
-  wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus;
   
   // branch and jump bus
   wire [`BJ_CTRL_WIDTH-1:0]      bj_ctrl_bus;
@@ -2196,9 +2182,7 @@ module ysyx_210611_cpu(
     .csr_rd_ena                (csr_rd_ena),
     .csr_rd_addr               (csr_rd_addr),
 
-    .bj_ctrl_bus               (bj_ctrl_bus),
-
-    .id_to_ex_diffbus          (id_to_ex_diffbus)
+    .bj_ctrl_bus               (bj_ctrl_bus)
   );
   
   ysyx_210611_ex_stage ysyx_210611_Ex_stage(
@@ -2244,11 +2228,7 @@ module ysyx_210611_cpu(
     .ex_rs2_r_ena              (rs2_r_ena),
     .ex_rs2_addr               (rs2_r_addr),
     .rs1_data                  (r_data1),
-    .rs2_data                  (r_data2),
-    
-    .id_to_ex_diffbus          (id_to_ex_diffbus),
-    .csr_to_ex_diffbus         (csr_to_ex_diffbus),
-    .ex_to_mem_diffbus         (ex_to_mem_diffbus)
+    .rs2_data                  (r_data2)
   );
 
   // CSRs
@@ -2264,9 +2244,6 @@ module ysyx_210611_cpu(
   wire                      excp_enter, excp_exit;
   wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
   wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
-
-  // direct read and write
-  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
 
   ysyx_210611_csrfile ysyx_210611_CSRfile(
     .clk                       (clock),
@@ -2289,9 +2266,7 @@ module ysyx_210611_cpu(
     .csr_excp_wr_bus           (csr_excp_wr_bus),
 
     .excp_enter                (excp_enter),
-    .excp_exit                 (excp_exit),
-
-    .csr_to_ex_diffbus         (csr_to_ex_diffbus)
+    .excp_exit                 (excp_exit)
   );
   
   // MEM_STAGE
@@ -2315,10 +2290,6 @@ module ysyx_210611_cpu(
     
     // pipeline forward control
     .mem_forward_bus           (mem_forward_bus),
-
-    // difftest bus
-    .ex_to_mem_diffbus         (ex_to_mem_diffbus),
-    .mem_to_wb_diffbus         (mem_to_wb_diffbus),
 
     // Custom interface
     .mem_rw_valid              (mem_rw_valid),
@@ -2349,10 +2320,6 @@ module ysyx_210611_cpu(
     .reg_wr_ena                (reg_wr_ena),
     .reg_wr_addr               (reg_wr_addr),
     .reg_wr_data               (reg_wr_data),
-    
-    // difftest bus
-    .mem_to_wb_diffbus         (mem_to_wb_diffbus),
-    .difftest_bus              (difftest_bus),
     
     // serial port output
     .wb_uart_out_valid         (uart_out_valid),
@@ -2391,43 +2358,6 @@ module ysyx_210611_cpu(
   
     .regs_o                    (regs)
   );
-  
-  // Difftest
-  reg              cmt_wen;
-  reg [7:0]        cmt_wdest;
-  reg [`REG_BUS]   cmt_wdata;
-  reg [`REG_BUS]   cmt_pc;
-  reg [`INST_BUS]  cmt_inst;
-  reg              cmt_valid, cmt_skip;
-  reg [`INST_BUS]  cmt_itrp_NO, cmt_excp_NO;
-  reg [`REG_BUS]   cycleCnt, instrCnt;
-  
-  wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
-  wire [`INST_BUS] wb_inst;
-  wire             wb_commit, wb_w_ena, wb_r_ena, wb_skip;
-  wire [7 : 0]     wb_w_mask;
-  wire [`INST_BUS] wb_itrp_NO, wb_excp_NO;
-  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] wb_csr_diff;
-  assign {
-    wb_skip,
-
-    // ex stage
-    wb_csr_diff,
-    wb_itrp_NO,
-    wb_excp_NO,
-    
-    // mem stage
-    wb_rw_addr,
-    wb_w_data,
-    wb_w_mask,
-    wb_w_ena,
-    wb_r_ena,
-
-    // wb stage 
-    wb_pc,       // 96 :33
-    wb_inst,     // 32 :1
-    wb_commit    // 0  :0
-  } = difftest_bus;
 endmodule
 
 module ysyx_210611_csrfile(
@@ -2452,10 +2382,7 @@ module ysyx_210611_csrfile(
   
   // exception read and write
   input wire                              excp_enter,
-  input wire                              excp_exit,
-  
-  // difftest bus
-  output wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus
+  input wire                              excp_exit
   );
   
   wire [`REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
@@ -2770,11 +2697,6 @@ module ysyx_210611_csrfile(
     | ({64{mhartid_rd_ena}}   & mhartid_rd_data)
   );
 
-  assign csr_to_ex_diffbus = {
-    mstatus_rd_data, mepc_rd_data, mtval_rd_data, mtvec_rd_data,
-    mcause_rd_data, mip_rd_data, mie_rd_data, mscratch_rd_data
-  };
-
 endmodule
 
 module ysyx_210611_ex_stage_alu(
@@ -2962,12 +2884,7 @@ module ysyx_210611_ex_stage(
   output wire                             ex_rs2_r_ena,
   output wire [4 : 0]                     ex_rs2_addr,
   input wire [`REG_BUS]                   rs1_data,
-  input wire [`REG_BUS]                   rs2_data,
-
-  // difftest bus
-  input wire [`ID_TO_EX_DIFF_WIDTH-1:0]   id_to_ex_diffbus,
-  input wire [`CSR_TO_EX_DIFF_WIDTH-1:0]  csr_to_ex_diffbus,
-  output wire [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus
+  input wire [`REG_BUS]                   rs2_data
   );
 
   // read GPRs
@@ -2981,7 +2898,6 @@ module ysyx_210611_ex_stage(
   reg [`REG_BUS] id_to_ex_pc_r;
   reg [`INST_BUS] id_to_ex_inst_r;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
-  reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
   reg itrp_valid;
   wire ex_done = ~hazard;
@@ -3004,7 +2920,6 @@ module ysyx_210611_ex_stage(
       id_to_ex_pc_r <= id_to_ex_pc;
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
-      id_to_ex_diffbus_r <= id_to_ex_diffbus;
     end
   end
   
@@ -3131,11 +3046,7 @@ module ysyx_210611_ex_stage(
     .excp_jmp_pc         (excp_jmp_pc),
     
     // to ex stage
-    .itrp_valid          (itrp_valid),
-    
-    // to difftest
-    .itrp_NO             (itrp_NO),
-    .excp_NO             (excp_NO)
+    .itrp_valid          (itrp_valid)
   );
   
   wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
@@ -3210,15 +3121,6 @@ module ysyx_210611_ex_stage(
   assign csr_wr_ena  = ex_csr_wr_ena;
   assign csr_wr_addr = ex_csr_wr_addr;
   assign csr_wr_data = ex_data;
-  
-  wire [`INST_BUS] itrp_NO, excp_NO;
-  assign ex_to_mem_diffbus = {
-    id_to_ex_diffbus_r || itrp_valid,
-
-    csr_to_ex_diffbus,
-    itrp_NO,
-    excp_NO
-  };
 
 endmodule
 
@@ -3241,11 +3143,7 @@ module ysyx_210611_excp_handler (
   output wire [`REG_BUS]             excp_jmp_pc,
 
   // to ex_stage
-  input wire                         itrp_valid,
-
-  // to difftest
-  output wire [`INST_BUS]            itrp_NO,
-  output wire [`INST_BUS]            excp_NO
+  input wire                         itrp_valid
   );
   
   // to CSRs
@@ -3371,10 +3269,6 @@ module ysyx_210611_excp_handler (
   wire [`REG_BUS] excp_exit_pc = mepc_rd_data;
   assign excp_jmp_ena = excp_enter | excp_exit;
   assign excp_jmp_pc = ({64{excp_enter}} & excp_enter_pc) | ({64{excp_exit}} & excp_exit_pc);
-  
-  /* -----------Difftest Control-----------*/
-  assign itrp_NO = {32{sp_itrp_ena}} & itrp_idx [31:0];
-  assign excp_NO = {32{sp_excp_ena}} & excp_idx [31:0];
 endmodule
 
 module ysyx_210611_forward (
@@ -3499,9 +3393,7 @@ module ysyx_210611_id_stage(
   output wire                            csr_rd_ena,
   output wire [11: 0]                    csr_rd_addr,
 
-  input wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
-
-  output wire [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus
+  input wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus
 );
 
   wire [`REG_BUS] r_data1 = 64'b0;
@@ -3889,11 +3781,6 @@ module ysyx_210611_id_stage(
     csr_wr_addr,       // 75 :64
     csr_data           // 64 :0
   };
-  
-  wire id_skip_instr = inst_putch || (csr_vld && (csr_rd_addr == 12'hB00 || csr_rd_addr == 12'h344));
-  assign id_to_ex_diffbus = (
-    id_skip_instr
-  );
 endmodule
 
 module ysyx_210611_if_stage(
@@ -4005,7 +3892,7 @@ module ysyx_210611_if_stage(
   
   always @(posedge clk) begin
     if (rst) begin
-      if_pc <= 64'h7ffffffc;
+      if_pc <= 64'h2ffffffc;
     end
     else if (pre_to_if_valid && if_allowin) begin
       if_pc <= if_axi_addr;
@@ -4037,10 +3924,6 @@ module ysyx_210611_mem_stage(
   
   // pipeline forward control
   output wire [`MEM_FORWARD_WIDTH-1:0]     mem_forward_bus,
-  
-  // difftest bus
-  input wire [`EX_TO_MEM_DIFF_WIDTH-1:0]   ex_to_mem_diffbus,
-  output wire [`MEM_TO_WB_DIFF_WIDTH-1:0]  mem_to_wb_diffbus,
 
   // custom interface
   output wire                              mem_rw_valid,
@@ -4059,7 +3942,6 @@ module ysyx_210611_mem_stage(
   reg [`REG_BUS] ex_to_mem_pc_r;
   reg [`INST_BUS] ex_to_mem_inst_r;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
-  reg [`EX_TO_MEM_DIFF_WIDTH-1:0] ex_to_mem_diffbus_r;
   
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
@@ -4078,7 +3960,6 @@ module ysyx_210611_mem_stage(
       ex_to_mem_pc_r <= ex_to_mem_pc;
       ex_to_mem_inst_r <= ex_to_mem_inst;
       ex_to_mem_bus_r <= ex_to_mem_bus;
-      ex_to_mem_diffbus_r <= ex_to_mem_diffbus;
     end
   end
 
@@ -4218,60 +4099,6 @@ module ysyx_210611_mem_stage(
 
   wire mem_finish = mem_state == RETN;
   wire [`REG_BUS] mem_ex_data = mem_addr;
-  
-  // difftest
-  wire size_b = mem_rw_size == `SIZE_B;
-  wire size_h = mem_rw_size == `SIZE_H;
-  wire size_w = mem_rw_size == `SIZE_W;
-  wire size_d = mem_rw_size == `SIZE_D;
-  wire addr0 = mem_rw_addr[2:0] == 3'b000;
-  wire addr1 = mem_rw_addr[2:0] == 3'b001;
-  wire addr2 = mem_rw_addr[2:0] == 3'b010;
-  wire addr3 = mem_rw_addr[2:0] == 3'b011;
-  wire addr4 = mem_rw_addr[2:0] == 3'b100;
-  wire addr5 = mem_rw_addr[2:0] == 3'b101;
-  wire addr6 = mem_rw_addr[2:0] == 3'b110;
-  wire addr7 = mem_rw_addr[2:0] == 3'b111;
-  wire            difftest_s_valid = |mem_save_info;
-  wire            difftest_l_valid = |mem_load_info;
-  wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
-  wire [`REG_BUS] difftest_data = (
-      ({64{size_b}} & {8{mem_w_data[7 :0]}})
-    | ({64{size_h}} & {4{mem_w_data[15:0]}})
-    | ({64{size_w}} & {2{mem_w_data[31:0]}})
-    | ({64{size_d}} & {1{mem_w_data[63:0]}})
-  ) & (
-      {64{addr0 && size_d}} & 64'hffffffffffffffff
-    | {64{addr0 && size_w}} & 64'h00000000ffffffff
-    | {64{addr0 && size_h}} & 64'h000000000000ffff
-    | {64{addr0 && size_b}} & 64'h00000000000000ff
-    | {64{addr1 && size_b}} & 64'h000000000000ff00
-    | {64{addr2 && size_h}} & 64'h00000000ffff0000
-    | {64{addr2 && size_b}} & 64'h0000000000ff0000
-    | {64{addr3 && size_b}} & 64'h00000000ff000000
-    | {64{addr4 && size_w}} & 64'hffffffff00000000
-    | {64{addr4 && size_h}} & 64'h0000ffff00000000
-    | {64{addr4 && size_b}} & 64'h000000ff00000000
-    | {64{addr5 && size_b}} & 64'h0000ff0000000000
-    | {64{addr6 && size_h}} & 64'hffff000000000000
-    | {64{addr6 && size_b}} & 64'h00ff000000000000
-    | {64{addr7 && size_b}} & 64'hff00000000000000
-  );
-  wire [7:0]      difftest_mask = (
-      ({8{size_b}} & 8'b00000001)
-    | ({8{size_h}} & 8'b00000011)
-    | ({8{size_w}} & 8'b00001111)
-    | ({8{size_d}} & 8'b11111111)
-  ) << mem_addr[2:0];
-  assign mem_to_wb_diffbus = {
-    ex_to_mem_diffbus_r,
-
-    difftest_addr,      // 137:74
-    difftest_data,      // 73 :10
-    difftest_mask,      // 9  :2
-    difftest_s_valid,   // 1  :1
-    difftest_l_valid    // 0  :0
-  };
 
   assign mem_to_wb_pc = mem_pc;
   assign mem_to_wb_inst = mem_inst;
@@ -4389,10 +4216,6 @@ module ysyx_210611_wb_stage (
   output wire                             reg_wr_ena,
   output wire [4 : 0]                     reg_wr_addr,
   output wire [`REG_BUS]                  reg_wr_data,
-
-  // difftest
-  input wire [`MEM_TO_WB_DIFF_WIDTH-1:0]  mem_to_wb_diffbus,
-  output wire [`WB_DIFFTEST_WIDTH-1:0]    difftest_bus,
   
   // serial port output
   output wire                             wb_uart_out_valid,
@@ -4404,7 +4227,6 @@ module ysyx_210611_wb_stage (
   reg [`REG_BUS] mem_to_wb_pc_r;
   reg [`INST_BUS] mem_to_wb_inst_r;
   reg [`MEM_TO_WB_WIDTH-1:0] mem_to_wb_bus_r;
-  reg [`MEM_TO_WB_DIFF_WIDTH-1:0] mem_to_wb_diffbus_r;
   assign wb_allowin = 1'b1;
   
   always @(posedge clk) begin
@@ -4419,7 +4241,6 @@ module ysyx_210611_wb_stage (
       mem_to_wb_pc_r <= mem_to_wb_pc;
       mem_to_wb_inst_r <= mem_to_wb_inst;
       mem_to_wb_bus_r <= mem_to_wb_bus;
-      mem_to_wb_diffbus_r <= mem_to_wb_diffbus;
     end
   end
   
@@ -4461,12 +4282,6 @@ module ysyx_210611_wb_stage (
   );
   
   wire wb_commit = wb_valid;
-  assign difftest_bus = {
-    mem_to_wb_diffbus_r,
-    wb_pc,       // 96 :33
-    wb_inst,     // 32 :1
-    wb_commit    // 0  :0
-  };
 
   assign wb_forward_bus = {
     reg_wr_addr,       // 136:132
