@@ -3358,10 +3358,10 @@ module ysyx_210611_excp_handler (
   wire [61 : 0] mtvec_base = mtvec_rd_data[63 : 2];
   wire [`REG_BUS] mode0_addr = {mtvec_base, 2'b0};
   wire [`REG_BUS] mode1_excp_addr = {mtvec_base, 2'b0};
-  wire [`REG_BUS] mode1_itrp_addr = {mtvec_base + itrp_idx, 2'b0};
+  wire [`REG_BUS] mode1_itrp_addr = {mtvec_base + itrp_idx[61:0], 2'b0};
   wire [`REG_BUS] mode1_addr = (
-           ({64{sp_excp_ena}} & mtvec_base) // when exception, jump to base
-         | ({64{sp_itrp_ena}} & (mtvec_base + itrp_idx))// when interruption, jump to base + code
+           ({64{sp_excp_ena}} & mode1_excp_addr) // when exception, jump to base
+         | ({64{sp_itrp_ena}} & mode1_itrp_addr) // when interruption, jump to base + code
   );
   wire [`REG_BUS] excp_enter_pc = 
       ({64{mtvec_mode0}} & mode0_addr) // mode0, jump to base
