@@ -1002,9 +1002,9 @@ module ysyx_210611_axi_2x2 # (
   // Master
   reg [1:0] master_w_state, slave_w_state;
   wire w_0_to_cli = ~w_0_to_ram;
-  wire w_0_to_ram = aw_addr_i_0[63:16] != 48'h00000000_0200;
+  wire w_0_to_ram = aw_addr_i_0[31:16] != 16'h0200;
   wire w_1_to_cli = ~w_1_to_ram;
-  wire w_1_to_ram = aw_addr_i_1[63:16] != 48'h00000000_0200;
+  wire w_1_to_ram = aw_addr_i_1[31:16] != 16'h0200;
   
   // Current Stage
   always @(posedge clock) begin
@@ -1093,9 +1093,9 @@ module ysyx_210611_axi_2x2 # (
   // Read State Machine
   reg [1:0] master_r_state, slave_r_state;
   wire r_0_to_cli = ~r_0_to_ram;
-  wire r_0_to_ram = ar_addr_i_0[31:16] != 48'h0200;
+  wire r_0_to_ram = ar_addr_i_0[31:16] != 16'h0200;
   wire r_1_to_cli = ~r_1_to_ram;
-  wire r_1_to_ram = ar_addr_i_1[31:16] != 48'h0200;
+  wire r_1_to_ram = ar_addr_i_1[31:16] != 16'h0200;
 
   // Current Stage
   always @(posedge clock) begin
@@ -1527,7 +1527,7 @@ module ysyx_210611_axi_rw # (
   parameter RW_DATA_WIDTH     = 64,
   parameter RW_ADDR_WIDTH     = 64,
   parameter AXI_DATA_WIDTH    = 64,
-  parameter AXI_ADDR_WIDTH    = 64,
+  parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
   parameter AXI_USER_WIDTH    = 1
 )(
