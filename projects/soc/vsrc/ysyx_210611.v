@@ -12,7 +12,7 @@
 `define REG_BUS    63 : 0
 `define INST_BUS   31 : 0
 
-`define ID_TO_EX_WIDTH        472
+`define ID_TO_EX_WIDTH        470
 `define EX_TO_MEM_WIDTH       224
 `define MEM_TO_WB_WIDTH       210
 
@@ -3026,11 +3026,11 @@ module ysyx_210611_ex_stage(
   assign ex_inst = id_to_ex_inst_r;
   assign {
     // serial port output
-    ex_uart_out_valid, // 575:575
+    ex_uart_out_valid, // 469:469
     
     // exception
-    ex_excp_exit,   // 566:566
-    ex_excp_bus,    // 565:550
+    ex_excp_exit,   // 468:468
+    ex_excp_bus,    // 467:452
 
     // -> ex
     ex_rs1_addr,    // 451:447
@@ -3060,7 +3060,7 @@ module ysyx_210611_ex_stage(
     // -> csr
     ex_csr_wr_ena,  // 76 :76
     ex_csr_wr_addr, // 75 :64
-    ex_csr_rd_data  // 64 :0
+    ex_csr_rd_data  // 63 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~itrp_valid}};
   
   wire                   ex_uart_out_valid;
