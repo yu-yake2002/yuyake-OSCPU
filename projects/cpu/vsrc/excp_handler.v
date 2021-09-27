@@ -3,7 +3,6 @@
 `include "defines.v"
 
 module excp_handler (
-  input wire [`ITRP_BUS]             clint_bus,
   input wire [`EXCP_BUS]             excp_info,
   input wire [`ITRP_BUS]             itrp_info,
   input wire [`REG_BUS]              now_pc,
@@ -22,7 +21,7 @@ module excp_handler (
   output wire [`REG_BUS]             excp_jmp_pc,
 
   // to ex_stage
-  output wire                        itrp_valid,
+  input wire                         itrp_valid,
 
   // to difftest
   output wire [`INST_BUS]            itrp_NO,
@@ -52,17 +51,20 @@ module excp_handler (
 
   // generate excp_ena
   wire sp_excp_ena = |excp_info;
-  wire sp_itrp_ena = itrp_allowin && (|itrp_info);
-  assign itrp_allowin = mstatus_rd_data[3] && mie_rd_data[7] && mip_rd_data[7];
-
+  wire sp_itrp_ena = itrp_valid;
+  
+  wire msie_allowin = mstatus_rd_data[3] && mie_rd_data[3]  && mip_rd_data[3];
+  wire mtie_allowin = mstatus_rd_data[3] && mie_rd_data[7]  && mip_rd_data[7];
+  wire meie_allowin = mstatus_rd_data[3] && mie_rd_data[11] && mip_rd_data[11];
+  assign itrp_allowin = meie_allowin || mtie_allowin || msie_allowin;
+  
   assign excp_enter = sp_excp_ena | sp_itrp_ena;
-  assign itrp_valid = sp_itrp_ena;
   
   /* ----------- Decode ----------- */
   // decode machine interruption
-  wire soft_itrp = itrp_info[`SOFT_ITRP];
-  wire timer_itrp = itrp_info[`TIMER_ITRP];
-  wire exter_itrp = itrp_info[`EXTER_ITRP];
+  wire soft_itrp  = msie_allowin && itrp_valid;
+  wire timer_itrp = mtie_allowin && itrp_valid;
+  wire exter_itrp = meie_allowin && itrp_valid;
   wire [62 : 0] itrp_idx = (
       ({63{soft_itrp}}       & 63'd3)
     | ({63{timer_itrp}}      & 63'd7)
@@ -99,7 +101,7 @@ module excp_handler (
   wire mem_acc_fault = excp_load_misal | excp_load_acc | excp_stor_misal 
                      | excp_stor_acc | excp_load_page | excp_stor_page;
   
-  assign mip_wr_data = {64{clint_bus[`TIMER_ITRP]}} & 64'h80;
+  assign mip_wr_data = {64{itrp_info[`TIMER_ITRP]}} & 64'h80;
 
   /* -----------Write CSRs----------- */
   // write mcause

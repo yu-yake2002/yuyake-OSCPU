@@ -64,7 +64,7 @@ module ex_stage(
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   reg [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus_r;
   
-  wire itrp_valid;
+  reg itrp_valid;
   wire ex_done = ~hazard;
   wire bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
@@ -86,7 +86,7 @@ module ex_stage(
       id_to_ex_inst_r <= id_to_ex_inst;
       id_to_ex_bus_r <= id_to_ex_bus;
       id_to_ex_diffbus_r <= id_to_ex_diffbus;
-      ex_itrp_bus <= clint_interupt_bus && {12{itrp_valid}};
+      itrp_valid <= itrp_allowin;
     end
   end
   
@@ -177,14 +177,12 @@ module ex_stage(
   assign                 excp_enter = ex_excp_enter;
 
   wire [`EXCP_BUS]       ex_excp_bus;
-  reg  [`ITRP_BUS]       ex_itrp_bus;
   wire                   itrp_allowin;
   wire                   ex_excp_exit, ex_excp_enter;
   
   excp_handler Excp_handler(
-    .clint_bus           (clint_interupt_bus),
     .excp_info           (ex_excp_bus),
-    .itrp_info           (ex_itrp_bus),
+    .itrp_info           (clint_interupt_bus),
     .now_pc              (ex_pc),
     .now_inst            (ex_inst),
     .mem_addr            (ex_data),
