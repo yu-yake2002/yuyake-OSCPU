@@ -1687,7 +1687,7 @@ module ysyx_210611_axi_rw # (
   //wire [2:0] axi_size     = 3'b011;
   wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
   wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
-  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = 6'd64 - aligned_offset_l;
+  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = (64 - aligned_offset_l);
   wire [MASK_WIDTH-1:0] mask                  = (({MASK_WIDTH{size_b}} & {{MASK_WIDTH-8{1'b0}}, 8'hff})
                                               | ({MASK_WIDTH{size_h}} & {{MASK_WIDTH-16{1'b0}}, 16'hffff})
                                               | ({MASK_WIDTH{size_w}} & {{MASK_WIDTH-32{1'b0}}, 32'hffffffff})
