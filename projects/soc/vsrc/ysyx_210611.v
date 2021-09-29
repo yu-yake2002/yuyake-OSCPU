@@ -1683,8 +1683,8 @@ module ysyx_210611_axi_rw # (
   wire overstep           = addr_end[3:ALIGNED_WIDTH] != 0;
   
   wire [7:0] axi_len      = aligned ? TRANS_LEN - 1 : {{7{1'b0}}, overstep};
-  wire [2:0] axi_size     = AXI_SIZE[2:0];
-  //wire [2:0] axi_size     = 3'b011;
+  //wire [2:0] axi_size     = AXI_SIZE[2:0];
+  wire [2:0] axi_size     = {1'b0, rw_size_i};
   wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
   wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
   wire [OFFSET_WIDTH-1:0] aligned_offset_h    = (64 - aligned_offset_l);
@@ -1757,12 +1757,20 @@ module ysyx_210611_axi_rw # (
         | ({64{size_w}} & {2{data_write_i[31:0]}})
         | ({64{size_d}} & {1{data_write_i[63:0]}})
       );
+      /*
       axi_w_strb_o <= (
           ({8{size_b}} & 8'b00000001)
         | ({8{size_h}} & 8'b00000011)
         | ({8{size_w}} & 8'b00001111)
         | ({8{size_d}} & 8'b11111111)
       ) << rw_addr_i[2:0];
+      */
+      axi_w_strb_o <= (
+          ({8{size_b}} & 8'b00000001)
+        | ({8{size_h}} & 8'b00000011)
+        | ({8{size_w}} & 8'b00001111)
+        | ({8{size_d}} & 8'b11111111)
+      );
     end
   end
   assign axi_w_last_o     = axi_w_valid_o;
@@ -1793,7 +1801,7 @@ module ysyx_210611_axi_rw # (
   
   wire [AXI_DATA_WIDTH-1:0] axi_r_data_l  = (axi_r_data_i & mask_l) >> aligned_offset_l;
   wire [AXI_DATA_WIDTH-1:0] axi_r_data_h  = (axi_r_data_i & mask_h) << aligned_offset_h;
-  
+  /*
   generate
     for (genvar i = 0; i < TRANS_LEN; i += 1) begin
       always @(posedge clock) begin
@@ -1816,7 +1824,15 @@ module ysyx_210611_axi_rw # (
       end
     end
   endgenerate
-
+  */
+  always @(posedge clock) begin
+    if (reset) begin
+      data_read_o <= 0;
+    end
+    else if (r_hs) begin
+      data_read_o <= 64'b0 | axi_r_data_l;
+    end
+  end
 endmodule
 
 module ysyx_210611_clint # (
