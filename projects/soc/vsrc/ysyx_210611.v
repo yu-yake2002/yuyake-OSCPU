@@ -1751,7 +1751,7 @@ module ysyx_210611_axi_rw # (
         | ({8{size_h}} & 8'b00000011)
         | ({8{size_w}} & 8'b00001111)
         | ({8{size_d}} & 8'b11111111)
-      ) << rw_addr_i[2:0];
+      ) << rw_addr_i [2:0];
     end
   end
   assign axi_w_last_o     = axi_w_valid_o;
