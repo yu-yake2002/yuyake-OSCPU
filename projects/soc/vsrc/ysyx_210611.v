@@ -1686,15 +1686,6 @@ module ysyx_210611_axi_rw # (
   //wire [2:0] axi_size     = AXI_SIZE[2:0];
   wire [2:0] axi_size     = {1'b0, rw_size_i};
   wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
-  wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
-  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = (64 - aligned_offset_l);
-  wire [MASK_WIDTH-1:0] mask                  = (({MASK_WIDTH{size_b}} & {{MASK_WIDTH-8{1'b0}}, 8'hff})
-                                              | ({MASK_WIDTH{size_h}} & {{MASK_WIDTH-16{1'b0}}, 16'hffff})
-                                              | ({MASK_WIDTH{size_w}} & {{MASK_WIDTH-32{1'b0}}, 32'hffffffff})
-                                              | ({MASK_WIDTH{size_d}} & {{MASK_WIDTH-64{1'b0}}, 64'hffffffff_ffffffff})
-                                                ) << aligned_offset_l;
-  wire [AXI_DATA_WIDTH-1:0] mask_l      = mask[AXI_DATA_WIDTH-1:0];
-  wire [AXI_DATA_WIDTH-1:0] mask_h      = mask[MASK_WIDTH-1:AXI_DATA_WIDTH];
   
   wire [AXI_ID_WIDTH-1:0] axi_id        = device_id;
   wire [AXI_USER_WIDTH-1:0] axi_user    = {AXI_USER_WIDTH{1'b0}};
@@ -1757,14 +1748,6 @@ module ysyx_210611_axi_rw # (
         | ({64{size_w}} & {2{data_write_i[31:0]}})
         | ({64{size_d}} & {1{data_write_i[63:0]}})
       );
-      /*
-      axi_w_strb_o <= (
-          ({8{size_b}} & 8'b00000001)
-        | ({8{size_h}} & 8'b00000011)
-        | ({8{size_w}} & 8'b00001111)
-        | ({8{size_d}} & 8'b11111111)
-      ) << rw_addr_i[2:0];
-      */
       axi_w_strb_o <= (
           ({8{size_b}} & 8'b00000001)
         | ({8{size_h}} & 8'b00000011)
@@ -1798,39 +1781,13 @@ module ysyx_210611_axi_rw # (
   
   // Read data channel signals
   assign axi_r_ready_o    = r_state_read;
-  
-  wire [AXI_DATA_WIDTH-1:0] axi_r_data_l  = (axi_r_data_i & mask_l) >> aligned_offset_l;
-  wire [AXI_DATA_WIDTH-1:0] axi_r_data_h  = (axi_r_data_i & mask_h) << aligned_offset_h;
-  /*
-  generate
-    for (genvar i = 0; i < TRANS_LEN; i += 1) begin
-      always @(posedge clock) begin
-        if (reset) begin
-          data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= 0;
-        end
-        else if (r_hs) begin
-          if (~aligned & overstep) begin
-            if (len[0]) begin
-              data_read_o[AXI_DATA_WIDTH-1:0] <= data_read_o[AXI_DATA_WIDTH-1:0] | axi_r_data_h;
-            end
-            else begin
-              data_read_o[AXI_DATA_WIDTH-1:0] <= axi_r_data_l;
-            end
-          end
-          else if (len == i) begin
-            data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= axi_r_data_l;
-          end
-        end
-      end
-    end
-  endgenerate
-  */
+
   always @(posedge clock) begin
     if (reset) begin
       data_read_o <= 0;
     end
     else if (r_hs) begin
-      data_read_o <= 64'b0 | axi_r_data_l;
+      data_read_o <= axi_r_data_i;
     end
   end
 endmodule
