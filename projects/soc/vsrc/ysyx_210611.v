@@ -1722,8 +1722,6 @@ module ysyx_210611_axi_rw # (
   // Write address channel signals
   assign axi_aw_valid_o   = w_state_addr;
   assign axi_aw_addr_o    = rw_addr_i[31:0];
-  //assign axi_aw_addr_o    = axi_addr;
-
   assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
   assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
@@ -1753,7 +1751,7 @@ module ysyx_210611_axi_rw # (
         | ({8{size_h}} & 8'b00000011)
         | ({8{size_w}} & 8'b00001111)
         | ({8{size_d}} & 8'b11111111)
-      );
+      ) << rw_addr_i[2:0];
     end
   end
   assign axi_w_last_o     = axi_w_valid_o;
@@ -1767,8 +1765,6 @@ module ysyx_210611_axi_rw # (
   // Read address channel signals
   assign axi_ar_valid_o   = r_state_addr;
   assign axi_ar_addr_o    = rw_addr_i[31:0];
-  //assign axi_ar_addr_o    = axi_addr;
-
   assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
   assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
