@@ -1732,6 +1732,13 @@ module ysyx_210611_axi_rw # (
   assign axi_aw_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
   assign axi_aw_qos_o     = 4'h0;
   
+  wire [7:0] debug = (
+          ({8{size_b}} & 8'b00000001)
+        | ({8{size_h}} & 8'b00000011)
+        | ({8{size_w}} & 8'b00001111)
+        | ({8{size_d}} & 8'b11111111)
+      ) << rw_addr_i [2:0];
+
   // Write data channel signals
   assign axi_w_valid_o    = w_state_write;
   always @(posedge clock) begin
