@@ -1660,7 +1660,7 @@ module ysyx_210611_axi_rw # (
     end
   end
   
-  
+  /*
   // ------------------Process Data------------------
   parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
   parameter OFFSET_WIDTH  = $clog2(AXI_DATA_WIDTH);
@@ -1793,6 +1793,164 @@ module ysyx_210611_axi_rw # (
       data_read_o <= axi_r_data_i;
     end
   end
+  */
+
+  // ------------------Process Data------------------
+  parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
+  parameter OFFSET_WIDTH  = $clog2(AXI_DATA_WIDTH);
+  parameter AXI_SIZE      = $clog2(AXI_DATA_WIDTH / 8);
+  parameter MASK_WIDTH    = AXI_DATA_WIDTH * 2;
+  parameter TRANS_LEN     = RW_DATA_WIDTH / AXI_DATA_WIDTH;
+  
+  wire aligned            = TRANS_LEN != 1 | rw_addr_i[ALIGNED_WIDTH-1:0] == 0;
+  wire size_b             = rw_size_i == `SIZE_B;
+  wire size_h             = rw_size_i == `SIZE_H;
+  wire size_w             = rw_size_i == `SIZE_W;
+  wire size_d             = rw_size_i == `SIZE_D;
+  wire [3:0] addr_op1     = {{4-ALIGNED_WIDTH{1'b0}}, rw_addr_i[ALIGNED_WIDTH-1:0]};
+  wire [3:0] addr_op2     = ({4{size_b}} & {4'b0})
+                          | ({4{size_h}} & {4'b1})
+                          | ({4{size_w}} & {4'b11})
+                          | ({4{size_d}} & {4'b111})
+                            ;
+  wire [3:0] addr_end     = addr_op1 + addr_op2;
+  wire overstep           = addr_end[3:ALIGNED_WIDTH] != 0;
+  
+  wire [7:0] axi_len      = aligned ? TRANS_LEN - 1 : {{7{1'b0}}, overstep};
+  wire [2:0] axi_size     = AXI_SIZE[2:0];
+  //wire [2:0] axi_size     = 3'b011;
+  wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
+  wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
+  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = AXI_DATA_WIDTH - aligned_offset_l;
+  wire [MASK_WIDTH-1:0] mask                  = (({MASK_WIDTH{size_b}} & {{MASK_WIDTH-8{1'b0}}, 8'hff})
+                                              | ({MASK_WIDTH{size_h}} & {{MASK_WIDTH-16{1'b0}}, 16'hffff})
+                                              | ({MASK_WIDTH{size_w}} & {{MASK_WIDTH-32{1'b0}}, 32'hffffffff})
+                                              | ({MASK_WIDTH{size_d}} & {{MASK_WIDTH-64{1'b0}}, 64'hffffffff_ffffffff})
+                                                ) << aligned_offset_l;
+  wire [AXI_DATA_WIDTH-1:0] mask_l      = mask[AXI_DATA_WIDTH-1:0];
+  wire [AXI_DATA_WIDTH-1:0] mask_h      = mask[MASK_WIDTH-1:AXI_DATA_WIDTH];
+  
+  wire [AXI_ID_WIDTH-1:0] axi_id        = device_id;
+  wire [AXI_USER_WIDTH-1:0] axi_user    = {AXI_USER_WIDTH{1'b0}};
+  
+  reg rw_ready;
+  wire rw_ready_nxt = trans_done;
+  wire rw_ready_en      = trans_done | rw_ready;
+  always @(posedge clock) begin
+    if (reset) begin
+      rw_ready <= 0;
+    end
+    else if (rw_ready_en) begin
+      rw_ready <= rw_ready_nxt;
+    end
+  end
+  assign rw_ready_o     = rw_ready;
+  
+  reg [1:0] rw_resp;
+  wire rw_resp_nxt = w_trans ? axi_b_resp_i : axi_r_resp_i;
+  wire resp_en = trans_done;
+  always @(posedge clock) begin
+    if (reset) begin
+      rw_resp <= 0;
+    end
+    else if (resp_en) begin
+      rw_resp <= rw_resp_nxt;
+    end
+  end
+  assign rw_resp_o      = rw_resp;
+  
+  
+  // ------------------Write Transaction------------------
+  
+  // Write address channel signals
+  assign axi_aw_valid_o   = w_state_addr;
+  //assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
+  assign axi_aw_addr_o    = axi_addr;
+
+  assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
+  assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
+  assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
+  assign axi_aw_len_o     = {8{w_state_addr}} & axi_len;
+  assign axi_aw_size_o    = {3{w_state_addr}} & axi_size;
+  assign axi_aw_burst_o   = `AXI_BURST_TYPE_INCR;
+  assign axi_aw_lock_o    = 1'b0;
+  assign axi_aw_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
+  assign axi_aw_qos_o     = 4'h0;
+  
+  // Write data channel signals
+  assign axi_w_valid_o    = w_state_write;
+  always @(posedge clock) begin
+    if (reset) begin
+      axi_w_data_o <= `ZERO_WORD;
+      axi_w_strb_o <= 8'b0;
+    end
+    else if (aw_hs) begin
+      axi_w_data_o <= (
+          ({64{size_b}} & {8{data_write_i[7 :0]}})
+        | ({64{size_h}} & {4{data_write_i[15:0]}})
+        | ({64{size_w}} & {2{data_write_i[31:0]}})
+        | ({64{size_d}} & {1{data_write_i[63:0]}})
+      );
+      axi_w_strb_o <= (
+          ({8{size_b}} & 8'b00000001)
+        | ({8{size_h}} & 8'b00000011)
+        | ({8{size_w}} & 8'b00001111)
+        | ({8{size_d}} & 8'b11111111)
+      ) << rw_addr_i[2:0];
+    end
+  end
+  assign axi_w_last_o     = axi_w_valid_o;
+  assign axi_w_id_o       = axi_id;
+  
+  // Write response channel signals
+  assign axi_b_ready_o    = w_state_resp;
+  
+  // ------------------Read Transaction------------------
+  
+  // Read address channel signals
+  assign axi_ar_valid_o   = r_state_addr;
+  //assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
+  assign axi_ar_addr_o    = axi_addr;
+
+  assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
+  assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
+  assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
+  assign axi_ar_len_o     = {8{r_state_addr}} & axi_len;
+  assign axi_ar_size_o    = {3{r_state_addr}} & axi_size;
+  assign axi_ar_burst_o   = `AXI_BURST_TYPE_INCR;
+  assign axi_ar_lock_o    = 1'b0;
+  assign axi_ar_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
+  assign axi_ar_qos_o     = 4'h0;
+  
+  // Read data channel signals
+  assign axi_r_ready_o    = r_state_read;
+  
+  wire [AXI_DATA_WIDTH-1:0] axi_r_data_l  = (axi_r_data_i & mask_l) >> aligned_offset_l;
+  wire [AXI_DATA_WIDTH-1:0] axi_r_data_h  = (axi_r_data_i & mask_h) << aligned_offset_h;
+  
+  generate
+    for (genvar i = 0; i < TRANS_LEN; i += 1) begin
+      always @(posedge clock) begin
+        if (reset) begin
+          data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= 0;
+        end
+        else if (r_hs) begin
+          if (~aligned & overstep) begin
+            if (len[0]) begin
+              data_read_o[AXI_DATA_WIDTH-1:0] <= data_read_o[AXI_DATA_WIDTH-1:0] | axi_r_data_h;
+            end
+            else begin
+              data_read_o[AXI_DATA_WIDTH-1:0] <= axi_r_data_l;
+            end
+          end
+          else if (len == i) begin
+            data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= axi_r_data_l;
+          end
+        end
+      end
+    end
+  endgenerate
+  
 endmodule
 
 module ysyx_210611_clint # (
