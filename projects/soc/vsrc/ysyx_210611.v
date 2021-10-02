@@ -1790,7 +1790,7 @@ module ysyx_210611_axi_rw # (
       data_read_o <= 0;
     end
     else if (r_hs) begin
-      data_read_o <= axi_r_data_i;
+      data_read_o <= axi_r_data_i >> rw_addr_i[2:0];
     end
   end
 endmodule
