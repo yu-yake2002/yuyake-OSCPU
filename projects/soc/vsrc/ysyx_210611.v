@@ -2772,8 +2772,6 @@ module ysyx_210611_ex_stage(
   
   wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
   wire [`REG_BUS] ex_data;
-  assign ex_to_mem_pc = ex_pc;
-  assign ex_to_mem_inst = ex_inst;
   assign ex_to_mem_bus = {
     // mem
     ex_load_info,   // 214:208
