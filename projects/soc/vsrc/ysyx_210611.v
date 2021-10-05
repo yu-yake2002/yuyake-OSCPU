@@ -1395,7 +1395,6 @@ module ysyx_210611_axi_rw # (
   // ------------------Process Data------------------
   parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
   parameter OFFSET_WIDTH  = $clog2(AXI_DATA_WIDTH);
-  parameter AXI_SIZE      = $clog2(AXI_DATA_WIDTH / 8);
   parameter MASK_WIDTH    = AXI_DATA_WIDTH * 2;
   parameter TRANS_LEN     = RW_DATA_WIDTH / AXI_DATA_WIDTH;
   
@@ -1429,7 +1428,6 @@ module ysyx_210611_axi_rw # (
   wire [AXI_DATA_WIDTH-1:0] mask_h      = mask[MASK_WIDTH-1:AXI_DATA_WIDTH];
   
   wire [AXI_ID_WIDTH-1:0] axi_id        = device_id;
-  wire [AXI_USER_WIDTH-1:0] axi_user    = {AXI_USER_WIDTH{1'b0}};
   
   reg rw_ready;
   wire rw_ready_nxt = trans_done;
@@ -1539,8 +1537,7 @@ module ysyx_210611_axi_rw # (
 endmodule
 
 module ysyx_210611_clint # (
-  parameter AXI_ID_WIDTH      = 4,
-  parameter AXI_USER_WIDTH    = 1
+  parameter AXI_ID_WIDTH      = 4
 )(
   input  wire                             clk,
   input  wire                             rst,
@@ -1583,9 +1580,6 @@ module ysyx_210611_clint # (
   // interupt bus to core
   output wire [`ITRP_BUS]                 clint_interupt_bus
 );
-
-  wire debug_wr = msip_wr_ena || mtime_wr_ena || mtimecmp_wr_ena;
-  wire debug_rd = msip_rd_ena || mtime_rd_ena || mtimecmp_rd_ena;
 
   // CLINT CSRs
   reg [31 : 0]   csr_msip;
@@ -2043,9 +2037,6 @@ module ysyx_210611_cpu(
   wire reg_wr_ena;
   wire [4 : 0] reg_wr_addr;
   wire [`REG_BUS] reg_wr_data;
-  
-  // difftest
-  wire [`REG_BUS] regs[0 : 31];
 
   ysyx_210611_regfile ysyx_210611_Regfile(
     .clk                       (clock),
@@ -2059,9 +2050,7 @@ module ysyx_210611_cpu(
     .r_ena1                    (rs1_r_ena),
     .r_addr2                   (rs2_r_addr),
     .r_data2                   (r_data2),
-    .r_ena2                    (rs2_r_ena),
-  
-    .regs_o                    (regs)
+    .r_ena2                    (rs2_r_ena)
   );
 endmodule
 
@@ -3068,16 +3057,8 @@ module ysyx_210611_id_stage(
   input wire                             ex_allowin,
 
   // data from regfile and CSRs
-//  input wire [`REG_BUS]             r_data1,
-//  input wire [`REG_BUS]             r_data2,
   input wire [`REG_BUS]                  csr_data,
   
-  // control reg
-//  output wire                       rs1_r_ena,
-//  output wire [4 : 0]               rs1_addr,
-//  output wire                       rs2_r_ena,
-//  output wire [4 : 0]               rs2_addr,
-
   // control csr
   output wire                            csr_rd_ena,
   output wire [11: 0]                    csr_rd_addr,
@@ -3812,9 +3793,7 @@ module ysyx_210611_regfile(
 	
 	input  wire [4  : 0] r_addr2,
 	output wire [`REG_BUS] r_data2,
-	input  wire r_ena2,
-
-	output wire [`REG_BUS] regs_o[0:31]
+	input  wire r_ena2
   );
 
     // 32 registers
@@ -3870,7 +3849,6 @@ module ysyx_210611_regfile(
 	assign r_data2 = {64{~rst & r_ena2}} & (
     (r_addr2 == w_addr && (|r_addr2)) ? w_data : regs[r_addr2]
 	);
-  assign regs_o = regs;
 endmodule
 
 module ysyx_210611_wb_stage (
