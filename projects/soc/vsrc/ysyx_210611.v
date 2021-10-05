@@ -13,7 +13,7 @@
 `define INST_BUS   31 : 0
 
 `define ID_TO_EX_WIDTH        469
-`define EX_TO_MEM_WIDTH       214
+`define EX_TO_MEM_WIDTH       215
 `define MEM_TO_WB_WIDTH       201
 
 `define BJ_CTRL_WIDTH         66
@@ -2785,7 +2785,8 @@ module ysyx_210611_ex_stage(
     // wb
     ex_reg_wr_ctrl, // 9  :7
     ex_reg_wr_addr, // 6  :2
-    ex_reg_wr_ena  // 1  :1
+    ex_reg_wr_ena,  // 1  :1
+    ex_csr_wr_ena   // 0  :0
   };
 
   wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;
@@ -3629,7 +3630,7 @@ module ysyx_210611_mem_stage(
   // wb stage
   wire [2  : 0]    mem_reg_wr_ctrl;
   wire [4  : 0]    mem_reg_wr_addr;
-  wire             mem_reg_wr_ena;
+  wire             mem_reg_wr_ena, mem_csr_wr_ena;
   
   assign {
     // mem
@@ -3644,7 +3645,8 @@ module ysyx_210611_mem_stage(
     // wb
     mem_reg_wr_ctrl, // 9  :7
     mem_reg_wr_addr, // 6  :2
-    mem_reg_wr_ena  // 1  :1
+    mem_reg_wr_ena,  // 1  :1
+    mem_csr_wr_ena   // 0  :0
   } = ex_to_mem_bus_r & {`EX_TO_MEM_WIDTH{mem_valid}};
   wire ex_ram_rd_ena = ex_to_mem_bus[11];
   wire ex_ram_wr_ena = ex_to_mem_bus[10];
