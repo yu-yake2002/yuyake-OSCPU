@@ -12,9 +12,9 @@
 `define REG_BUS    63 : 0
 `define INST_BUS   31 : 0
 
-`define ID_TO_EX_WIDTH        470
-`define EX_TO_MEM_WIDTH       224
-`define MEM_TO_WB_WIDTH       210
+`define ID_TO_EX_WIDTH        469
+`define EX_TO_MEM_WIDTH       215
+`define MEM_TO_WB_WIDTH       201
 
 `define BJ_CTRL_WIDTH         66
 `define MEM_FORWARD_WIDTH     73
@@ -357,8 +357,7 @@ module ysyx_210611(
   wire [63:0]                 mem_axi_w_data,   if_axi_w_data,   cli_w_data;
   wire [7:0]                  mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
   wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
-  wire [3:0]                  mem_axi_w_id,     if_axi_w_id,     cli_w_id;
-
+  
   wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
   wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
   wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
@@ -495,8 +494,6 @@ module ysyx_210611(
   wire [1:0] mem_rw_size;
   wire [1:0] mem_rw_resp;
 
-  wire io_uart_out_valid;
-  wire [7:0] io_uart_out_ch;
   wire [`ITRP_BUS] clint_interupt_bus;
 
   ysyx_210611_cpu ysyx_210611_u_cpu(
@@ -520,10 +517,6 @@ module ysyx_210611(
     .mem_rw_addr                   (mem_rw_addr),
     .mem_rw_size                   (mem_rw_size),
     .mem_rw_resp                   (mem_rw_resp),
-
-    // serial port output
-    .uart_out_valid                (io_uart_out_valid),
-    .uart_out_char                 (io_uart_out_ch),
 
     .clint_interupt_bus            (clint_interupt_bus)
   );
@@ -680,7 +673,6 @@ module ysyx_210611_axi_2x2 # (
   input  wire [AXI_DATA_WIDTH-1:0]        w_data_i_1,
   input  wire [AXI_DATA_WIDTH/8-1:0]      w_strb_i_1,
   input  wire                             w_last_i_1,
-  input  wire [AXI_ID_WIDTH-1:0]          w_id_i_1,
   
   input  wire                             b_ready_i_1,
   output wire                             b_valid_o_1,
@@ -719,7 +711,6 @@ module ysyx_210611_axi_2x2 # (
   output wire [AXI_DATA_WIDTH-1:0]        ram_w_data_o,
   output wire [AXI_DATA_WIDTH/8-1:0]      ram_w_strb_o,
   output wire                             ram_w_last_o,
-  output wire [AXI_ID_WIDTH-1:0]          ram_w_id_o,
   
   output wire                             ram_b_ready_o,
   input  wire                             ram_b_valid_i,
@@ -755,7 +746,6 @@ module ysyx_210611_axi_2x2 # (
   output wire [AXI_DATA_WIDTH-1:0]        cli_w_data_o,
   output wire [AXI_DATA_WIDTH/8-1:0]      cli_w_strb_o,
   output wire                             cli_w_last_o,
-  output wire [AXI_ID_WIDTH-1:0]          cli_w_id_o,
   
   output wire                             cli_b_ready_o,
   input  wire                             cli_b_valid_i,
@@ -792,7 +782,6 @@ module ysyx_210611_axi_2x2 # (
   wire [AXI_DATA_WIDTH-1:0]        mid_w_data;
   wire [AXI_DATA_WIDTH/8-1:0]      mid_w_strb;
   wire                             mid_w_last;
-  wire [AXI_ID_WIDTH-1:0]          mid_w_id;
   
   wire                             mid_b_ready;
   wire                             mid_b_valid;
@@ -1080,10 +1069,6 @@ module ysyx_210611_axi_2x2 # (
       (w_state_0 & w_last_i_0) 
     | (w_state_1 & w_last_i_1)
   );
-  assign mid_w_id = (
-      ({AXI_ID_WIDTH{w_state_0}} & w_id_i_0) 
-    | ({AXI_ID_WIDTH{w_state_1}} & w_id_i_1)
-  );
   
   assign mid_b_ready = (
       (w_state_0 & b_ready_i_0) 
@@ -1128,7 +1113,6 @@ module ysyx_210611_axi_2x2 # (
   assign cli_w_data_o = {AXI_DATA_WIDTH{w_state_cli}} & mid_w_data;
   assign cli_w_strb_o = {AXI_DATA_WIDTH/8{w_state_cli}} & mid_w_strb;
   assign cli_w_last_o = w_state_cli & mid_w_last;
-  assign cli_w_id_o = {AXI_ID_WIDTH{w_state_cli}} & mid_w_id;
   
   assign cli_b_ready_o = w_state_cli & mid_b_ready;
 
@@ -1508,7 +1492,6 @@ module ysyx_210611_axi_rw # (
     end
   end
   assign axi_w_last_o     = axi_w_valid_o;
-  assign axi_w_id_o       = axi_id;
   
   // Write response channel signals
   assign axi_b_ready_o    = w_state_resp;
@@ -1829,10 +1812,6 @@ module ysyx_210611_cpu(
   output wire [1 : 0]        mem_rw_size,
   input wire [1 : 0]         mem_rw_resp,
 
-  // UART serial port
-  output wire                uart_out_valid,
-  output wire [7 : 0]        uart_out_char,
-
   input wire [`ITRP_BUS]     clint_interupt_bus
 );
 
@@ -2049,11 +2028,7 @@ module ysyx_210611_cpu(
     // regfile control
     .reg_wr_ena                (reg_wr_ena),
     .reg_wr_addr               (reg_wr_addr),
-    .reg_wr_data               (reg_wr_data),
-    
-    // serial port output
-    .wb_uart_out_valid         (uart_out_valid),
-    .wb_uart_out_char          (uart_out_char)
+    .reg_wr_data               (reg_wr_data)
   );
   
   // General Purpose Registers
@@ -2670,9 +2645,6 @@ module ysyx_210611_ex_stage(
   assign ex_pc = id_to_ex_pc_r;
   assign ex_inst = id_to_ex_inst_r;
   assign {
-    // serial port output
-    ex_uart_out_valid, // 469:469
-    
     // exception
     ex_excp_exit,   // 468:468
     ex_excp_bus,    // 467:452
@@ -2707,9 +2679,7 @@ module ysyx_210611_ex_stage(
     ex_csr_wr_addr, // 75 :64
     ex_csr_rd_data  // 63 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~itrp_valid}};
-  
-  wire                   ex_uart_out_valid;
-  wire [7 : 0]           ex_uart_out_char = rs1_forward[7 : 0];
+
   wire [`INST_BUS]       ex_inst;
   wire [`REG_BUS]        ex_pc;
   wire [`REG_BUS]        ex_op1, ex_op2;
@@ -2817,10 +2787,6 @@ module ysyx_210611_ex_stage(
   assign ex_to_mem_pc = ex_pc;
   assign ex_to_mem_inst = ex_inst;
   assign ex_to_mem_bus = {
-    // serial port output
-    ex_uart_out_valid, // 319:319
-    ex_uart_out_char,  // 318:311
-
     // mem
     ex_load_info,   // 214:208
     ex_save_info,   // 207:204
@@ -3060,13 +3026,6 @@ module ysyx_210611_forward (
                        (wb_op1_src_ex)  ? wb_ex_data  :
                        (wb_op1_src_mem) ? wb_mem_data :
                        ex_rs1_data;
-
-  /* test wires begin */
-  wire test_eq     = (ex_rs1_addr == mem_reg_wr_addr);
-  wire test_wr_ena = mem_reg_wr_ena;
-  wire test_rs1    = (|ex_rs1_addr);
-  wire test_wr_src = mem_reg_wr_ctrl[`MEM_TO_REG];
-  /* test wires end */
 
   wire mem_op2_src_ex = (ex_rs2_addr == mem_reg_wr_addr) 
                         && mem_reg_wr_ena 
@@ -3470,14 +3429,10 @@ module ysyx_210611_id_stage(
   wire id_excp_exit = inst_mret;
   assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
   assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
-  
-  wire id_uart_out_valid = inst_putch;
  
   assign id_to_ex_pc = id_pc;
   assign id_to_ex_inst = id_inst;
   assign id_to_ex_bus = {
-    // serial port output
-    id_uart_out_valid, // 567:567
     
     // exception
     id_excp_exit,      // 566:566
@@ -3692,10 +3647,6 @@ module ysyx_210611_mem_stage(
       ex_to_mem_bus_r <= ex_to_mem_bus;
     end
   end
-
-  // serial port output
-  wire             mem_uart_out_valid;
-  wire [7 : 0]     mem_uart_out_char;
   
   wire [`REG_BUS]  mem_pc;
   wire [31 : 0]    mem_inst;
@@ -3716,9 +3667,6 @@ module ysyx_210611_mem_stage(
   assign mem_pc = ex_to_mem_pc_r;
   assign mem_inst = ex_to_mem_inst_r;
   assign {
-    mem_uart_out_valid, // 319:319
-    mem_uart_out_char,  // 318:311
-
     // mem
     mem_load_info,   // 214:208
     mem_save_info,   // 207:204
@@ -3833,10 +3781,6 @@ module ysyx_210611_mem_stage(
   assign mem_to_wb_pc = mem_pc;
   assign mem_to_wb_inst = mem_inst;
   assign mem_to_wb_bus = {
-    // serial port output
-    mem_uart_out_valid, // 305:305
-    mem_uart_out_char,  // 304:297
-
     // wb stage
     mem_reg_wr_ena,  // 200:200
     mem_reg_wr_addr, // 199:195
@@ -3945,11 +3889,7 @@ module ysyx_210611_wb_stage (
   // regfile control
   output wire                             reg_wr_ena,
   output wire [4 : 0]                     reg_wr_addr,
-  output wire [`REG_BUS]                  reg_wr_data,
-  
-  // serial port output
-  output wire                             wb_uart_out_valid,
-  output wire [7 : 0]                     wb_uart_out_char
+  output wire [`REG_BUS]                  reg_wr_data
   );
   
   // pipeline control
@@ -3982,10 +3922,6 @@ module ysyx_210611_wb_stage (
   assign wb_pc = mem_to_wb_pc_r;
   assign wb_inst = mem_to_wb_inst_r;
   assign {
-    // serial port output
-    wb_uart_out_valid, // 305:305
-    wb_uart_out_char,  // 304:297
-    
     wb_wen,         // 200:200
     wb_wdest,       // 199:195
     wb_reg_wr_ctrl, // 194:192
