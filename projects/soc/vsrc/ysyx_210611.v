@@ -3091,7 +3091,7 @@ module ysyx_210611_id_stage(
   // pipeline control
   reg id_valid;
   wire id_ready_go;
-  wire id_flush = bj_ena;
+  wire id_flush = bj_ena && bj_valid;
   reg [`REG_BUS] if_to_id_pc_r;
   reg [`INST_BUS] if_to_id_inst_r;
 
