@@ -1428,7 +1428,7 @@ module ysyx_210611_axi_rw # (
   //wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
   wire [AXI_ADDR_WIDTH-1:0] axi_addr          = rw_addr_i[31:0];
   wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
-  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = AXI_DATA_WIDTH - aligned_offset_l;
+  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = -aligned_offset_l;
   wire [MASK_WIDTH-1:0] mask                  = (({MASK_WIDTH{size_b}} & {{MASK_WIDTH-8{1'b0}}, 8'hff})
                                               | ({MASK_WIDTH{size_h}} & {{MASK_WIDTH-16{1'b0}}, 16'hffff})
                                               | ({MASK_WIDTH{size_w}} & {{MASK_WIDTH-32{1'b0}}, 32'hffffffff})
@@ -3412,8 +3412,15 @@ module ysyx_210611_id_stage(
   
   wire [`EXCP_BUS] id_excp_bus;
   wire id_excp_exit = inst_mret;
-  assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
-  assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
+  assign id_excp_bus = {
+    4'b0,        // 15:12
+    inst_ecall,  // 11:11
+    7'b0,        // 10:4
+    inst_ebreak, // 3 :3
+    3'b0         // 2 :0
+  };
+  //assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
+  //assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
  
   assign id_to_ex_pc = id_pc;
   assign id_to_ex_inst = id_inst;
