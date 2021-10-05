@@ -3068,13 +3068,11 @@ module ysyx_210611_id_stage(
   wire                       rs2_r_ena;
   wire [4 : 0]               rs2_addr;
 
-  wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;
   assign {
-    bj_pc,    // 65:2
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
-  } = bj_ctrl_bus;
+  } = bj_ctrl_bus[1:0];
 
   // pipeline control
   reg id_valid;
