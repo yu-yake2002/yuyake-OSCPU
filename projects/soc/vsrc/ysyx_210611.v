@@ -363,9 +363,9 @@ module ysyx_210611(
   wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
   wire [31:0]                 mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
   wire [3:0]                  mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
-  wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len,   cli_aw_len;
+  wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len;
   wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
-  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst, cli_aw_burst;
+  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst;
   
   wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
   wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
@@ -382,9 +382,9 @@ module ysyx_210611(
   wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
   wire [31:0]                 mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
   wire [3:0]                  mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
-  wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len,   cli_ar_len;
+  wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len;
   wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
-  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst, cli_ar_burst;
+  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst;
   
   wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
   wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
