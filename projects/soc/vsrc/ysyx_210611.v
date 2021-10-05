@@ -199,6 +199,21 @@ module ysyx_210611(
   output [3:0]                        io_slave_rid
 );
 
+  // drive unused wires
+  assign io_slave_awready = 1'b0;
+  assign io_slave_wready  = 1'b0;
+  assign io_slave_bvalid  = 1'b0;
+  assign io_slave_bresp   = 2'b0;
+  assign io_slave_bid     = 4'b0;
+
+  assign io_slave_arready = 1'b0;
+  assign io_slave_rvalid  = 1'b0;
+  assign io_slave_rresp   = 2'b0;
+  assign io_slave_rdata   = 64'b0;
+  assign io_slave_rlast   = 1'b0;
+  assign io_slave_rid     = 4'b0;
+
+
   ysyx_210611_axi_2x2 ysyx_210611_axi_2x2(
     .clock                          (clock),
     .reset                          (reset),
@@ -334,7 +349,7 @@ module ysyx_210611(
     .cli_ar_id_o                    (cli_ar_id),
     .cli_ar_len_o                   (cli_ar_len),
     .cli_ar_size_o                  (cli_ar_size),
-    .cli_ar_burst_o                 (cli_aw_burst),
+    .cli_ar_burst_o                 (cli_ar_burst),
   
     .cli_r_ready_o                  (cli_r_ready),
     .cli_r_valid_i                  (cli_r_valid),
@@ -1438,7 +1453,7 @@ module ysyx_210611_axi_rw # (
   assign rw_ready_o     = rw_ready;
   
   reg [1:0] rw_resp;
-  wire rw_resp_nxt = w_trans ? axi_b_resp_i : axi_r_resp_i;
+  wire [1:0] rw_resp_nxt = w_trans ? axi_b_resp_i : axi_r_resp_i;
   wire resp_en = trans_done;
   always @(posedge clock) begin
     if (reset) begin
@@ -1772,8 +1787,12 @@ module ysyx_210611_clint # (
   assign b_id_o    = wr_id_reg;
   
   /* ------Generate CLINT------ */
-  assign clint_interupt_bus [`SOFT_ITRP]  = csr_msip == 32'b1;
-  assign clint_interupt_bus [`TIMER_ITRP] = csr_mtime >= csr_mtimecmp;
+  assign clint_interupt_bus = {
+    4'b0,                      // 11:8
+    csr_mtime >= csr_mtimecmp, // 7:7
+    7'b0                       // 6:0
+  };
+  //assign clint_interupt_bus [`TIMER_ITRP] = csr_mtime >= csr_mtimecmp;
 endmodule
 
 module ysyx_210611_cpu(
