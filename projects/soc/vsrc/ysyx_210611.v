@@ -3903,13 +3903,9 @@ module ysyx_210611_wb_stage (
     end
   end
   
-  wire [`REG_BUS] wb_pc;
-  wire [31 : 0]   wb_inst;
   wire            wb_wen;
   wire [4  : 0]   wb_wdest;
   
-  assign wb_pc = mem_to_wb_pc_r;
-  assign wb_inst = mem_to_wb_inst_r;
   assign {
     wb_wen,         // 200:200
     wb_wdest,       // 199:195
@@ -3935,8 +3931,6 @@ module ysyx_210611_wb_stage (
     | ({64{ex_to_reg}}  & wb_ex_data)
     | ({64{csr_to_reg}} & wb_csr_rd_data)
   );
-  
-  wire wb_commit = wb_valid;
 
   assign wb_forward_bus = {
     reg_wr_addr,       // 136:132
