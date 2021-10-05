@@ -3063,10 +3063,10 @@ module ysyx_210611_id_stage(
 
   wire [`REG_BUS] r_data1 = 64'b0;
   wire [`REG_BUS] r_data2 = 64'b0;
-  wire                       rs1_r_ena;
-  wire [4 : 0]               rs1_addr;
-  wire                       rs2_r_ena;
-  wire [4 : 0]               rs2_addr;
+  wire            rs1_r_ena;
+  wire [4 : 0]    rs1_addr;
+  wire            rs2_r_ena;
+  wire [4 : 0]    rs2_addr;
 
   wire            bj_ena, bj_valid;
   assign {
