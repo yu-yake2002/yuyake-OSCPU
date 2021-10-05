@@ -1826,8 +1826,8 @@ module ysyx_210611_cpu(
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
-  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc;
-  wire [`INST_BUS] if_to_id_inst, id_to_ex_inst, ex_to_mem_inst;
+  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc;
+  wire [`INST_BUS] if_to_id_inst, id_to_ex_inst;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
   wire [`MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
@@ -1913,8 +1913,6 @@ module ysyx_210611_cpu(
     .ex_allowin                (ex_allowin),
 
     .ex_to_mem_valid           (ex_to_mem_valid),
-    .ex_to_mem_pc              (ex_to_mem_pc),
-    .ex_to_mem_inst            (ex_to_mem_inst),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     
@@ -1992,8 +1990,6 @@ module ysyx_210611_cpu(
   
     // pipeline control
     .ex_to_mem_valid           (ex_to_mem_valid),
-    .ex_to_mem_pc              (ex_to_mem_pc),
-    .ex_to_mem_inst            (ex_to_mem_inst),
     .ex_to_mem_bus             (ex_to_mem_bus),
     .mem_allowin               (mem_allowin),
     .ex_to_mem_handshake       (ex_to_mem_handshake),
@@ -3584,8 +3580,6 @@ module ysyx_210611_mem_stage(
   
   // pipeline control
   input wire                               ex_to_mem_valid,
-  input wire [`REG_BUS]                    ex_to_mem_pc,
-  input wire [`INST_BUS]                   ex_to_mem_inst,
   input wire [`EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
   output wire                              mem_allowin,
   output wire                              ex_to_mem_handshake,
@@ -3611,8 +3605,6 @@ module ysyx_210611_mem_stage(
   // pipeline control
   reg mem_valid;
   wire mem_ready_go;
-  reg [`REG_BUS] ex_to_mem_pc_r;
-  reg [`INST_BUS] ex_to_mem_inst_r;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
   
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
@@ -3629,14 +3621,9 @@ module ysyx_210611_mem_stage(
     end
 
     if (ex_to_mem_valid && mem_allowin) begin
-      ex_to_mem_pc_r <= ex_to_mem_pc;
-      ex_to_mem_inst_r <= ex_to_mem_inst;
       ex_to_mem_bus_r <= ex_to_mem_bus;
     end
   end
-  
-  wire [`REG_BUS]  mem_pc;
-  wire [31 : 0]    mem_inst;
   
   // ram control
   wire [`LOAD_BUS] mem_load_info;
@@ -3651,8 +3638,6 @@ module ysyx_210611_mem_stage(
   wire [4  : 0]    mem_reg_wr_addr;
   wire             mem_reg_wr_ena, mem_csr_wr_ena;
   
-  assign mem_pc = ex_to_mem_pc_r;
-  assign mem_inst = ex_to_mem_inst_r;
   assign {
     // mem
     mem_load_info,   // 214:208
