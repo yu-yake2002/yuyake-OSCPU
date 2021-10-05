@@ -1826,8 +1826,8 @@ module ysyx_210611_cpu(
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
-  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc, mem_to_wb_pc;
-  wire [`INST_BUS] if_to_id_inst, id_to_ex_inst, ex_to_mem_inst, mem_to_wb_inst;
+  wire [`REG_BUS] if_to_id_pc, id_to_ex_pc, ex_to_mem_pc;
+  wire [`INST_BUS] if_to_id_inst, id_to_ex_inst, ex_to_mem_inst;
   wire [`ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
   wire [`MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
@@ -1999,8 +1999,6 @@ module ysyx_210611_cpu(
     .ex_to_mem_handshake       (ex_to_mem_handshake),
 
     .mem_to_wb_valid           (mem_to_wb_valid),
-    .mem_to_wb_pc              (mem_to_wb_pc),
-    .mem_to_wb_inst            (mem_to_wb_inst),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
     
@@ -2025,8 +2023,6 @@ module ysyx_210611_cpu(
     
     // pipeline control
     .mem_to_wb_valid           (mem_to_wb_valid),
-    .mem_to_wb_pc              (mem_to_wb_pc),
-    .mem_to_wb_inst            (mem_to_wb_inst),
     .mem_to_wb_bus             (mem_to_wb_bus),
     .wb_allowin                (wb_allowin),
 
@@ -3595,8 +3591,6 @@ module ysyx_210611_mem_stage(
   output wire                              ex_to_mem_handshake,
 
   output wire                              mem_to_wb_valid,
-  output wire [`REG_BUS]                   mem_to_wb_pc,
-  output wire [`INST_BUS]                  mem_to_wb_inst,
   output wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   input wire                               wb_allowin,
   
@@ -3771,8 +3765,6 @@ module ysyx_210611_mem_stage(
   wire mem_finish = mem_state == RETN;
   wire [`REG_BUS] mem_ex_data = mem_addr;
 
-  assign mem_to_wb_pc = mem_pc;
-  assign mem_to_wb_inst = mem_inst;
   assign mem_to_wb_bus = {
     // wb stage
     mem_reg_wr_ena,  // 200:200
@@ -3869,8 +3861,6 @@ module ysyx_210611_wb_stage (
   
   // pipeline control
   input wire                              mem_to_wb_valid,
-  input wire [`REG_BUS]                   mem_to_wb_pc,
-  input wire [`INST_BUS]                  mem_to_wb_inst,
   input wire [`MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
   output wire                             wb_allowin,
   
