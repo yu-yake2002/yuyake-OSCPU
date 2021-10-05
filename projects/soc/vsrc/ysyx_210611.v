@@ -1455,7 +1455,6 @@ module ysyx_210611_axi_rw # (
   
   // Write address channel signals
   assign axi_aw_valid_o   = w_state_addr;
-  //assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
   assign axi_aw_addr_o    = axi_addr;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
   assign axi_aw_len_o     = {8{w_state_addr}} & axi_len;
