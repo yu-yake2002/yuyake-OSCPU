@@ -107,8 +107,8 @@ module mem_stage(
     mem_reg_wr_addr, // 6  :2
     mem_reg_wr_ena   // 1  :1
   } = ex_to_mem_bus_r & {`EX_TO_MEM_WIDTH{mem_valid}};
-  wire ex_ram_rd_ena = ex_to_mem_bus[11];
-  wire ex_ram_wr_ena = ex_to_mem_bus[10];
+  wire ex_ram_rd_ena = ex_to_mem_bus[10];
+  wire ex_ram_wr_ena = ex_to_mem_bus[9];
   wire refresh = ex_to_mem_valid && mem_allowin;
   wire mem_handshake = mem_rw_valid && mem_rw_ready;
 
