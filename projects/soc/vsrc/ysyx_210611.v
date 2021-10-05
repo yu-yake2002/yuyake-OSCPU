@@ -207,41 +207,29 @@ module ysyx_210611(
     .aw_ready_o_0                   (mem_axi_aw_ready),
     .aw_valid_i_0                   (mem_axi_aw_valid),
     .aw_addr_i_0                    (mem_axi_aw_addr),
-    .aw_prot_i_0                    (mem_axi_aw_prot),
     .aw_id_i_0                      (mem_axi_aw_id),
-    .aw_user_i_0                    (mem_axi_aw_user),
     .aw_len_i_0                     (mem_axi_aw_len),
     .aw_size_i_0                    (mem_axi_aw_size),
     .aw_burst_i_0                   (mem_axi_aw_burst),
-    .aw_lock_i_0                    (mem_axi_aw_lock),
-    .aw_cache_i_0                   (mem_axi_aw_cache),
-    .aw_qos_i_0                     (mem_axi_aw_qos),
 
     .w_ready_o_0                    (mem_axi_w_ready),
     .w_valid_i_0                    (mem_axi_w_valid),
     .w_data_i_0                     (mem_axi_w_data),
     .w_strb_i_0                     (mem_axi_w_strb),
     .w_last_i_0                     (mem_axi_w_last),
-    .w_id_i_0                       (mem_axi_w_id),
 
     .b_ready_i_0                    (mem_axi_b_ready),
     .b_valid_o_0                    (mem_axi_b_valid),
     .b_resp_o_0                     (mem_axi_b_resp),
     .b_id_o_0                       (mem_axi_b_id),
-    .b_user_o_0                     (mem_axi_b_user),
 
     .ar_ready_o_0                   (mem_axi_ar_ready),
     .ar_valid_i_0                   (mem_axi_ar_valid),
     .ar_addr_i_0                    (mem_axi_ar_addr),
-    .ar_prot_i_0                    (mem_axi_ar_prot),
     .ar_id_i_0                      (mem_axi_ar_id),
-    .ar_user_i_0                    (mem_axi_ar_user),
     .ar_len_i_0                     (mem_axi_ar_len),
     .ar_size_i_0                    (mem_axi_ar_size),
     .ar_burst_i_0                   (mem_axi_ar_burst),
-    .ar_lock_i_0                    (mem_axi_ar_lock),
-    .ar_cache_i_0                   (mem_axi_ar_cache),
-    .ar_qos_i_0                     (mem_axi_ar_qos),
 
     .r_ready_i_0                    (mem_axi_r_ready),
     .r_valid_o_0                    (mem_axi_r_valid),
@@ -249,47 +237,34 @@ module ysyx_210611(
     .r_data_o_0                     (mem_axi_r_data),
     .r_last_o_0                     (mem_axi_r_last),
     .r_id_o_0                       (mem_axi_r_id),
-    .r_user_o_0                     (mem_axi_r_user),
 
     // IF
     .aw_ready_o_1                   (if_axi_aw_ready),
     .aw_valid_i_1                   (if_axi_aw_valid),
     .aw_addr_i_1                    (if_axi_aw_addr),
-    .aw_prot_i_1                    (if_axi_aw_prot),
     .aw_id_i_1                      (if_axi_aw_id),
-    .aw_user_i_1                    (if_axi_aw_user),
     .aw_len_i_1                     (if_axi_aw_len),
     .aw_size_i_1                    (if_axi_aw_size),
     .aw_burst_i_1                   (if_axi_aw_burst),
-    .aw_lock_i_1                    (if_axi_aw_lock),
-    .aw_cache_i_1                   (if_axi_aw_cache),
-    .aw_qos_i_1                     (if_axi_aw_qos),
 
     .w_ready_o_1                    (if_axi_w_ready),
     .w_valid_i_1                    (if_axi_w_valid),
     .w_data_i_1                     (if_axi_w_data),
     .w_strb_i_1                     (if_axi_w_strb),
     .w_last_i_1                     (if_axi_w_last),
-    .w_id_i_1                       (if_axi_w_id),
 
     .b_ready_i_1                    (if_axi_b_ready),
     .b_valid_o_1                    (if_axi_b_valid),
     .b_resp_o_1                     (if_axi_b_resp),
     .b_id_o_1                       (if_axi_b_id),
-    .b_user_o_1                     (if_axi_b_user),
 
     .ar_ready_o_1                   (if_axi_ar_ready),
     .ar_valid_i_1                   (if_axi_ar_valid),
     .ar_addr_i_1                    (if_axi_ar_addr),
-    .ar_prot_i_1                    (if_axi_ar_prot),
     .ar_id_i_1                      (if_axi_ar_id),
-    .ar_user_i_1                    (if_axi_ar_user),
     .ar_len_i_1                     (if_axi_ar_len),
     .ar_size_i_1                    (if_axi_ar_size),
     .ar_burst_i_1                   (if_axi_ar_burst),
-    .ar_lock_i_1                    (if_axi_ar_lock),
-    .ar_cache_i_1                   (if_axi_ar_cache),
-    .ar_qos_i_1                     (if_axi_ar_qos),
 
     .r_ready_i_1                    (if_axi_r_ready),
     .r_valid_o_1                    (if_axi_r_valid),
@@ -297,47 +272,34 @@ module ysyx_210611(
     .r_data_o_1                     (if_axi_r_data),
     .r_last_o_1                     (if_axi_r_last),
     .r_id_o_1                       (if_axi_r_id),
-    .r_user_o_1                     (if_axi_r_user),
     
     // TOP INTERFACE
     .ram_aw_ready_i                 (io_master_awready),
     .ram_aw_valid_o                 (io_master_awvalid),
     .ram_aw_addr_o                  (io_master_awaddr),
-    .ram_aw_prot_o                  (),
     .ram_aw_id_o                    (io_master_awid),
-    .ram_aw_user_o                  (),
     .ram_aw_len_o                   (io_master_awlen),
     .ram_aw_size_o                  (io_master_awsize),
     .ram_aw_burst_o                 (io_master_awburst),
-    .ram_aw_lock_o                  (),
-    .ram_aw_cache_o                 (),
-    .ram_aw_qos_o                   (),
 
     .ram_w_ready_i                  (io_master_wready),
     .ram_w_valid_o                  (io_master_wvalid),
     .ram_w_data_o                   (io_master_wdata),
     .ram_w_strb_o                   (io_master_wstrb),
     .ram_w_last_o                   (io_master_wlast),
-    .ram_w_id_o                     (),
   
     .ram_b_ready_o                  (io_master_bready),
     .ram_b_valid_i                  (io_master_bvalid),
     .ram_b_resp_i                   (io_master_bresp),
     .ram_b_id_i                     (io_master_bid),
-    .ram_b_user_i                   (),
   
     .ram_ar_ready_i                 (io_master_arready),
     .ram_ar_valid_o                 (io_master_arvalid),
     .ram_ar_addr_o                  (io_master_araddr),
-    .ram_ar_prot_o                  (),
     .ram_ar_id_o                    (io_master_arid),
-    .ram_ar_user_o                  (),
     .ram_ar_len_o                   (io_master_arlen),
     .ram_ar_size_o                  (io_master_arsize),
     .ram_ar_burst_o                 (io_master_arburst),
-    .ram_ar_lock_o                  (),
-    .ram_ar_cache_o                 (),
-    .ram_ar_qos_o                   (),
   
     .ram_r_ready_o                  (io_master_rready),
     .ram_r_valid_i                  (io_master_rvalid),
@@ -345,69 +307,50 @@ module ysyx_210611(
     .ram_r_data_i                   (io_master_rdata),
     .ram_r_last_i                   (io_master_rlast),
     .ram_r_id_i                     (io_master_rid),
-    .ram_r_user_i                   (),
 
     // CLINT
     .cli_aw_ready_i                 (cli_aw_ready),
     .cli_aw_valid_o                 (cli_aw_valid),
     .cli_aw_addr_o                  (cli_aw_addr),
-    .cli_aw_prot_o                  (cli_aw_prot),
     .cli_aw_id_o                    (cli_aw_id),
-    .cli_aw_user_o                  (cli_aw_user),
     .cli_aw_len_o                   (cli_aw_len),
     .cli_aw_size_o                  (cli_aw_size),
     .cli_aw_burst_o                 (cli_aw_burst),
-    .cli_aw_lock_o                  (cli_aw_lock),
-    .cli_aw_cache_o                 (cli_aw_cache),
-    .cli_aw_qos_o                   (cli_aw_qos),
 
     .cli_w_ready_i                  (cli_w_ready),
     .cli_w_valid_o                  (cli_w_valid),
     .cli_w_data_o                   (cli_w_data),
     .cli_w_strb_o                   (cli_w_strb),
     .cli_w_last_o                   (cli_w_last),
-    .cli_w_id_o                     (cli_w_id),
   
     .cli_b_ready_o                  (cli_b_ready),
     .cli_b_valid_i                  (cli_b_valid),
     .cli_b_resp_i                   (cli_b_resp),
     .cli_b_id_i                     (cli_b_id),
-    .cli_b_user_i                   (cli_b_user),
   
     .cli_ar_ready_i                 (cli_ar_ready),
     .cli_ar_valid_o                 (cli_ar_valid),
     .cli_ar_addr_o                  (cli_ar_addr),
-    .cli_ar_prot_o                  (cli_ar_prot),
     .cli_ar_id_o                    (cli_ar_id),
-    .cli_ar_user_o                  (cli_ar_user),
     .cli_ar_len_o                   (cli_ar_len),
     .cli_ar_size_o                  (cli_ar_size),
     .cli_ar_burst_o                 (cli_aw_burst),
-    .cli_ar_lock_o                  (cli_ar_lock),
-    .cli_ar_cache_o                 (cli_ar_cache),
-    .cli_ar_qos_o                   (cli_ar_qos),
   
     .cli_r_ready_o                  (cli_r_ready),
     .cli_r_valid_i                  (cli_r_valid),
     .cli_r_resp_i                   (cli_r_resp),
     .cli_r_data_i                   (cli_r_data),
     .cli_r_last_i                   (cli_r_last),
-    .cli_r_id_i                     (cli_r_id),
-    .cli_r_user_i                   (cli_r_user)
+    .cli_r_id_i                     (cli_r_id)
   );
   
   wire                        mem_axi_aw_ready, if_axi_aw_ready, cli_aw_ready;
   wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
   wire [31:0]                 mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
-  wire [2:0]                  mem_axi_aw_prot,  if_axi_aw_prot,  cli_aw_prot;
   wire [3:0]                  mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
-  wire                        mem_axi_aw_user,  if_axi_aw_user,  cli_aw_user;
   wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len,   cli_aw_len;
   wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
   wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst, cli_aw_burst;
-  wire                        mem_axi_aw_lock,  if_axi_aw_lock,  cli_aw_lock;
-  wire [3:0]                  mem_axi_aw_cache, if_axi_aw_cache, cli_aw_cache;
-  wire [3:0]                  mem_axi_aw_qos,   if_axi_aw_qos,   cli_aw_qos;
   
   wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
   wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
@@ -420,29 +363,22 @@ module ysyx_210611(
   wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
   wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
   wire [3:0]                  mem_axi_b_id,     if_axi_b_id,     cli_b_id;
-  wire                        mem_axi_b_user,   if_axi_b_user,   cli_b_user;
-
+  
   wire                        mem_axi_ar_ready, if_axi_ar_ready, cli_ar_ready;
   wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
   wire [31:0]                 mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
-  wire [2:0]                  mem_axi_ar_prot,  if_axi_ar_prot,  cli_ar_prot;
   wire [3:0]                  mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
-  wire                        mem_axi_ar_user,  if_axi_ar_user,  cli_ar_user;
   wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len,   cli_ar_len;
   wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
   wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst, cli_ar_burst;
-  wire                        mem_axi_ar_lock,  if_axi_ar_lock,  cli_ar_lock;
-  wire [3:0]                  mem_axi_ar_cache, if_axi_ar_cache, cli_ar_cache;
-  wire [3:0]                  mem_axi_ar_qos,   if_axi_ar_qos,   cli_ar_qos;
-
+  
   wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
   wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
   wire [1:0]                  mem_axi_r_resp,   if_axi_r_resp,   cli_r_resp;
   wire [63:0]                 mem_axi_r_data,   if_axi_r_data,   cli_r_data;
   wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
   wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
-  wire                        mem_axi_r_user,   if_axi_r_user,   cli_r_user;
-
+  
   ysyx_210611_axi_rw ysyx_210611_mem_axi_rw (
     .clock                          (clock),
     .reset                          (reset),
@@ -460,49 +396,36 @@ module ysyx_210611(
     .axi_aw_ready_i                 (mem_axi_aw_ready),
     .axi_aw_valid_o                 (mem_axi_aw_valid),
     .axi_aw_addr_o                  (mem_axi_aw_addr),
-    .axi_aw_prot_o                  (mem_axi_aw_prot),
     .axi_aw_id_o                    (mem_axi_aw_id),
-    .axi_aw_user_o                  (mem_axi_aw_user),
     .axi_aw_len_o                   (mem_axi_aw_len),
     .axi_aw_size_o                  (mem_axi_aw_size),
     .axi_aw_burst_o                 (mem_axi_aw_burst),
-    .axi_aw_lock_o                  (mem_axi_aw_lock),
-    .axi_aw_cache_o                 (mem_axi_aw_cache),
-    .axi_aw_qos_o                   (mem_axi_aw_qos),
     
     .axi_w_ready_i                  (mem_axi_w_ready),
     .axi_w_valid_o                  (mem_axi_w_valid),
     .axi_w_data_o                   (mem_axi_w_data),
     .axi_w_strb_o                   (mem_axi_w_strb),
     .axi_w_last_o                   (mem_axi_w_last),
-    .axi_w_id_o                     (mem_axi_w_id),
         
     .axi_b_ready_o                  (mem_axi_b_ready),
     .axi_b_valid_i                  (mem_axi_b_valid),
     .axi_b_resp_i                   (mem_axi_b_resp),
     .axi_b_id_i                     (mem_axi_b_id),
-    .axi_b_user_i                   (mem_axi_b_user),
 
     .axi_ar_ready_i                 (mem_axi_ar_ready),
     .axi_ar_valid_o                 (mem_axi_ar_valid),
     .axi_ar_addr_o                  (mem_axi_ar_addr),
-    .axi_ar_prot_o                  (mem_axi_ar_prot),
     .axi_ar_id_o                    (mem_axi_ar_id),
-    .axi_ar_user_o                  (mem_axi_ar_user),
     .axi_ar_len_o                   (mem_axi_ar_len),
     .axi_ar_size_o                  (mem_axi_ar_size),
     .axi_ar_burst_o                 (mem_axi_ar_burst),
-    .axi_ar_lock_o                  (mem_axi_ar_lock),
-    .axi_ar_cache_o                 (mem_axi_ar_cache),
-    .axi_ar_qos_o                   (mem_axi_ar_qos),
         
     .axi_r_ready_o                  (mem_axi_r_ready),
     .axi_r_valid_i                  (mem_axi_r_valid),
     .axi_r_resp_i                   (mem_axi_r_resp),
     .axi_r_data_i                   (mem_axi_r_data),
     .axi_r_last_i                   (mem_axi_r_last),
-    .axi_r_id_i                     (mem_axi_r_id),
-    .axi_r_user_i                   (mem_axi_r_user)
+    .axi_r_id_i                     (mem_axi_r_id)
   );
 
   ysyx_210611_axi_rw ysyx_210611_if_axi_rw (
@@ -522,49 +445,36 @@ module ysyx_210611(
     .axi_aw_ready_i                 (if_axi_aw_ready),
     .axi_aw_valid_o                 (if_axi_aw_valid),
     .axi_aw_addr_o                  (if_axi_aw_addr),
-    .axi_aw_prot_o                  (if_axi_aw_prot),
     .axi_aw_id_o                    (if_axi_aw_id),
-    .axi_aw_user_o                  (if_axi_aw_user),
     .axi_aw_len_o                   (if_axi_aw_len),
     .axi_aw_size_o                  (if_axi_aw_size),
     .axi_aw_burst_o                 (if_axi_aw_burst),
-    .axi_aw_lock_o                  (if_axi_aw_lock),
-    .axi_aw_cache_o                 (if_axi_aw_cache),
-    .axi_aw_qos_o                   (if_axi_aw_qos),
     
     .axi_w_ready_i                  (if_axi_w_ready),
     .axi_w_valid_o                  (if_axi_w_valid),
     .axi_w_data_o                   (if_axi_w_data),
     .axi_w_strb_o                   (if_axi_w_strb),
     .axi_w_last_o                   (if_axi_w_last),
-    .axi_w_id_o                     (if_axi_w_id),
         
     .axi_b_ready_o                  (if_axi_b_ready),
     .axi_b_valid_i                  (if_axi_b_valid),
     .axi_b_resp_i                   (if_axi_b_resp),
     .axi_b_id_i                     (if_axi_b_id),
-    .axi_b_user_i                   (if_axi_b_user),
 
     .axi_ar_ready_i                 (if_axi_ar_ready),
     .axi_ar_valid_o                 (if_axi_ar_valid),
     .axi_ar_addr_o                  (if_axi_ar_addr),
-    .axi_ar_prot_o                  (if_axi_ar_prot),
     .axi_ar_id_o                    (if_axi_ar_id),
-    .axi_ar_user_o                  (if_axi_ar_user),
     .axi_ar_len_o                   (if_axi_ar_len),
     .axi_ar_size_o                  (if_axi_ar_size),
     .axi_ar_burst_o                 (if_axi_ar_burst),
-    .axi_ar_lock_o                  (if_axi_ar_lock),
-    .axi_ar_cache_o                 (if_axi_ar_cache),
-    .axi_ar_qos_o                   (if_axi_ar_qos),
         
     .axi_r_ready_o                  (if_axi_r_ready),
     .axi_r_valid_i                  (if_axi_r_valid),
     .axi_r_resp_i                   (if_axi_r_resp),
     .axi_r_data_i                   (if_axi_r_data),
     .axi_r_last_i                   (if_axi_r_last),
-    .axi_r_id_i                     (if_axi_r_id),
-    .axi_r_user_i                   (if_axi_r_user)
+    .axi_r_id_i                     (if_axi_r_id)
   );
 
   wire if_rw_valid;
@@ -625,41 +535,29 @@ module ysyx_210611(
     .aw_ready_o                    (cli_aw_ready),
     .aw_valid_i                    (cli_aw_valid),
     .aw_addr_i                     (cli_aw_addr),
-    .aw_prot_i                     (cli_aw_prot),
     .aw_id_i                       (cli_aw_id),
-    .aw_user_i                     (cli_aw_user),
     .aw_len_i                      (cli_aw_len),
     .aw_size_i                     (cli_aw_size),
     .aw_burst_i                    (cli_aw_burst),
-    .aw_lock_i                     (cli_aw_lock),
-    .aw_cache_i                    (cli_aw_cache),
-    .aw_qos_i                      (cli_aw_qos),
     
     .w_ready_o                     (cli_w_ready),
     .w_valid_i                     (cli_w_valid),
     .w_data_i                      (cli_w_data),
     .w_strb_i                      (cli_w_strb),
     .w_last_i                      (cli_w_last),
-    .w_id_i                        (cli_w_id),
         
     .b_ready_i                     (cli_b_ready),
     .b_valid_o                     (cli_b_valid),
     .b_resp_o                      (cli_b_resp),
     .b_id_o                        (cli_b_id),
-    .b_user_o                      (cli_b_user),
 
     .ar_ready_o                    (cli_ar_ready),
     .ar_valid_i                    (cli_ar_valid),
     .ar_addr_i                     (cli_ar_addr),
-    .ar_prot_i                     (cli_ar_prot),
     .ar_id_i                       (cli_ar_id),
-    .ar_user_i                     (cli_ar_user),
     .ar_len_i                      (cli_ar_len),
     .ar_size_i                     (cli_ar_size),
     .ar_burst_i                    (cli_ar_burst),
-    .ar_lock_i                     (cli_ar_lock),
-    .ar_cache_i                    (cli_ar_cache),
-    .ar_qos_i                      (cli_ar_qos),
         
     .r_ready_i                     (cli_r_ready),
     .r_valid_o                     (cli_r_valid),
@@ -667,7 +565,6 @@ module ysyx_210611(
     .r_data_o                      (cli_r_data),
     .r_last_o                      (cli_r_last),
     .r_id_o                        (cli_r_id),
-    .r_user_o                      (cli_r_user),
 
     .clint_interupt_bus            (clint_interupt_bus)
   );
@@ -735,15 +632,10 @@ module ysyx_210611_axi_2x2 # (
   output wire                             aw_ready_o_0,
   input  wire                             aw_valid_i_0,
   input  wire [AXI_ADDR_WIDTH-1:0]        aw_addr_i_0,
-  input  wire [2:0]                       aw_prot_i_0,
   input  wire [AXI_ID_WIDTH-1:0]          aw_id_i_0,
-  input  wire [AXI_USER_WIDTH-1:0]        aw_user_i_0,
   input  wire [7:0]                       aw_len_i_0,
   input  wire [2:0]                       aw_size_i_0,
   input  wire [1:0]                       aw_burst_i_0,
-  input  wire                             aw_lock_i_0,
-  input  wire [3:0]                       aw_cache_i_0,
-  input  wire [3:0]                       aw_qos_i_0,
   
   output wire                             w_ready_o_0,
   input  wire                             w_valid_i_0,
@@ -756,20 +648,14 @@ module ysyx_210611_axi_2x2 # (
   output wire                             b_valid_o_0,
   output wire [1:0]                       b_resp_o_0,
   output wire [AXI_ID_WIDTH-1:0]          b_id_o_0,
-  output wire [AXI_USER_WIDTH-1:0]        b_user_o_0,
   
   output wire                             ar_ready_o_0,
   input  wire                             ar_valid_i_0,
   input  wire [AXI_ADDR_WIDTH-1:0]        ar_addr_i_0,
-  input  wire [2:0]                       ar_prot_i_0,
   input  wire [AXI_ID_WIDTH-1:0]          ar_id_i_0,
-  input  wire [AXI_USER_WIDTH-1:0]        ar_user_i_0,
   input  wire [7:0]                       ar_len_i_0,
   input  wire [2:0]                       ar_size_i_0,
   input  wire [1:0]                       ar_burst_i_0,
-  input  wire                             ar_lock_i_0,
-  input  wire [3:0]                       ar_cache_i_0,
-  input  wire [3:0]                       ar_qos_i_0,
   
   input  wire                             r_ready_i_0,
   output wire                             r_valid_o_0,
@@ -777,7 +663,6 @@ module ysyx_210611_axi_2x2 # (
   output wire [AXI_DATA_WIDTH-1:0]        r_data_o_0,
   output wire                             r_last_o_0,
   output wire [AXI_ID_WIDTH-1:0]          r_id_o_0,
-  output wire [AXI_USER_WIDTH-1:0]        r_user_o_0,
 
   // Advanced eXtensible Interface
   // if stage (master) -> 2x2 interconnect (slave)
@@ -785,15 +670,10 @@ module ysyx_210611_axi_2x2 # (
   output wire                             aw_ready_o_1,
   input  wire                             aw_valid_i_1,
   input  wire [AXI_ADDR_WIDTH-1:0]        aw_addr_i_1,
-  input  wire [2:0]                       aw_prot_i_1,
   input  wire [AXI_ID_WIDTH-1:0]          aw_id_i_1,
-  input  wire [AXI_USER_WIDTH-1:0]        aw_user_i_1,
   input  wire [7:0]                       aw_len_i_1,
   input  wire [2:0]                       aw_size_i_1,
   input  wire [1:0]                       aw_burst_i_1,
-  input  wire                             aw_lock_i_1,
-  input  wire [3:0]                       aw_cache_i_1,
-  input  wire [3:0]                       aw_qos_i_1,
   
   output wire                             w_ready_o_1,
   input  wire                             w_valid_i_1,
@@ -806,20 +686,14 @@ module ysyx_210611_axi_2x2 # (
   output wire                             b_valid_o_1,
   output wire [1:0]                       b_resp_o_1,
   output wire [AXI_ID_WIDTH-1:0]          b_id_o_1,
-  output wire [AXI_USER_WIDTH-1:0]        b_user_o_1,
   
   output wire                             ar_ready_o_1,
   input  wire                             ar_valid_i_1,
   input  wire [AXI_ADDR_WIDTH-1:0]        ar_addr_i_1,
-  input  wire [2:0]                       ar_prot_i_1,
   input  wire [AXI_ID_WIDTH-1:0]          ar_id_i_1,
-  input  wire [AXI_USER_WIDTH-1:0]        ar_user_i_1,
   input  wire [7:0]                       ar_len_i_1,
   input  wire [2:0]                       ar_size_i_1,
   input  wire [1:0]                       ar_burst_i_1,
-  input  wire                             ar_lock_i_1,
-  input  wire [3:0]                       ar_cache_i_1,
-  input  wire [3:0]                       ar_qos_i_1,
   
   input  wire                             r_ready_i_1,
   output wire                             r_valid_o_1,
@@ -836,13 +710,9 @@ module ysyx_210611_axi_2x2 # (
   output wire [AXI_ADDR_WIDTH-1:0]        ram_aw_addr_o,
   output wire [2:0]                       ram_aw_prot_o,
   output wire [AXI_ID_WIDTH-1:0]          ram_aw_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        ram_aw_user_o,
   output wire [7:0]                       ram_aw_len_o,
   output wire [2:0]                       ram_aw_size_o,
   output wire [1:0]                       ram_aw_burst_o,
-  output wire                             ram_aw_lock_o,
-  output wire [3:0]                       ram_aw_cache_o,
-  output wire [3:0]                       ram_aw_qos_o,
   
   input  wire                             ram_w_ready_i,
   output wire                             ram_w_valid_o,
@@ -855,20 +725,14 @@ module ysyx_210611_axi_2x2 # (
   input  wire                             ram_b_valid_i,
   input  wire [1:0]                       ram_b_resp_i,
   input  wire [AXI_ID_WIDTH-1:0]          ram_b_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        ram_b_user_i,
   
   input  wire                             ram_ar_ready_i,
   output wire                             ram_ar_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        ram_ar_addr_o,
-  output wire [2:0]                       ram_ar_prot_o,
   output wire [AXI_ID_WIDTH-1:0]          ram_ar_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        ram_ar_user_o,
   output wire [7:0]                       ram_ar_len_o,
   output wire [2:0]                       ram_ar_size_o,
   output wire [1:0]                       ram_ar_burst_o,
-  output wire                             ram_ar_lock_o,
-  output wire [3:0]                       ram_ar_cache_o,
-  output wire [3:0]                       ram_ar_qos_o,
   
   output wire                             ram_r_ready_o,
   input  wire                             ram_r_valid_i,
@@ -876,21 +740,15 @@ module ysyx_210611_axi_2x2 # (
   input  wire [AXI_DATA_WIDTH-1:0]        ram_r_data_i,
   input  wire                             ram_r_last_i,
   input  wire [AXI_ID_WIDTH-1:0]          ram_r_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        ram_r_user_i,
   
   // 2x2 interconnect -> CLINT
   input  wire                             cli_aw_ready_i,
   output wire                             cli_aw_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        cli_aw_addr_o,
-  output wire [2:0]                       cli_aw_prot_o,
   output wire [AXI_ID_WIDTH-1:0]          cli_aw_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        cli_aw_user_o,
   output wire [7:0]                       cli_aw_len_o,
   output wire [2:0]                       cli_aw_size_o,
   output wire [1:0]                       cli_aw_burst_o,
-  output wire                             cli_aw_lock_o,
-  output wire [3:0]                       cli_aw_cache_o,
-  output wire [3:0]                       cli_aw_qos_o,
   
   input  wire                             cli_w_ready_i,
   output wire                             cli_w_valid_o,
@@ -903,43 +761,31 @@ module ysyx_210611_axi_2x2 # (
   input  wire                             cli_b_valid_i,
   input  wire [1:0]                       cli_b_resp_i,
   input  wire [AXI_ID_WIDTH-1:0]          cli_b_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        cli_b_user_i,
   
   input  wire                             cli_ar_ready_i,
   output wire                             cli_ar_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        cli_ar_addr_o,
-  output wire [2:0]                       cli_ar_prot_o,
   output wire [AXI_ID_WIDTH-1:0]          cli_ar_id_o,
-  output wire [AXI_USER_WIDTH-1:0]        cli_ar_user_o,
   output wire [7:0]                       cli_ar_len_o,
   output wire [2:0]                       cli_ar_size_o,
   output wire [1:0]                       cli_ar_burst_o,
-  output wire                             cli_ar_lock_o,
-  output wire [3:0]                       cli_ar_cache_o,
-  output wire [3:0]                       cli_ar_qos_o,
   
   output wire                             cli_r_ready_o,
   input  wire                             cli_r_valid_i,
   input  wire [1:0]                       cli_r_resp_i,
   input  wire [AXI_DATA_WIDTH-1:0]        cli_r_data_i,
   input  wire                             cli_r_last_i,
-  input  wire [AXI_ID_WIDTH-1:0]          cli_r_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]        cli_r_user_i
+  input  wire [AXI_ID_WIDTH-1:0]          cli_r_id_i
 );
 
   // bridge between master and slave
   wire                             mid_aw_ready;
   wire                             mid_aw_valid;
   wire [AXI_ADDR_WIDTH-1:0]        mid_aw_addr;
-  wire [2:0]                       mid_aw_prot;
   wire [AXI_ID_WIDTH-1:0]          mid_aw_id;
-  wire [AXI_USER_WIDTH-1:0]        mid_aw_user;
   wire [7:0]                       mid_aw_len;
   wire [2:0]                       mid_aw_size;
   wire [1:0]                       mid_aw_burst;
-  wire                             mid_aw_lock;
-  wire [3:0]                       mid_aw_cache;
-  wire [3:0]                       mid_aw_qos;
   
   wire                             mid_w_ready;
   wire                             mid_w_valid;
@@ -952,20 +798,14 @@ module ysyx_210611_axi_2x2 # (
   wire                             mid_b_valid;
   wire [1:0]                       mid_b_resp;
   wire [AXI_ID_WIDTH-1:0]          mid_b_id;
-  wire [AXI_USER_WIDTH-1:0]        mid_b_user;
   
   wire                             mid_ar_ready;
   wire                             mid_ar_valid;
   wire [AXI_ADDR_WIDTH-1:0]        mid_ar_addr;
-  wire [2:0]                       mid_ar_prot;
   wire [AXI_ID_WIDTH-1:0]          mid_ar_id;
-  wire [AXI_USER_WIDTH-1:0]        mid_ar_user;
   wire [7:0]                       mid_ar_len;
   wire [2:0]                       mid_ar_size;
   wire [1:0]                       mid_ar_burst;
-  wire                             mid_ar_lock;
-  wire [3:0]                       mid_ar_cache;
-  wire [3:0]                       mid_ar_qos;
   
   wire                             mid_r_ready;
   wire                             mid_r_valid;
@@ -973,7 +813,6 @@ module ysyx_210611_axi_2x2 # (
   wire [AXI_DATA_WIDTH-1:0]        mid_r_data;
   wire                             mid_r_last;
   wire [AXI_ID_WIDTH-1:0]          mid_r_id;
-  wire [AXI_USER_WIDTH-1:0]        mid_r_user;
 
   wire r_finish_0 = mid_r_valid && r_ready_i_0 && mid_r_last && r_state_0;
   wire r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
@@ -994,9 +833,7 @@ module ysyx_210611_axi_2x2 # (
   // Write State Machine
   // Master
   reg [1:0] master_w_state, slave_w_state;
-  wire w_0_to_cli = ~w_0_to_ram;
   wire w_0_to_ram = aw_addr_i_0[31:16] != 16'h0200;
-  wire w_1_to_cli = ~w_1_to_ram;
   wire w_1_to_ram = aw_addr_i_1[31:16] != 16'h0200;
   
   // Current Stage
@@ -1085,9 +922,7 @@ module ysyx_210611_axi_2x2 # (
   
   // Read State Machine
   reg [1:0] master_r_state, slave_r_state;
-  wire r_0_to_cli = ~r_0_to_ram;
   wire r_0_to_ram = ar_addr_i_0[31:16] != 16'h0200;
-  wire r_1_to_cli = ~r_1_to_ram;
   wire r_1_to_ram = ar_addr_i_1[31:16] != 16'h0200;
 
   // Current Stage
@@ -1187,7 +1022,6 @@ module ysyx_210611_axi_2x2 # (
   assign b_valid_o_0   = w_state_0                   & mid_b_valid;
   assign b_resp_o_0    = {2{w_state_0}}              & mid_b_resp;
   assign b_id_o_0      = {AXI_ID_WIDTH{w_state_0}}   & mid_b_id;
-  assign b_user_o_0    = {AXI_USER_WIDTH{w_state_0}} & mid_b_user;
   
   // to IF
   assign aw_ready_o_1  = w_state_1                   & mid_aw_ready;
@@ -1195,7 +1029,6 @@ module ysyx_210611_axi_2x2 # (
   assign b_valid_o_1   = w_state_1                   & mid_b_valid;
   assign b_resp_o_1    = {2{w_state_1}}              & mid_b_resp;
   assign b_id_o_1      = {AXI_ID_WIDTH{w_state_1}}   & mid_b_id;
-  assign b_user_o_1    = {AXI_USER_WIDTH{w_state_1}} & mid_b_user;
 
   // bridge side
   assign mid_aw_ready = (
@@ -1210,17 +1043,9 @@ module ysyx_210611_axi_2x2 # (
       ({AXI_ADDR_WIDTH{w_state_0}} & aw_addr_i_0) 
     | ({AXI_ADDR_WIDTH{w_state_1}} & aw_addr_i_1)
   );
-  assign mid_aw_prot = (
-      ({3{w_state_0}} & aw_prot_i_0) 
-    | ({3{w_state_1}} & aw_prot_i_1)
-  );
   assign mid_aw_id = (
       ({AXI_ID_WIDTH{w_state_0}} & aw_id_i_0) 
     | ({AXI_ID_WIDTH{w_state_1}} & aw_id_i_1)
-  );
-  assign mid_aw_user = (
-      ({AXI_USER_WIDTH{w_state_0}} & aw_user_i_0) 
-    | ({AXI_USER_WIDTH{w_state_1}} & aw_user_i_1)
   );
   assign mid_aw_len = (
       ({8{w_state_0}} & aw_len_i_0) 
@@ -1233,18 +1058,6 @@ module ysyx_210611_axi_2x2 # (
   assign mid_aw_burst = (
       ({2{w_state_0}} & aw_burst_i_0) 
     | ({2{w_state_1}} & aw_burst_i_1)
-  );
-  assign mid_aw_lock = (
-      (w_state_0 & aw_lock_i_0) 
-    | (w_state_1 & aw_lock_i_1)
-  );
-  assign mid_aw_cache = (
-      ({4{w_state_0}} & aw_cache_i_0) 
-    | ({4{w_state_1}} & aw_cache_i_1)
-  );
-  assign mid_aw_qos = (
-      ({4{w_state_0}} & aw_qos_i_0) 
-    | ({4{w_state_1}} & aw_qos_i_1)
   );
   
   assign mid_w_ready = (
@@ -1288,43 +1101,28 @@ module ysyx_210611_axi_2x2 # (
       ({AXI_ID_WIDTH{w_state_cli}} & cli_b_id_i)
     | ({AXI_ID_WIDTH{w_state_ram}} & ram_b_id_i)
   );
-  assign mid_b_user = (
-      ({AXI_USER_WIDTH{w_state_cli}} & cli_b_user_i)
-    | ({AXI_USER_WIDTH{w_state_ram}} & ram_b_user_i)
-  );
   
   // slave side
   assign ram_aw_valid_o = w_state_ram & mid_aw_valid;
   assign ram_aw_addr_o = {AXI_ADDR_WIDTH{w_state_ram}} & mid_aw_addr;
-  assign ram_aw_prot_o = {3{w_state_ram}} & mid_aw_prot;
   assign ram_aw_id_o = {AXI_ID_WIDTH{w_state_ram}} & mid_aw_id;
-  assign ram_aw_user_o = {AXI_USER_WIDTH{w_state_ram}} & mid_aw_user;
   assign ram_aw_len_o = {8{w_state_ram}} & mid_aw_len;
   assign ram_aw_size_o = {3{w_state_ram}} & mid_aw_size;
   assign ram_aw_burst_o = {2{w_state_ram}} & mid_aw_burst;
-  assign ram_aw_lock_o = w_state_ram & mid_aw_lock;
-  assign ram_aw_cache_o = {4{w_state_ram}} & mid_aw_cache;
-  assign ram_aw_qos_o = {4{w_state_ram}} & mid_aw_qos;
   
   assign ram_w_valid_o = w_state_ram & mid_w_valid;
   assign ram_w_data_o = {AXI_DATA_WIDTH{w_state_ram}} & mid_w_data;
   assign ram_w_strb_o = {AXI_DATA_WIDTH/8{w_state_ram}} & mid_w_strb;
   assign ram_w_last_o = w_state_ram & mid_w_last;
-  assign ram_w_id_o = {AXI_ID_WIDTH{w_state_ram}} & mid_w_id;
   
   assign ram_b_ready_o = w_state_ram & mid_b_ready;
 
   assign cli_aw_valid_o = w_state_cli & mid_aw_valid;
   assign cli_aw_addr_o = {AXI_ADDR_WIDTH{w_state_cli}} & mid_aw_addr;
-  assign cli_aw_prot_o = {3{w_state_cli}} & mid_aw_prot;
   assign cli_aw_id_o = {AXI_ID_WIDTH{w_state_cli}} & mid_aw_id;
-  assign cli_aw_user_o = {AXI_USER_WIDTH{w_state_cli}} & mid_aw_user;
   assign cli_aw_len_o = {8{w_state_cli}} & mid_aw_len;
   assign cli_aw_size_o = {3{w_state_cli}} & mid_aw_size;
   assign cli_aw_burst_o = {2{w_state_cli}} & mid_aw_burst;
-  assign cli_aw_lock_o = w_state_cli & mid_aw_lock;
-  assign cli_aw_cache_o = {4{w_state_cli}} & mid_aw_cache;
-  assign cli_aw_qos_o = {4{w_state_cli}} & mid_aw_qos;
   
   assign cli_w_valid_o = w_state_cli & mid_w_valid;
   assign cli_w_data_o = {AXI_DATA_WIDTH{w_state_cli}} & mid_w_data;
@@ -1348,7 +1146,6 @@ module ysyx_210611_axi_2x2 # (
   assign r_data_o_0    = {AXI_DATA_WIDTH{r_state_0}}  & mid_r_data;
   assign r_last_o_0    = r_state_0                    & mid_r_last;
   assign r_id_o_0      = {AXI_ID_WIDTH{r_state_0}}    & mid_r_id;
-  assign r_user_o_0    = {AXI_USER_WIDTH{r_state_0}}  & mid_r_user;
   
   // to IF
   assign ar_ready_o_1  = r_state_1                    & mid_ar_ready;
@@ -1357,7 +1154,6 @@ module ysyx_210611_axi_2x2 # (
   assign r_data_o_1    = {AXI_DATA_WIDTH{r_state_1}}  & mid_r_data;
   assign r_last_o_1    = r_state_1                    & mid_r_last;
   assign r_id_o_1      = {AXI_ID_WIDTH{r_state_1}}    & mid_r_id;
-  assign r_user_o_1    = {AXI_USER_WIDTH{r_state_1}}  & mid_r_user;
   
   // bridge side
   assign mid_ar_ready = (
@@ -1372,17 +1168,9 @@ module ysyx_210611_axi_2x2 # (
       ({AXI_ADDR_WIDTH{r_state_0}} & ar_addr_i_0) 
     | ({AXI_ADDR_WIDTH{r_state_1}} & ar_addr_i_1)
   );
-  assign mid_ar_prot = (
-      ({3{r_state_0}} & ar_prot_i_0) 
-    | ({3{r_state_1}} & ar_prot_i_1)
-  );
   assign mid_ar_id = (
       ({AXI_ID_WIDTH{r_state_0}} & ar_id_i_0) 
     | ({AXI_ID_WIDTH{r_state_1}} & ar_id_i_1)
-  );
-  assign mid_ar_user = (
-      ({AXI_USER_WIDTH{r_state_0}} & ar_user_i_0) 
-    | ({AXI_USER_WIDTH{r_state_1}} & ar_user_i_1)
   );
   assign mid_ar_len = (
       ({8{r_state_0}} & ar_len_i_0) 
@@ -1395,18 +1183,6 @@ module ysyx_210611_axi_2x2 # (
   assign mid_ar_burst = (
       ({2{r_state_0}} & ar_burst_i_0) 
     | ({2{r_state_1}} & ar_burst_i_1)
-  );
-  assign mid_ar_lock = (
-      (r_state_0 & ar_lock_i_0) 
-    | (r_state_1 & ar_lock_i_1)
-  );
-  assign mid_ar_cache = (
-      ({4{r_state_0}} & ar_cache_i_0) 
-    | ({4{r_state_1}} & ar_cache_i_1)
-  );
-  assign mid_ar_qos = (
-      ({4{r_state_0}} & ar_qos_i_0) 
-    | ({4{r_state_1}} & ar_qos_i_1)
   );
     
   assign mid_r_ready = (
@@ -1433,37 +1209,23 @@ module ysyx_210611_axi_2x2 # (
       ({AXI_ID_WIDTH{r_state_cli}} & cli_r_id_i)
     | ({AXI_ID_WIDTH{r_state_ram}} & ram_r_id_i)
   );
-  assign mid_r_user = (
-      ({AXI_USER_WIDTH{r_state_cli}} & cli_r_user_i)
-    | ({AXI_USER_WIDTH{r_state_ram}} & ram_r_user_i)
-  );
   
   // slave side
   assign ram_ar_valid_o = r_state_ram & mid_ar_valid;
   assign ram_ar_addr_o = {AXI_ADDR_WIDTH{r_state_ram}} & mid_ar_addr;
-  assign ram_ar_prot_o = {3{r_state_ram}} & mid_ar_prot;
   assign ram_ar_id_o = {AXI_ID_WIDTH{r_state_ram}} & mid_ar_id;
-  assign ram_ar_user_o = {AXI_USER_WIDTH{r_state_ram}} & mid_ar_user;
   assign ram_ar_len_o = {8{r_state_ram}} & mid_ar_len;
   assign ram_ar_size_o = {3{r_state_ram}} & mid_ar_size;
   assign ram_ar_burst_o = {2{r_state_ram}} & mid_ar_burst;
-  assign ram_ar_lock_o = r_state_ram & mid_ar_lock;
-  assign ram_ar_cache_o = {4{r_state_ram}} & mid_ar_cache;
-  assign ram_ar_qos_o = {4{r_state_ram}} & mid_ar_qos;
   
   assign ram_r_ready_o = r_state_ram & mid_r_ready;
 
   assign cli_ar_valid_o = r_state_cli & mid_ar_valid;
   assign cli_ar_addr_o = {AXI_ADDR_WIDTH{r_state_cli}} & mid_ar_addr;
-  assign cli_ar_prot_o = {3{r_state_cli}} & mid_ar_prot;
   assign cli_ar_id_o = {AXI_ID_WIDTH{r_state_cli}} & mid_ar_id;
-  assign cli_ar_user_o = {AXI_USER_WIDTH{r_state_cli}} & mid_ar_user;
   assign cli_ar_len_o = {8{r_state_cli}} & mid_ar_len;
   assign cli_ar_size_o = {3{r_state_cli}} & mid_ar_size;
   assign cli_ar_burst_o = {2{r_state_cli}} & mid_ar_burst;
-  assign cli_ar_lock_o = r_state_cli & mid_ar_lock;
-  assign cli_ar_cache_o = {4{r_state_cli}} & mid_ar_cache;
-  assign cli_ar_qos_o = {4{r_state_cli}} & mid_ar_qos;
   
   assign cli_r_ready_o = r_state_cli & mid_r_ready;
 endmodule
@@ -1518,7 +1280,6 @@ endmodule
 
 module ysyx_210611_axi_rw # (
   parameter RW_DATA_WIDTH     = 64,
-  parameter RW_ADDR_WIDTH     = 64,
   parameter AXI_DATA_WIDTH    = 64,
   parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
@@ -1541,49 +1302,36 @@ module ysyx_210611_axi_rw # (
   input  wire                              axi_aw_ready_i,
   output wire                              axi_aw_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]         axi_aw_addr_o,
-  output wire [2:0]                        axi_aw_prot_o,
   output wire [AXI_ID_WIDTH-1:0]           axi_aw_id_o,
-  output wire [AXI_USER_WIDTH-1:0]         axi_aw_user_o,
   output wire [7:0]                        axi_aw_len_o,
   output wire [2:0]                        axi_aw_size_o,
   output wire [1:0]                        axi_aw_burst_o,
-  output wire                              axi_aw_lock_o,
-  output wire [3:0]                        axi_aw_cache_o,
-  output wire [3:0]                        axi_aw_qos_o,
   
   input  wire                              axi_w_ready_i,
   output wire                              axi_w_valid_o,
   output wire [AXI_DATA_WIDTH-1:0]         axi_w_data_o,
   output wire [AXI_DATA_WIDTH/8-1:0]       axi_w_strb_o,
   output wire                              axi_w_last_o,
-  output wire [AXI_ID_WIDTH-1:0]           axi_w_id_o,
   
   output wire                              axi_b_ready_o,
   input  wire                              axi_b_valid_i,
   input  wire [1:0]                        axi_b_resp_i,
   input  wire [AXI_ID_WIDTH-1:0]           axi_b_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]         axi_b_user_i,
   
   input  wire                              axi_ar_ready_i,
   output wire                              axi_ar_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]         axi_ar_addr_o,
-  output wire [2:0]                        axi_ar_prot_o,
   output wire [AXI_ID_WIDTH-1:0]           axi_ar_id_o,
-  output wire [AXI_USER_WIDTH-1:0]         axi_ar_user_o,
   output wire [7:0]                        axi_ar_len_o,
   output wire [2:0]                        axi_ar_size_o,
   output wire [1:0]                        axi_ar_burst_o,
-  output wire                              axi_ar_lock_o,
-  output wire [3:0]                        axi_ar_cache_o,
-  output wire [3:0]                        axi_ar_qos_o,
   
   output wire                              axi_r_ready_o,
   input  wire                              axi_r_valid_i,
   input  wire [1:0]                        axi_r_resp_i,
   input  wire [AXI_DATA_WIDTH-1:0]         axi_r_data_i,
   input  wire                              axi_r_last_i,
-  input  wire [AXI_ID_WIDTH-1:0]           axi_r_id_i,
-  input  wire [AXI_USER_WIDTH-1:0]         axi_r_user_i
+  input  wire [AXI_ID_WIDTH-1:0]           axi_r_id_i
 );
   
   wire w_trans    = rw_req_i == `REQ_WRITE;
@@ -1732,16 +1480,10 @@ module ysyx_210611_axi_rw # (
   assign axi_aw_valid_o   = w_state_addr;
   //assign axi_aw_addr_o    = {AXI_DATA_WIDTH{w_state_addr}} & axi_addr;
   assign axi_aw_addr_o    = axi_addr;
-
-  assign axi_aw_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_aw_id_o      = {AXI_ID_WIDTH{w_state_addr}} & axi_id;
-  assign axi_aw_user_o    = {AXI_USER_WIDTH{w_state_addr}} & axi_user;
   assign axi_aw_len_o     = {8{w_state_addr}} & axi_len;
   assign axi_aw_size_o    = {3{w_state_addr}} & axi_size;
   assign axi_aw_burst_o   = `AXI_BURST_TYPE_INCR;
-  assign axi_aw_lock_o    = 1'b0;
-  assign axi_aw_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
-  assign axi_aw_qos_o     = 4'h0;
   
   // Write data channel signals
   assign axi_w_valid_o    = w_state_write;
@@ -1777,16 +1519,10 @@ module ysyx_210611_axi_rw # (
   assign axi_ar_valid_o   = r_state_addr;
   //assign axi_ar_addr_o    = {AXI_DATA_WIDTH{r_state_addr}} & axi_addr;
   assign axi_ar_addr_o    = axi_addr;
-
-  assign axi_ar_prot_o    = `AXI_PROT_UNPRIVILEGED_ACCESS | `AXI_PROT_SECURE_ACCESS | `AXI_PROT_DATA_ACCESS;
   assign axi_ar_id_o      = {AXI_ID_WIDTH{r_state_addr}} & axi_id;
-  assign axi_ar_user_o    = {AXI_USER_WIDTH{r_state_addr}} & axi_user;
   assign axi_ar_len_o     = {8{r_state_addr}} & axi_len;
   assign axi_ar_size_o    = {3{r_state_addr}} & axi_size;
   assign axi_ar_burst_o   = `AXI_BURST_TYPE_INCR;
-  assign axi_ar_lock_o    = 1'b0;
-  assign axi_ar_cache_o   = `AXI_ARCACHE_NORMAL_NON_CACHEABLE_NON_BUFFERABLE;
-  assign axi_ar_qos_o     = 4'h0;
   
   // Read data channel signals
   assign axi_r_ready_o    = r_state_read;
@@ -1820,8 +1556,6 @@ module ysyx_210611_axi_rw # (
 endmodule
 
 module ysyx_210611_clint # (
-  parameter AXI_DATA_WIDTH    = 64,
-  parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
   parameter AXI_USER_WIDTH    = 1
 )(
@@ -1832,41 +1566,29 @@ module ysyx_210611_clint # (
   output wire                             aw_ready_o,
   input  wire                             aw_valid_i,
   input  wire [31:0]                      aw_addr_i,
-  input  wire [2:0]                       aw_prot_i,
   input  wire [3:0]                       aw_id_i,
-  input  wire                             aw_user_i,
   input  wire [7:0]                       aw_len_i,
   input  wire [2:0]                       aw_size_i,
   input  wire [1:0]                       aw_burst_i,
-  input  wire                             aw_lock_i,
-  input  wire [3:0]                       aw_cache_i,
-  input  wire [3:0]                       aw_qos_i,
   
   output wire                             w_ready_o,
   input  wire                             w_valid_i,
   input  wire [63:0]                      w_data_i,
   input  wire [7:0]                       w_strb_i,
   input  wire                             w_last_i,
-  input  wire [3:0]                       w_id_i,
    
   input  wire                             b_ready_i,
   output wire                             b_valid_o,
   output wire [1:0]                       b_resp_o,
   output wire [3:0]                       b_id_o,
-  output wire                             b_user_o,
   
   output wire                             ar_ready_o,
   input  wire                             ar_valid_i,
   input  wire [31:0]                      ar_addr_i,
-  input  wire [2:0]                       ar_prot_i,
   input  wire [3:0]                       ar_id_i,
-  input  wire                             ar_user_i,
   input  wire [7:0]                       ar_len_i,
   input  wire [2:0]                       ar_size_i,
   input  wire [1:0]                       ar_burst_i,
-  input  wire                             ar_lock_i,
-  input  wire [3:0]                       ar_cache_i,
-  input  wire [3:0]                       ar_qos_i,
   
   input  wire                             r_ready_i,
   output wire                             r_valid_o,
@@ -1874,7 +1596,6 @@ module ysyx_210611_clint # (
   output wire [63:0]                      r_data_o,
   output wire                             r_last_o,
   output wire [3:0]                       r_id_o,
-  output wire                             r_user_o,
 
   // interupt bus to core
   output wire [`ITRP_BUS]                 clint_interupt_bus
@@ -1917,19 +1638,16 @@ module ysyx_210611_clint # (
   assign ar_ready_o = r_state_idle && ar_valid_i;
   reg [31:0] rd_addr_reg;
   reg [3:0]  rd_id_reg;
-  reg        rd_user_reg;
   reg [2:0]  rd_size_reg;
   always @(posedge clk) begin
     if (rst) begin
       rd_addr_reg <= 32'b0; 
       rd_id_reg   <= 4'b0;
-      rd_user_reg <= 1'b0;
       rd_size_reg <= 3'b0;
     end
     else if (ar_hs) begin
       rd_addr_reg <= ar_addr_i;
       rd_id_reg   <= ar_id_i;
-      rd_user_reg <= ar_user_i;
       rd_size_reg <= ar_size_i;
     end
     else if (r_hs) begin
@@ -1963,7 +1681,6 @@ module ysyx_210611_clint # (
 
   assign r_last_o  = R_STATE_READ;
   assign r_id_o    = rd_id_reg;
-  assign r_user_o  = rd_user_reg;
   
   /* ------Write Bus------ */
 
@@ -1999,19 +1716,16 @@ module ysyx_210611_clint # (
   assign aw_ready_o = w_state_idle && aw_valid_i;
   reg [31:0]               wr_addr_reg;
   reg [AXI_ID_WIDTH-1:0]   wr_id_reg;
-  reg [AXI_USER_WIDTH-1:0] wr_user_reg;
   reg [2:0]                wr_size_reg;
   always @(posedge clk) begin
     if (rst) begin
       wr_addr_reg <= 32'b0;
       wr_id_reg   <= 4'b0;
-      wr_user_reg <= 1'b0;
       wr_size_reg <= 3'b0;
     end
     else if (aw_hs) begin
       wr_addr_reg <= aw_addr_i;
       wr_id_reg   <= aw_id_i;
-      wr_user_reg <= aw_user_i;
       wr_size_reg <= aw_size_i;
     end
     else if (w_hs) begin
@@ -2085,7 +1799,6 @@ module ysyx_210611_clint # (
   assign b_valid_o = w_state_resp; 
   assign b_resp_o  = 2'b0;
   assign b_id_o    = wr_id_reg;
-  assign b_user_o  = wr_user_reg;
   
   /* ------Generate CLINT------ */
   assign clint_interupt_bus [`SOFT_ITRP]  = csr_msip == 32'b1;
