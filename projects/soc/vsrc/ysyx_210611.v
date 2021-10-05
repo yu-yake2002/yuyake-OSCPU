@@ -3363,7 +3363,6 @@ module ysyx_210611_id_stage(
                 | ({64{inst_i_csr_reg}}     & csr_data)
                );
   wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
-  wire id_use_csr = inst_i_csr_imm | inst_i_csr_reg;
   wire [`REG_BUS] id_rs2_data = r_data2;
   
   wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
