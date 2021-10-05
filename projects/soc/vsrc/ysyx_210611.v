@@ -3417,8 +3417,9 @@ module ysyx_210611_id_stage(
     inst_ecall,  // 11:11
     7'b0,        // 10:4
     inst_ebreak, // 3 :3
-    3'b0         // 2 :0
-  };
+    ~inst_vld,   // 2: 2
+    2'b0         // 1 :0
+  } & {16{id_valid}};
   //assign id_excp_bus[`EXCP_BRK_PT]  = inst_ebreak;
   //assign id_excp_bus[`EXCP_ECALL_M] = inst_ecall;
  
@@ -3883,8 +3884,6 @@ module ysyx_210611_wb_stage (
   
   // pipeline control
   reg wb_valid;
-  reg [`REG_BUS] mem_to_wb_pc_r;
-  reg [`INST_BUS] mem_to_wb_inst_r;
   reg [`MEM_TO_WB_WIDTH-1:0] mem_to_wb_bus_r;
   assign wb_allowin = 1'b1;
   
@@ -3897,8 +3896,6 @@ module ysyx_210611_wb_stage (
     end
 
     if (mem_to_wb_valid && wb_allowin) begin
-      mem_to_wb_pc_r <= mem_to_wb_pc;
-      mem_to_wb_inst_r <= mem_to_wb_inst;
       mem_to_wb_bus_r <= mem_to_wb_bus;
     end
   end
@@ -3925,7 +3922,6 @@ module ysyx_210611_wb_stage (
   wire ex_to_reg  = wb_reg_wr_ctrl[`EXE_TO_REG];
   wire csr_to_reg = wb_reg_wr_ctrl[`CSR_TO_REG];
   
-  wire [`EXCP_BUS] wb_excp_bus;
   assign reg_wr_data = {64{~rst}} & (
       ({64{mem_to_reg}} & wb_mem_rd_data)
     | ({64{ex_to_reg}}  & wb_ex_data)
