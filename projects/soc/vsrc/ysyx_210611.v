@@ -635,7 +635,6 @@ module ysyx_210611_axi_2x2 # (
   input  wire [AXI_DATA_WIDTH-1:0]        w_data_i_0,
   input  wire [AXI_DATA_WIDTH/8-1:0]      w_strb_i_0,
   input  wire                             w_last_i_0,
-  input  wire [AXI_ID_WIDTH-1:0]          w_id_i_0,
    
   input  wire                             b_ready_i_0,
   output wire                             b_valid_o_0,
@@ -693,14 +692,12 @@ module ysyx_210611_axi_2x2 # (
   output wire [AXI_DATA_WIDTH-1:0]        r_data_o_1,
   output wire                             r_last_o_1,
   output wire [AXI_ID_WIDTH-1:0]          r_id_o_1,
-  output wire [AXI_USER_WIDTH-1:0]        r_user_o_1,
   
   // Advanced eXtensible Interface
   // 2x2 interconnect -> RAM
   input  wire                             ram_aw_ready_i,
   output wire                             ram_aw_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        ram_aw_addr_o,
-  output wire [2:0]                       ram_aw_prot_o,
   output wire [AXI_ID_WIDTH-1:0]          ram_aw_id_o,
   output wire [7:0]                       ram_aw_len_o,
   output wire [2:0]                       ram_aw_size_o,
@@ -3120,7 +3117,7 @@ module ysyx_210611_id_stage(
   wire [6  : 0] func7  = id_inst[31 : 25];
   wire [4  : 0] zimm = id_inst[19 : 15];
   
-  assign rs1_addr = inst_putch ? 5'b01010 : {5{rs1_r_ena}} & id_inst[19 : 15];
+  assign rs1_addr = {5{rs1_r_ena}} & id_inst[19 : 15];
   assign rs2_addr = {5{rs2_r_ena}} & id_inst[24 : 20];
   wire [11 : 0] id_csr_addr = id_inst[31 : 20];
   assign csr_rd_addr = id_csr_addr;
@@ -3172,8 +3169,6 @@ module ysyx_210611_id_stage(
   wire inst_i_excp        = inst_i_sys & func3_0;
   wire inst_i_csr_imm     = inst_i_sys & (func3[2] == 1) & ~func3_0;
   wire inst_i_csr_reg     = inst_i_sys & (func3[2] == 0) & ~func3_0;
-  //wire inst_t             = (opcode == 7'h6b); // signal of termination
-  wire inst_putch         = (opcode == 7'h7b); //signal of putch
 
   wire is_word_opt = inst_r_word | inst_i_arith_word;
 
@@ -3326,8 +3321,7 @@ module ysyx_210611_id_stage(
   
   assign rs1_r_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
                             | inst_i_arith_word | inst_s | inst_r_dword 
-                            | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
-                            | inst_putch);
+                            | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg);
   assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
   assign csr_rd_ena = csr_vld;
   
