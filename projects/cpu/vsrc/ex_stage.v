@@ -274,8 +274,7 @@ module ex_stage(
     // wb
     ex_reg_wr_ctrl, // 9  :7
     ex_reg_wr_addr, // 6  :2
-    ex_reg_wr_ena,  // 1  :1
-    ex_csr_wr_ena   // 0  :0
+    ex_reg_wr_ena  // 1  :1
   };
 
   wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;

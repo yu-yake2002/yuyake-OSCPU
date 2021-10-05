@@ -85,7 +85,7 @@ module mem_stage(
   // wb stage
   wire [2  : 0]    mem_reg_wr_ctrl;
   wire [4  : 0]    mem_reg_wr_addr;
-  wire             mem_reg_wr_ena, mem_csr_wr_ena;
+  wire             mem_reg_wr_ena;
   
   assign mem_pc = ex_to_mem_pc_r;
   assign mem_inst = ex_to_mem_inst_r;
@@ -105,8 +105,7 @@ module mem_stage(
     // wb
     mem_reg_wr_ctrl, // 9  :7
     mem_reg_wr_addr, // 6  :2
-    mem_reg_wr_ena,  // 1  :1
-    mem_csr_wr_ena   // 0  :0
+    mem_reg_wr_ena   // 1  :1
   } = ex_to_mem_bus_r & {`EX_TO_MEM_WIDTH{mem_valid}};
   wire ex_ram_rd_ena = ex_to_mem_bus[11];
   wire ex_ram_wr_ena = ex_to_mem_bus[10];
