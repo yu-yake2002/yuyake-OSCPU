@@ -1949,16 +1949,16 @@ module ysyx_210611_clint # (
   wire msip_rd_ena      = (rd_addr_reg == 32'h02000000);
   wire mtimecmp_rd_ena  = (rd_addr_reg == 32'h02004000);
   wire mtime_rd_ena     = (rd_addr_reg == 32'h0200BFF8);
-  wire [63:0] clint_val = (
+  wire [63:0] clint_rd_val = (
       ({64{msip_rd_ena}}     & {{32{csr_msip[31]}}, csr_msip})
     | ({64{mtimecmp_rd_ena}} & csr_mtimecmp)
     | ({64{mtime_rd_ena}}    & csr_mtime)
-  );
+  ) >> rd_addr_reg[2:0];
   assign r_data_o  = (
-      ({64{rd_size_b}} & {8{clint_val[7:0]}})
-    | ({64{rd_size_h}} & {4{clint_val[15:0]}})
-    | ({64{rd_size_w}} & {2{clint_val[31:0]}})
-    | ({64{rd_size_d}} & {1{clint_val[63:0]}})
+      ({64{rd_size_b}} & {8{clint_rd_val[7:0]}})
+    | ({64{rd_size_h}} & {4{clint_rd_val[15:0]}})
+    | ({64{rd_size_w}} & {2{clint_rd_val[31:0]}})
+    | ({64{rd_size_d}} & {1{clint_rd_val[63:0]}})
   );
 
   assign r_last_o  = R_STATE_READ;
