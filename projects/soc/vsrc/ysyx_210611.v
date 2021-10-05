@@ -613,8 +613,7 @@ endmodule
 module ysyx_210611_axi_2x2 # (
   parameter AXI_DATA_WIDTH    = 64,
   parameter AXI_ADDR_WIDTH    = 32,
-  parameter AXI_ID_WIDTH      = 4,
-  parameter AXI_USER_WIDTH    = 1
+  parameter AXI_ID_WIDTH      = 4
 )(
   input  wire               clock,
   input  wire               reset,
@@ -1263,8 +1262,7 @@ module ysyx_210611_axi_rw # (
   parameter RW_DATA_WIDTH     = 64,
   parameter AXI_DATA_WIDTH    = 64,
   parameter AXI_ADDR_WIDTH    = 32,
-  parameter AXI_ID_WIDTH      = 4,
-  parameter AXI_USER_WIDTH    = 1
+  parameter AXI_ID_WIDTH      = 4
 )(
   input  wire                              clock,
   input  wire                              reset,
@@ -1635,7 +1633,7 @@ module ysyx_210611_clint # (
   wire rd_size_d = rd_size_reg == 3'b011;
 
   // r bus
-  assign r_valid_o = R_STATE_READ;
+  assign r_valid_o = r_state_read;
   assign r_resp_o  = 2'b0;
 
   wire msip_rd_ena      = (rd_addr_reg == 32'h02000000);
@@ -2690,12 +2688,8 @@ module ysyx_210611_ex_stage(
   ysyx_210611_forward ysyx_210611_Forward(
     .ex_rs1_addr         (ex_rs1_addr),
     .ex_rs2_addr         (ex_rs2_addr),
-    //.ex_rs1_data         (ex_rs1_data),
-    //.ex_rs2_data         (ex_rs2_data),
     .ex_rs1_data         (rs1_data),
     .ex_rs2_data         (rs2_data),
-    .ex_use_rs1          (ex_use_rs1),
-    .ex_use_rs2          (ex_use_rs2),
 
     .mem_forward_bus     (mem_forward_bus),
     .wb_forward_bus      (wb_forward_bus),
@@ -2960,8 +2954,6 @@ module ysyx_210611_forward (
   //input wire [12: 0] csr_addr,
   input wire [`REG_BUS]               ex_rs1_data,
   input wire [`REG_BUS]               ex_rs2_data,
-  input wire                          ex_use_rs1,
-  input wire                          ex_use_rs2,
 
   input wire [`MEM_FORWARD_WIDTH-1:0] mem_forward_bus,
   input wire [`WB_FORWARD_WIDTH-1:0]  wb_forward_bus,
