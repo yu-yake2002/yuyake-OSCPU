@@ -2554,8 +2554,6 @@ module ysyx_210611_ex_stage(
   output wire                             ex_allowin,
 
   output wire                             ex_to_mem_valid,
-  output wire [`REG_BUS]                  ex_to_mem_pc,
-  output wire [`INST_BUS]                 ex_to_mem_inst,
   output wire [`EX_TO_MEM_WIDTH-1:0]      ex_to_mem_bus,
   input wire                              mem_allowin,
   
