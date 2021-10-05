@@ -1918,33 +1918,47 @@ module ysyx_210611_clint # (
   reg [31:0] rd_addr_reg;
   reg [3:0]  rd_id_reg;
   reg        rd_user_reg;
+  reg [2:0]  rd_size_reg;
   always @(posedge clk) begin
     if (rst) begin
       rd_addr_reg <= 32'b0; 
       rd_id_reg   <= 4'b0;
       rd_user_reg <= 1'b0;
+      rd_size_reg <= 3'b0;
     end
     else if (ar_hs) begin
       rd_addr_reg <= ar_addr_i;
       rd_id_reg   <= ar_id_i;
       rd_user_reg <= ar_user_i;
+      rd_size_reg <= ar_size_i;
     end
     else if (r_hs) begin
       rd_addr_reg <= 0;
     end
   end
+  
+  wire rd_size_b = rd_size_reg == 3'b000;
+  wire rd_size_h = rd_size_reg == 3'b001;
+  wire rd_size_w = rd_size_reg == 3'b010;
+  wire rd_size_d = rd_size_reg == 3'b011;
 
   // r bus
   assign r_valid_o = R_STATE_READ;
   assign r_resp_o  = 2'b0;
 
-  wire msip_rd_ena     = (rd_addr_reg == 32'h02000000);
-  wire mtimecmp_rd_ena = (rd_addr_reg == 32'h02004000);
-  wire mtime_rd_ena    = (rd_addr_reg == 32'h0200BFF8);
-  assign r_data_o  = (
+  wire msip_rd_ena      = (rd_addr_reg == 32'h02000000);
+  wire mtimecmp_rd_ena  = (rd_addr_reg == 32'h02004000);
+  wire mtime_rd_ena     = (rd_addr_reg == 32'h0200BFF8);
+  wire [63:0] clint_val = (
       ({64{msip_rd_ena}}     & {{32{csr_msip[31]}}, csr_msip})
     | ({64{mtimecmp_rd_ena}} & csr_mtimecmp)
     | ({64{mtime_rd_ena}}    & csr_mtime)
+  );
+  assign r_data_o  = (
+      ({64{rd_size_b}} & {8{clint_val[7:0]}})
+    | ({64{rd_size_h}} & {4{clint_val[15:0]}})
+    | ({64{rd_size_w}} & {2{clint_val[31:0]}})
+    | ({64{rd_size_d}} & {1{clint_val[63:0]}})
   );
 
   assign r_last_o  = R_STATE_READ;
@@ -1986,16 +2000,19 @@ module ysyx_210611_clint # (
   reg [31:0]               wr_addr_reg;
   reg [AXI_ID_WIDTH-1:0]   wr_id_reg;
   reg [AXI_USER_WIDTH-1:0] wr_user_reg;
+  reg [2:0]                wr_size_reg;
   always @(posedge clk) begin
     if (rst) begin
       wr_addr_reg <= 32'b0;
       wr_id_reg   <= 4'b0;
       wr_user_reg <= 1'b0;
+      wr_size_reg <= 3'b0;
     end
     else if (aw_hs) begin
       wr_addr_reg <= aw_addr_i;
       wr_id_reg   <= aw_id_i;
       wr_user_reg <= aw_user_i;
+      wr_size_reg <= aw_size_i;
     end
     else if (w_hs) begin
       wr_addr_reg <= 0;
