@@ -328,9 +328,9 @@ module ysyx_210611(
     .cli_aw_valid_o                 (cli_aw_valid),
     .cli_aw_addr_o                  (cli_aw_addr),
     .cli_aw_id_o                    (cli_aw_id),
-    .cli_aw_len_o                   (cli_aw_len),
+    .cli_aw_len_o                   (),
     .cli_aw_size_o                  (cli_aw_size),
-    .cli_aw_burst_o                 (cli_aw_burst),
+    .cli_aw_burst_o                 (),
 
     .cli_w_ready_i                  (cli_w_ready),
     .cli_w_valid_o                  (cli_w_valid),
@@ -347,9 +347,9 @@ module ysyx_210611(
     .cli_ar_valid_o                 (cli_ar_valid),
     .cli_ar_addr_o                  (cli_ar_addr),
     .cli_ar_id_o                    (cli_ar_id),
-    .cli_ar_len_o                   (cli_ar_len),
+    .cli_ar_len_o                   (),
     .cli_ar_size_o                  (cli_ar_size),
-    .cli_ar_burst_o                 (cli_ar_burst),
+    .cli_ar_burst_o                 (),
   
     .cli_r_ready_o                  (cli_r_ready),
     .cli_r_valid_i                  (cli_r_valid),
@@ -544,9 +544,7 @@ module ysyx_210611(
     .aw_valid_i                    (cli_aw_valid),
     .aw_addr_i                     (cli_aw_addr),
     .aw_id_i                       (cli_aw_id),
-    .aw_len_i                      (cli_aw_len),
     .aw_size_i                     (cli_aw_size),
-    .aw_burst_i                    (cli_aw_burst),
     
     .w_ready_o                     (cli_w_ready),
     .w_valid_i                     (cli_w_valid),
@@ -563,9 +561,7 @@ module ysyx_210611(
     .ar_valid_i                    (cli_ar_valid),
     .ar_addr_i                     (cli_ar_addr),
     .ar_id_i                       (cli_ar_id),
-    .ar_len_i                      (cli_ar_len),
     .ar_size_i                     (cli_ar_size),
-    .ar_burst_i                    (cli_ar_burst),
         
     .r_ready_i                     (cli_r_ready),
     .r_valid_o                     (cli_r_valid),
@@ -1556,9 +1552,7 @@ module ysyx_210611_clint # (
   input  wire                             aw_valid_i,
   input  wire [31:0]                      aw_addr_i,
   input  wire [3:0]                       aw_id_i,
-  input  wire [7:0]                       aw_len_i,
   input  wire [2:0]                       aw_size_i,
-  input  wire [1:0]                       aw_burst_i,
   
   output wire                             w_ready_o,
   input  wire                             w_valid_i,
@@ -1575,9 +1569,7 @@ module ysyx_210611_clint # (
   input  wire                             ar_valid_i,
   input  wire [31:0]                      ar_addr_i,
   input  wire [3:0]                       ar_id_i,
-  input  wire [7:0]                       ar_len_i,
   input  wire [2:0]                       ar_size_i,
-  input  wire [1:0]                       ar_burst_i,
   
   input  wire                             r_ready_i,
   output wire                             r_valid_o,
