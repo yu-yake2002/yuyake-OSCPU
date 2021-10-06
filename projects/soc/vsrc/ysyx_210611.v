@@ -3437,7 +3437,7 @@ module ysyx_210611_if_stage(
   
   // fetch an instruction
   assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake = ~rst && if_axi_valid & if_axi_ready;
+  wire   if_handshake = ~rst && if_axi_valid && if_axi_ready;
   
   assign if_axi_size = `SIZE_W;
   assign if_bj_ready = if_state == IDLE;
@@ -3457,21 +3457,30 @@ module ysyx_210611_if_stage(
   end
   
   always @(*) begin
-    case (if_state)
-      IDLE:
-        if_next_state = bj_handshake ? ADDR : IDLE;
-      ADDR:
-        if_next_state = if_handshake ? RETN : ADDR;
-      RETN:
-        if_next_state = (pre_to_if_valid && if_allowin) ? IDLE : RETN;
-      default:
-        if_next_state = IDLE;
-    endcase
+    if (rst) begin
+      if_next_state = IDLE;
+    end
+    else begin
+      case (if_state)
+        IDLE:
+          if_next_state = bj_handshake ? ADDR : IDLE;
+        ADDR:
+          if_next_state = if_handshake ? RETN : ADDR;
+        RETN:
+          if_next_state = (pre_to_if_valid && if_allowin) ? IDLE : RETN;
+        default:
+          if_next_state = IDLE;
+      endcase
+    end
   end
   
   always @(posedge clk) begin
-    if (if_state == IDLE)
+    if (rst) begin
+      if_axi_addr <= 64'b0;
+    end
+    else if (if_state == IDLE) begin
       if_axi_addr <= next_pc;
+    end
   end
 
   // IF stage
