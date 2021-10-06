@@ -3435,24 +3435,15 @@ module ysyx_210611_if_stage(
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
   } = bj_ctrl_bus;
-
+  
+  wire if_handshake, bj_handshake;
+  wire pre_valid;
+  wire pre_ready_go;
+  wire pre_to_if_valid;
+  wire [`REG_BUS] next_pc;
+  
   // pre-IF stage
-  wire pre_valid = 1'b1;
-  wire pre_ready_go = if_state == RETN;
-  wire pre_to_if_valid = pre_valid && pre_ready_go;
-  wire [`REG_BUS] next_pc = /*excp_jmp_ena ? excp_pc :*/
-                            bj_ena       ? bj_pc   :
-                            (if_pc + 4);
-  
-  // fetch an instruction
-  assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake;
-  assign if_handshake = ~rst && if_axi_valid && if_axi_ready;
-  
-  assign if_axi_size = `SIZE_W;
-  assign if_bj_ready = if_state == IDLE;
-  wire bj_handshake;
-  assign bj_handshake = ~rst && if_bj_ready && bj_valid;
+
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;
@@ -3493,6 +3484,22 @@ module ysyx_210611_if_stage(
       if_axi_addr <= next_pc;
     end
   end
+  
+  assign pre_valid = 1'b1;
+  assign pre_ready_go = if_state == RETN;
+  assign pre_to_if_valid = pre_valid && pre_ready_go;
+  assign next_pc = /*excp_jmp_ena ? excp_pc :*/
+                            bj_ena       ? bj_pc   :
+                            (if_pc + 4);
+  
+  // fetch an instruction
+  assign if_axi_valid = if_state == ADDR;
+  assign if_handshake = ~rst && if_axi_valid && if_axi_ready;
+  
+  assign if_axi_size = `SIZE_W;
+  assign if_bj_ready = if_state == IDLE;
+  assign bj_handshake = ~rst && if_bj_ready && bj_valid;
+  
 
   // IF stage
   
