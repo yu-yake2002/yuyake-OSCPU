@@ -198,7 +198,7 @@ module ysyx_210611(
   output                              io_slave_rlast,
   output [3:0]                        io_slave_rid
 );
-
+  
   // drive unused wires
   assign io_slave_awready = 1'b0;
   assign io_slave_wready  = 1'b0;
@@ -212,8 +212,41 @@ module ysyx_210611(
   assign io_slave_rdata   = 64'b0;
   assign io_slave_rlast   = 1'b0;
   assign io_slave_rid     = 4'b0;
-
-
+  
+  wire                        mem_axi_aw_ready, if_axi_aw_ready, cli_aw_ready;
+  wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
+  wire [31:0]                 mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
+  wire [3:0]                  mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
+  wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len;
+  wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
+  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst;
+  
+  wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
+  wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
+  wire [63:0]                 mem_axi_w_data,   if_axi_w_data,   cli_w_data;
+  wire [7:0]                  mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
+  wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
+  
+  wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
+  wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
+  wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
+  wire [3:0]                  mem_axi_b_id,     if_axi_b_id,     cli_b_id;
+  
+  wire                        mem_axi_ar_ready, if_axi_ar_ready, cli_ar_ready;
+  wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
+  wire [31:0]                 mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
+  wire [3:0]                  mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
+  wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len;
+  wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
+  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst;
+  
+  wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
+  wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
+  wire [1:0]                  mem_axi_r_resp,   if_axi_r_resp,   cli_r_resp;
+  wire [63:0]                 mem_axi_r_data,   if_axi_r_data,   cli_r_data;
+  wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
+  wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
+  
   ysyx_210611_axi_2x2 ysyx_210611_axi_2x2(
     .clock                          (clock),
     .reset                          (reset),
@@ -355,40 +388,7 @@ module ysyx_210611(
     .cli_r_id_i                     (cli_r_id)
   );
   
-  wire                        mem_axi_aw_ready, if_axi_aw_ready, cli_aw_ready;
-  wire                        mem_axi_aw_valid, if_axi_aw_valid, cli_aw_valid;
-  wire [31:0]                 mem_axi_aw_addr,  if_axi_aw_addr,  cli_aw_addr;
-  wire [3:0]                  mem_axi_aw_id,    if_axi_aw_id,    cli_aw_id;
-  wire [7:0]                  mem_axi_aw_len,   if_axi_aw_len;
-  wire [2:0]                  mem_axi_aw_size,  if_axi_aw_size,  cli_aw_size;
-  wire [1:0]                  mem_axi_aw_burst, if_axi_aw_burst;
-  
-  wire                        mem_axi_w_ready,  if_axi_w_ready,  cli_w_ready;
-  wire                        mem_axi_w_valid,  if_axi_w_valid,  cli_w_valid;
-  wire [63:0]                 mem_axi_w_data,   if_axi_w_data,   cli_w_data;
-  wire [7:0]                  mem_axi_w_strb,   if_axi_w_strb,   cli_w_strb;
-  wire                        mem_axi_w_last,   if_axi_w_last,   cli_w_last;
-  
-  wire                        mem_axi_b_ready,  if_axi_b_ready,  cli_b_ready;
-  wire                        mem_axi_b_valid,  if_axi_b_valid,  cli_b_valid;
-  wire [1:0]                  mem_axi_b_resp,   if_axi_b_resp,   cli_b_resp;
-  wire [3:0]                  mem_axi_b_id,     if_axi_b_id,     cli_b_id;
-  
-  wire                        mem_axi_ar_ready, if_axi_ar_ready, cli_ar_ready;
-  wire                        mem_axi_ar_valid, if_axi_ar_valid, cli_ar_valid;
-  wire [31:0]                 mem_axi_ar_addr,  if_axi_ar_addr,  cli_ar_addr;
-  wire [3:0]                  mem_axi_ar_id,    if_axi_ar_id,    cli_ar_id;
-  wire [7:0]                  mem_axi_ar_len,   if_axi_ar_len;
-  wire [2:0]                  mem_axi_ar_size,  if_axi_ar_size,  cli_ar_size;
-  wire [1:0]                  mem_axi_ar_burst, if_axi_ar_burst;
-  
-  wire                        mem_axi_r_ready,  if_axi_r_ready,  cli_r_ready;
-  wire                        mem_axi_r_valid,  if_axi_r_valid,  cli_r_valid;
-  wire [1:0]                  mem_axi_r_resp,   if_axi_r_resp,   cli_r_resp;
-  wire [63:0]                 mem_axi_r_data,   if_axi_r_data,   cli_r_data;
-  wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
-  wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
-  
+    
   ysyx_210611_axi_rw ysyx_210611_mem_axi_rw (
     .clock                          (clock),
     .reset                          (reset),
@@ -802,14 +802,14 @@ module ysyx_210611_axi_2x2 # (
   wire                             mid_r_last;
   wire [AXI_ID_WIDTH-1:0]          mid_r_id;
 
-  wire r_finish_0 = mid_r_valid && r_ready_i_0 && mid_r_last && r_state_0;
-  wire r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
-  wire r_finish_cli = mid_r_ready && cli_r_valid_i && cli_r_last_i && r_state_cli;
-  wire r_finish_ram = mid_r_ready && ram_r_valid_i && ram_r_last_i && r_state_ram;
-  wire w_finish_0 = b_valid_o_0 && b_ready_i_0 && w_state_0;
-  wire w_finish_1 = b_valid_o_1 && b_ready_i_1 && w_state_1;
-  wire w_finish_cli = cli_b_ready_o && cli_b_valid_i && w_state_cli;
-  wire w_finish_ram = ram_b_ready_o && ram_b_valid_i && w_state_ram;
+  wire r_finish_0;
+  wire r_finish_1;
+  wire r_finish_cli;
+  wire r_finish_ram;
+  wire w_finish_0;
+  wire w_finish_1;
+  wire w_finish_cli;
+  wire w_finish_ram;
 
   // ------------------State Machine------------------
   parameter [1:0] STATE_IDLE  = 2'b00;
@@ -821,9 +821,14 @@ module ysyx_210611_axi_2x2 # (
   // Write State Machine
   // Master
   reg [1:0] master_w_state, slave_w_state;
+  reg [1:0] master_w_next_state, slave_w_next_state;
   wire w_0_to_ram = aw_addr_i_0[31:16] != 16'h0200;
   wire w_1_to_ram = aw_addr_i_1[31:16] != 16'h0200;
-  
+  wire w_state_0 = (master_w_state == STATE_0);
+  wire w_state_1 = (master_w_state == STATE_1);
+  wire w_state_cli = (slave_w_state == STATE_CLINT);
+  wire w_state_ram = (slave_w_state == STATE_RAM);
+
   // Current Stage
   always @(posedge clock) begin
     if (reset) begin
@@ -837,7 +842,6 @@ module ysyx_210611_axi_2x2 # (
   end
   
   // Next Stage
-  reg [1:0] master_w_next_state, slave_w_next_state;
   always @(*) begin
     if (reset) begin
       master_w_next_state = STATE_IDLE;
@@ -915,8 +919,13 @@ module ysyx_210611_axi_2x2 # (
   
   // Read State Machine
   reg [1:0] master_r_state, slave_r_state;
+  reg [1:0] master_r_next_state, slave_r_next_state;
   wire r_0_to_ram = ar_addr_i_0[31:16] != 16'h0200;
   wire r_1_to_ram = ar_addr_i_1[31:16] != 16'h0200;
+  wire r_state_0 = (master_r_state == STATE_0);
+  wire r_state_1 = (master_r_state == STATE_1);
+  wire r_state_cli = (slave_r_state == STATE_CLINT);
+  wire r_state_ram = (slave_r_state == STATE_RAM);
 
   // Current Stage
   always @(posedge clock) begin
@@ -931,7 +940,6 @@ module ysyx_210611_axi_2x2 # (
   end
   
   // Next Stage
-  reg [1:0] master_r_next_state, slave_r_next_state;
   always @(*) begin
     if (reset) begin
       master_r_next_state = STATE_IDLE;
@@ -1008,11 +1016,16 @@ module ysyx_210611_axi_2x2 # (
     end
   end
   
+  assign r_finish_0 = mid_r_valid && r_ready_i_0 && mid_r_last && r_state_0;
+  assign r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
+  assign r_finish_cli = mid_r_ready && cli_r_valid_i && cli_r_last_i && r_state_cli;
+  assign r_finish_ram = mid_r_ready && ram_r_valid_i && ram_r_last_i && r_state_ram;
+  assign w_finish_0 = b_valid_o_0 && b_ready_i_0 && w_state_0;
+  assign w_finish_1 = b_valid_o_1 && b_ready_i_1 && w_state_1;
+  assign w_finish_cli = cli_b_ready_o && cli_b_valid_i && w_state_cli;
+  assign w_finish_ram = ram_b_ready_o && ram_b_valid_i && w_state_ram;
+
   // Write Output
-  wire w_state_0 = (master_w_state == STATE_0);
-  wire w_state_1 = (master_w_state == STATE_1);
-  wire w_state_cli = (slave_w_state == STATE_CLINT);
-  wire w_state_ram = (slave_w_state == STATE_RAM);
   
   // master side
   // to MEM
@@ -1125,10 +1138,6 @@ module ysyx_210611_axi_2x2 # (
   assign cli_b_ready_o = w_state_cli & mid_b_ready;
 
   // Read Output
-  wire r_state_0 = (master_r_state == STATE_0);
-  wire r_state_1 = (master_r_state == STATE_1);
-  wire r_state_cli = (slave_r_state == STATE_CLINT);
-  wire r_state_ram = (slave_r_state == STATE_RAM);
   
   // master side
   // to MEM
@@ -2066,21 +2075,6 @@ module ysyx_210611_csrfile(
   
   wire [`REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
                   mcause_wr_data, mtval_wr_data;
-  assign {
-    mip_wr_data,
-    mcause_wr_data,
-    mepc_wr_data,
-    mtval_wr_data,
-    mstatus_wr_data
-  } = csr_excp_wr_bus;
-
-  assign csr_excp_rd_bus = {
-    csr_mstatus,
-    csr_mtvec,
-    csr_mepc,
-    csr_mip,
-    csr_mie
-  };
   
   wire excp_enter_wr = excp_enter && csr_wr_clk;
   wire excp_exit_wr  = excp_exit  && csr_wr_clk;
@@ -2362,6 +2356,22 @@ module ysyx_210611_csrfile(
     | ({64{mimpid_rd_ena}}    & mimpid_rd_data)
     | ({64{mhartid_rd_ena}}   & mhartid_rd_data)
   );
+  
+  assign {
+    mip_wr_data,
+    mcause_wr_data,
+    mepc_wr_data,
+    mtval_wr_data,
+    mstatus_wr_data
+  } = csr_excp_wr_bus;
+
+  assign csr_excp_rd_bus = {
+    csr_mstatus,
+    csr_mtvec,
+    csr_mepc,
+    csr_mip,
+    csr_mie
+  };
 
 endmodule
 
@@ -3426,22 +3436,23 @@ module ysyx_210611_if_stage(
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
   } = bj_ctrl_bus;
+  
+  wire if_handshake, bj_handshake;
+  wire pre_valid;
+  wire pre_ready_go;
+  wire pre_to_if_valid;
+  wire [`REG_BUS] next_pc;
 
+  reg [`REG_BUS] if_pc;
+  reg [31 : 0]   if_inst;
+
+  reg if_valid;
+  wire if_ready_go;
+  wire if_flush = bj_ena;
+  wire if_allowin;
+  
   // pre-IF stage
-  wire pre_valid = 1'b1;
-  wire pre_ready_go = if_state == RETN;
-  wire pre_to_if_valid = pre_valid && pre_ready_go;
-  wire [`REG_BUS] next_pc = /*excp_jmp_ena ? excp_pc :*/
-                            bj_ena       ? bj_pc   :
-                            (if_pc + 4);
-  
-  // fetch an instruction
-  assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake = ~rst && if_axi_valid && if_axi_ready;
-  
-  assign if_axi_size = `SIZE_W;
-  assign if_bj_ready = if_state == IDLE;
-  wire bj_handshake = ~rst && if_bj_ready && bj_valid;
+
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;
@@ -3483,14 +3494,24 @@ module ysyx_210611_if_stage(
     end
   end
 
+  assign pre_valid = 1'b1;
+  assign pre_ready_go = if_state == RETN;
+  assign pre_to_if_valid = pre_valid && pre_ready_go;
+  assign next_pc = /*excp_jmp_ena ? excp_pc :*/
+                            bj_ena       ? bj_pc   :
+                            (if_pc + 4);
+  
+  // fetch an instruction
+  assign if_axi_valid = if_state == ADDR;
+  assign if_handshake = ~rst && if_axi_valid && if_axi_ready;
+  
+  assign if_axi_size = `SIZE_W;
+  assign if_bj_ready = if_state == IDLE;
+  assign bj_handshake = ~rst && if_bj_ready && bj_valid;
+  
   // IF stage
   
   // pipeline control
-  reg if_valid;
-  wire if_ready_go;
-  wire if_flush = bj_ena;
-  wire if_allowin;
-  
   assign if_ready_go    = 1'b1;
   assign if_allowin     = !if_valid || if_ready_go && id_allowin;
   assign if_to_id_valid = if_valid && if_ready_go && ~if_flush;
@@ -3506,9 +3527,6 @@ module ysyx_210611_if_stage(
       if_valid <= 1'b0;
     end
   end
-  
-  reg [`REG_BUS] if_pc;
-  reg [31 : 0]   if_inst;
   
   always @(posedge clk) begin
     if (rst) begin
