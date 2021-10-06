@@ -12,7 +12,7 @@
 `define REG_BUS    63 : 0
 `define INST_BUS   31 : 0
 
-`define ID_TO_EX_WIDTH        469
+`define ID_TO_EX_WIDTH        341
 `define EX_TO_MEM_WIDTH       214
 `define MEM_TO_WB_WIDTH       201
 
@@ -2638,8 +2638,6 @@ module ysyx_210611_ex_stage(
     ex_op2,         // 377:314
     ex_use_rs1,     // 313:313
     ex_use_rs2,     // 312:312
-    ex_rs1_data,    // 311:248
-    ex_rs2_data,    // 247:184
     ex_is_word_opt, // 183:183
     ex_alu_info,    // 182:171
     ex_bj_info,     // 170:163
@@ -2666,7 +2664,6 @@ module ysyx_210611_ex_stage(
   wire [`REG_BUS]        ex_pc;
   wire [`REG_BUS]        ex_op1, ex_op2;
   wire                   ex_use_rs1, ex_use_rs2;
-  wire [`REG_BUS]        ex_rs1_data, ex_rs2_data;
   wire                   ex_is_word_opt;
   wire [`ALU_BUS]        ex_alu_info;
   wire [`BJ_BUS]         ex_bj_info;
@@ -3089,7 +3086,6 @@ module ysyx_210611_id_stage(
     end
   end
   
-  
   wire [`REG_BUS]  id_pc   = if_to_id_pc_r;
   wire [`INST_BUS] id_inst = if_to_id_inst_r;
   
@@ -3323,7 +3319,6 @@ module ysyx_210611_id_stage(
   wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                   | inst_i_arith_word | inst_s | inst_r_dword
                   | inst_r_word | inst_b | inst_i_csr_reg;
-  wire [`REG_BUS] id_rs1_data = r_data1;
   
   wire [`REG_BUS] id_op2 = {64{~rst}} & (
                   ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
@@ -3339,7 +3334,6 @@ module ysyx_210611_id_stage(
                 | ({64{inst_i_csr_reg}}     & csr_data)
                );
   wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
-  wire [`REG_BUS] id_rs2_data = r_data2;
   
   wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
                  | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
@@ -3398,8 +3392,6 @@ module ysyx_210611_id_stage(
     id_op2,            // 377:314
     id_use_rs1,        // 313:313
     id_use_rs2,        // 312:312
-    id_rs1_data,       // 311:248
-    id_rs2_data,       // 247:184
     is_word_opt,       // 183:183
     id_alu_info,       // 182:171
     id_bj_info,        // 170:163
