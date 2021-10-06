@@ -1710,10 +1710,21 @@ module ysyx_210611_clint # (
       wr_addr_reg <= 0;
     end
   end
+  
+  wire wr_size_b = wr_size_reg == 3'b000;
+  wire wr_size_h = wr_size_reg == 3'b001;
+  wire wr_size_w = wr_size_reg == 3'b010;
+  wire wr_size_d = wr_size_reg == 3'b011;
 
   // w bus
   assign w_ready_o = w_state_write && w_valid_i;
-  
+  wire [7:0] mask_size  = (
+      ({8{wr_size_b}} & 8'b00000001)
+    | ({8{wr_size_h}} & 8'b00000011)
+    | ({8{wr_size_w}} & 8'b00001111)
+    | ({8{wr_size_d}} & 8'b11111111)
+  ) << wr_addr_reg[2:0];
+  wire [7:0] mask_8bits = w_strb_i & mask_size;
   wire [`REG_BUS] wr_mask = {
     {8{w_strb_i[7]}},
     {8{w_strb_i[6]}},
