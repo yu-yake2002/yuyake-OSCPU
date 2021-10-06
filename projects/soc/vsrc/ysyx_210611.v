@@ -1726,14 +1726,14 @@ module ysyx_210611_clint # (
   ) << wr_addr_reg[2:0];
   wire [7:0] mask_8bits = w_strb_i & mask_size;
   wire [`REG_BUS] wr_mask = {
-    {8{w_strb_i[7]}},
-    {8{w_strb_i[6]}},
-    {8{w_strb_i[5]}},
-    {8{w_strb_i[4]}},
-    {8{w_strb_i[3]}},
-    {8{w_strb_i[2]}},
-    {8{w_strb_i[1]}},
-    {8{w_strb_i[0]}}
+    {8{mask_8bits[7]}},
+    {8{mask_8bits[6]}},
+    {8{mask_8bits[5]}},
+    {8{mask_8bits[4]}},
+    {8{mask_8bits[3]}},
+    {8{mask_8bits[2]}},
+    {8{mask_8bits[1]}},
+    {8{mask_8bits[0]}}
   };
   wire msip_wr_ena     = (wr_addr_reg == 32'h02000000);
   wire mtimecmp_wr_ena = (wr_addr_reg == 32'h02004000);
