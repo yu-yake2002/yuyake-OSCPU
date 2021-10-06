@@ -47,11 +47,11 @@ module if_stage(
   
   // fetch an instruction
   assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake = if_axi_valid & if_axi_ready;
+  wire   if_handshake = ~rst && if_axi_valid && if_axi_ready;
   
   assign if_axi_size = `SIZE_W;
   assign if_bj_ready = if_state == IDLE;
-  wire bj_handshake = if_bj_ready & bj_valid;
+  wire bj_handshake = ~rst && if_bj_ready && bj_valid;
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;

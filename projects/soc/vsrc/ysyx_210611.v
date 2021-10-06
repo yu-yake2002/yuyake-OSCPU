@@ -1872,16 +1872,7 @@ module ysyx_210611_cpu(
     .id_to_ex_bus              (id_to_ex_bus),
     .ex_allowin                (ex_allowin),
 
-    // data from regfile and CSRs
-    //.r_data1                   (r_data1),
-    //.r_data2                   (r_data2),
     .csr_data                  (csr_rd_data),
-    
-    // control reg
-    //.rs1_r_ena                 (rs1_r_ena),
-    //.rs1_addr                  (rs1_r_addr),
-    //.rs2_r_ena                 (rs2_r_ena),
-    //.rs2_addr                  (rs2_r_addr),
     
     // control csr
     .csr_rd_ena                (csr_rd_ena),
@@ -2112,7 +2103,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mstatus;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mstatus <= 64'h1880;
     end
     else if (excp_wr) begin
@@ -2174,7 +2165,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mie;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mie <= 64'h888;  // only for machine mode
     end
     else if (mie_wr_ena) begin
@@ -2192,7 +2183,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mtvec;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mtvec <= `ZERO_WORD;
     end
     else if (mtvec_wr_ena) begin
@@ -2210,7 +2201,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mscratch;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mscratch <= `ZERO_WORD;
     end
     else if (mscratch_wr_ena) begin
@@ -2228,7 +2219,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mepc;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mepc <= `ZERO_WORD;
     end
     else if (excp_enter_wr) begin
@@ -2253,7 +2244,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mcause;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mcause <= `ZERO_WORD;
     end
     else if (excp_enter_wr) begin
@@ -2278,7 +2269,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mtval;
   
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mtval <= 64'b0;
     end
     else if (excp_enter_wr) begin
@@ -2299,19 +2290,8 @@ module ysyx_210611_csrfile(
   wire sel_rd_mip = (csr_rd_addr == 12'h344);
   wire mip_rd_ena = csr_rd_ena && sel_rd_mip;
   reg [`REG_BUS] csr_mip;
-  /*
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
-      csr_mip <= 64'h80;
-    end
-    else if (mip_wr_ena) begin
-      csr_mip <= csr_wr_data;
-    end
-    // TODO: when interruption pending, mip should flip corresponding bit
-  end
-  */
-  always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mip <= 64'h80;
     end
     else begin
@@ -2329,7 +2309,7 @@ module ysyx_210611_csrfile(
   reg [`REG_BUS] csr_mcycle;
 
   always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst) begin
       csr_mcycle <= `ZERO_WORD;
     end
     else if (mcycle_wr_ena) begin
@@ -2595,6 +2575,9 @@ module ysyx_210611_ex_stage(
   always @(posedge clk) begin
     if (rst) begin
       ex_valid <= 1'b0;
+      id_to_ex_pc_r <= 0;
+      id_to_ex_inst_r <= 0;
+      id_to_ex_bus_r <= 0;
     end
     else if (ex_allowin) begin
       ex_valid <= id_to_ex_valid;
@@ -3069,6 +3052,8 @@ module ysyx_210611_id_stage(
   always @(posedge clk) begin
     if (rst) begin
       id_valid <= 1'b0;
+      if_to_id_pc_r <= 0;
+      if_to_id_inst_r <= 0;
     end
     else if (id_allowin) begin
       id_valid <= if_to_id_valid;
@@ -3452,11 +3437,11 @@ module ysyx_210611_if_stage(
   
   // fetch an instruction
   assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake = if_axi_valid & if_axi_ready;
+  wire   if_handshake = ~rst && if_axi_valid & if_axi_ready;
   
   assign if_axi_size = `SIZE_W;
   assign if_bj_ready = if_state == IDLE;
-  wire bj_handshake = if_bj_ready & bj_valid;
+  wire bj_handshake = ~rst && if_bj_ready && bj_valid;
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;
