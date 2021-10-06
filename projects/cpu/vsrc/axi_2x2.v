@@ -444,73 +444,79 @@ module axi_2x2 # (
   // Next Stage
   reg [1:0] master_r_next_state, slave_r_next_state;
   always @(*) begin
-    // master side
-    case (master_r_state)
-      STATE_IDLE: begin
-        if (ar_valid_i_0) begin
-          master_r_next_state = STATE_0;
+    if (reset) begin
+      master_r_next_state = STATE_IDLE;
+      slave_r_next_state  = STATE_IDLE;
+    end
+    else begin
+      // master side
+      case (master_r_state)
+        STATE_IDLE: begin
+          if (ar_valid_i_0) begin
+            master_r_next_state = STATE_0;
+          end
+          else if (ar_valid_i_1) begin
+            master_r_next_state = STATE_1;
+          end
+          else begin
+            master_r_next_state = STATE_IDLE;
+          end
         end
-        else if (ar_valid_i_1) begin
-          master_r_next_state = STATE_1;
+        STATE_0: begin
+          if (r_finish_0) begin
+            master_r_next_state = STATE_IDLE;
+          end
+          else begin
+            master_r_next_state = STATE_0;
+          end
         end
-        else begin
+        STATE_1: begin
+          if (r_finish_1) begin
+            master_r_next_state = STATE_IDLE;
+          end
+          else begin
+            master_r_next_state = STATE_1;
+          end
+        end
+        default: begin
           master_r_next_state = STATE_IDLE;
         end
-      end
-      STATE_0: begin
-        if (r_finish_0) begin
-          master_r_next_state = STATE_IDLE;
-        end
-        else begin
-          master_r_next_state = STATE_0;
-        end
-      end
-      STATE_1: begin
-        if (r_finish_1) begin
-          master_r_next_state = STATE_IDLE;
-        end
-        else begin
-          master_r_next_state = STATE_1;
-        end
-      end
-      default: begin
-        master_r_next_state = STATE_IDLE;
-      end
-    endcase
+      endcase
 
-    // slave side
-    case (slave_r_state)
-      STATE_IDLE: begin
-        if ((master_r_next_state == STATE_0) && ar_valid_i_0) begin
-          slave_r_next_state = r_0_to_ram ? STATE_RAM : STATE_CLINT;
+      // slave side
+      case (slave_r_state)
+        STATE_IDLE: begin
+          if ((master_r_next_state == STATE_0) && ar_valid_i_0) begin
+            slave_r_next_state = r_0_to_ram ? STATE_RAM : STATE_CLINT;
+          end
+          else if ((master_r_next_state == STATE_1) && ar_valid_i_1) begin
+            slave_r_next_state = r_1_to_ram ? STATE_RAM : STATE_CLINT;
+          end
+          else begin
+            slave_r_next_state = STATE_IDLE;
+          end
         end
-        else if ((master_r_next_state == STATE_1) && ar_valid_i_1) begin
-          slave_r_next_state = r_1_to_ram ? STATE_RAM : STATE_CLINT;
+        STATE_CLINT: begin
+          if (r_finish_cli) begin
+            slave_r_next_state = STATE_IDLE;
+          end
+          else begin
+            slave_r_next_state = STATE_CLINT;
+          end
         end
-        else begin
+        STATE_RAM: begin
+          if (r_finish_ram) begin
+            slave_r_next_state = STATE_IDLE;
+          end
+          else begin
+            slave_r_next_state = STATE_RAM;
+          end
+        end
+        default: begin
           slave_r_next_state = STATE_IDLE;
         end
-      end
-      STATE_CLINT: begin
-        if (r_finish_cli) begin
-          slave_r_next_state = STATE_IDLE;
-        end
-        else begin
-          slave_r_next_state = STATE_CLINT;
-        end
-      end
-      STATE_RAM: begin
-        if (r_finish_ram) begin
-          slave_r_next_state = STATE_IDLE;
-        end
-        else begin
-          slave_r_next_state = STATE_RAM;
-        end
-      end
-      default: begin
-        slave_r_next_state = STATE_IDLE;
-      end
-    endcase
+      endcase
+    end
   end
   
   // Write Output
