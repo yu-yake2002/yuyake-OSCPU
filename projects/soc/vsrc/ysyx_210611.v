@@ -821,6 +821,7 @@ module ysyx_210611_axi_2x2 # (
   // Write State Machine
   // Master
   reg [1:0] master_w_state, slave_w_state;
+  reg [1:0] master_w_next_state, slave_w_next_state;
   wire w_0_to_ram = aw_addr_i_0[31:16] != 16'h0200;
   wire w_1_to_ram = aw_addr_i_1[31:16] != 16'h0200;
   wire w_state_0 = (master_w_state == STATE_0);
@@ -841,7 +842,6 @@ module ysyx_210611_axi_2x2 # (
   end
   
   // Next Stage
-  reg [1:0] master_w_next_state, slave_w_next_state;
   always @(*) begin
     if (reset) begin
       master_w_next_state = STATE_IDLE;
@@ -919,6 +919,7 @@ module ysyx_210611_axi_2x2 # (
   
   // Read State Machine
   reg [1:0] master_r_state, slave_r_state;
+  reg [1:0] master_r_next_state, slave_r_next_state;
   wire r_0_to_ram = ar_addr_i_0[31:16] != 16'h0200;
   wire r_1_to_ram = ar_addr_i_1[31:16] != 16'h0200;
   wire r_state_0 = (master_r_state == STATE_0);
@@ -939,7 +940,6 @@ module ysyx_210611_axi_2x2 # (
   end
   
   // Next Stage
-  reg [1:0] master_r_next_state, slave_r_next_state;
   always @(*) begin
     if (reset) begin
       master_r_next_state = STATE_IDLE;
@@ -2075,21 +2075,6 @@ module ysyx_210611_csrfile(
   
   wire [`REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
                   mcause_wr_data, mtval_wr_data;
-  assign {
-    mip_wr_data,
-    mcause_wr_data,
-    mepc_wr_data,
-    mtval_wr_data,
-    mstatus_wr_data
-  } = csr_excp_wr_bus;
-
-  assign csr_excp_rd_bus = {
-    csr_mstatus,
-    csr_mtvec,
-    csr_mepc,
-    csr_mip,
-    csr_mie
-  };
   
   wire excp_enter_wr = excp_enter && csr_wr_clk;
   wire excp_exit_wr  = excp_exit  && csr_wr_clk;
@@ -2371,6 +2356,22 @@ module ysyx_210611_csrfile(
     | ({64{mimpid_rd_ena}}    & mimpid_rd_data)
     | ({64{mhartid_rd_ena}}   & mhartid_rd_data)
   );
+  
+  assign {
+    mip_wr_data,
+    mcause_wr_data,
+    mepc_wr_data,
+    mtval_wr_data,
+    mstatus_wr_data
+  } = csr_excp_wr_bus;
+
+  assign csr_excp_rd_bus = {
+    csr_mstatus,
+    csr_mtvec,
+    csr_mepc,
+    csr_mip,
+    csr_mie
+  };
 
 endmodule
 
@@ -3441,6 +3442,14 @@ module ysyx_210611_if_stage(
   wire pre_ready_go;
   wire pre_to_if_valid;
   wire [`REG_BUS] next_pc;
+
+  reg [`REG_BUS] if_pc;
+  reg [31 : 0]   if_inst;
+
+  reg if_valid;
+  wire if_ready_go;
+  wire if_flush = bj_ena;
+  wire if_allowin;
   
   // pre-IF stage
 
@@ -3484,7 +3493,7 @@ module ysyx_210611_if_stage(
       if_axi_addr <= next_pc;
     end
   end
-  
+
   assign pre_valid = 1'b1;
   assign pre_ready_go = if_state == RETN;
   assign pre_to_if_valid = pre_valid && pre_ready_go;
@@ -3500,15 +3509,9 @@ module ysyx_210611_if_stage(
   assign if_bj_ready = if_state == IDLE;
   assign bj_handshake = ~rst && if_bj_ready && bj_valid;
   
-
   // IF stage
   
   // pipeline control
-  reg if_valid;
-  wire if_ready_go;
-  wire if_flush = bj_ena;
-  wire if_allowin;
-  
   assign if_ready_go    = 1'b1;
   assign if_allowin     = !if_valid || if_ready_go && id_allowin;
   assign if_to_id_valid = if_valid && if_ready_go && ~if_flush;
@@ -3524,9 +3527,6 @@ module ysyx_210611_if_stage(
       if_valid <= 1'b0;
     end
   end
-  
-  reg [`REG_BUS] if_pc;
-  reg [31 : 0]   if_inst;
   
   always @(posedge clk) begin
     if (rst) begin
