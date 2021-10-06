@@ -41,8 +41,6 @@ module id_stage(
   output wire [`ID_TO_EX_DIFF_WIDTH-1:0] id_to_ex_diffbus
 );
 
-  wire [`REG_BUS] r_data1 = 64'b0;
-  wire [`REG_BUS] r_data2 = 64'b0;
   wire                       rs1_r_ena;
   wire [4 : 0]               rs1_addr;
   wire                       rs2_r_ena;
@@ -321,7 +319,6 @@ module id_stage(
   wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                   | inst_i_arith_word | inst_s | inst_r_dword
                   | inst_r_word | inst_b | inst_i_csr_reg;
-  wire [`REG_BUS] id_rs1_data = r_data1;
   
   wire [`REG_BUS] id_op2 = {64{~rst}} & (
                   ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
@@ -338,7 +335,6 @@ module id_stage(
                );
   wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
   wire id_use_csr = inst_i_csr_imm | inst_i_csr_reg;
-  wire [`REG_BUS] id_rs2_data = r_data2;
   
   wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
                  | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
@@ -393,8 +389,6 @@ module id_stage(
     id_op2,            // 377:314
     id_use_rs1,        // 313:313
     id_use_rs2,        // 312:312
-    id_rs1_data,       // 311:248
-    id_rs2_data,       // 247:184
     is_word_opt,       // 183:183
     id_alu_info,       // 182:171
     id_bj_info,        // 170:163

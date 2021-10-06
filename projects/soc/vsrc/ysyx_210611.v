@@ -3050,8 +3050,6 @@ module ysyx_210611_id_stage(
   input wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus
 );
 
-  wire [`REG_BUS] r_data1 = 64'b0;
-  wire [`REG_BUS] r_data2 = 64'b0;
   wire            rs1_r_ena;
   wire [4 : 0]    rs1_addr;
   wire            rs2_r_ena;
@@ -3316,20 +3314,11 @@ module ysyx_210611_id_stage(
   wire mem_rd_ena = ~rst & inst_i_load;
   
   wire [`REG_BUS] id_op1 = {64{~rst}} & (
-                  ({64{inst_i_load}}        & r_data1)
-                | ({64{inst_i_fence}}       & r_data1)
-                | ({64{inst_i_arith_dword}} & r_data1)
-                | ({64{inst_u_auipc}}       & id_pc)
-                | ({64{inst_i_arith_word}}  & r_data1)
-                | ({64{inst_s}}             & r_data1)
-                | ({64{inst_r_dword}}       & r_data1)
+                  ({64{inst_u_auipc}}       & id_pc)
                 | ({64{inst_u_lui}}         & 64'b0)
-                | ({64{inst_r_word}}        & r_data1)
-                | ({64{inst_b}}             & r_data1)
                 | ({64{inst_i_jalr}}        & id_pc)
                 | ({64{inst_jal}}           & id_pc)
                 | ({64{inst_i_csr_imm}}     & {59'b0, zimm})
-                | ({64{inst_i_csr_reg}}     & r_data1)
                );
   wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
                   | inst_i_arith_word | inst_s | inst_r_dword
@@ -3343,10 +3332,7 @@ module ysyx_210611_id_stage(
                 | ({64{inst_u_auipc}}       & {{32{immU[19]}}, immU, 12'b0})
                 | ({64{inst_i_arith_word}}  & {{52{immI[11]}}, immI})
                 | ({64{inst_s}}             & {{52{immS[11]}}, immS})
-                | ({64{inst_r_dword}}       & r_data2)
                 | ({64{inst_u_lui}}         & {{32{immU[19]}}, immU, 12'b0})
-                | ({64{inst_r_word}}        & r_data2)
-                | ({64{inst_b}}             & r_data2)
                 | ({64{inst_i_jalr}}        & 64'h4)
                 | ({64{inst_jal}}           & 64'h4)
                 | ({64{inst_i_csr_imm}}     & csr_data)

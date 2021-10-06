@@ -121,8 +121,6 @@ module ex_stage(
     ex_op2,         // 377:314
     ex_use_rs1,     // 313:313
     ex_use_rs2,     // 312:312
-    ex_rs1_data,    // 311:248
-    ex_rs2_data,    // 247:184
     ex_is_word_opt, // 183:183
     ex_alu_info,    // 182:171
     ex_bj_info,     // 170:163
@@ -151,7 +149,6 @@ module ex_stage(
   wire [`REG_BUS]        ex_pc;
   wire [`REG_BUS]        ex_op1, ex_op2;
   wire                   ex_use_rs1, ex_use_rs2;
-  wire [`REG_BUS]        ex_rs1_data, ex_rs2_data;
   wire                   ex_is_word_opt;
   wire [`ALU_BUS]        ex_alu_info;
   wire [`BJ_BUS]         ex_bj_info;
@@ -171,8 +168,6 @@ module ex_stage(
   forward Forward(
     .ex_rs1_addr         (ex_rs1_addr),
     .ex_rs2_addr         (ex_rs2_addr),
-    //.ex_rs1_data         (ex_rs1_data),
-    //.ex_rs2_data         (ex_rs2_data),
     .ex_rs1_data         (rs1_data),
     .ex_rs2_data         (rs2_data),
     .ex_use_rs1          (ex_use_rs1),
