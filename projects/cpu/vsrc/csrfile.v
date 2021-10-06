@@ -271,7 +271,7 @@ module csrfile(
   */
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mip <= 64'h80;
+      csr_mip <= 64'h0;
     end
     else begin
       csr_mip <= mip_wr_data;

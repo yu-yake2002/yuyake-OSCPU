@@ -1750,35 +1750,22 @@ module ysyx_210611_clint # (
   // mtimecmp
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtimecmp <= `ZERO_WORD;
+      csr_mtimecmp <= 64'b0;
     end
     else if (w_hs && mtimecmp_wr_ena) begin
         csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & w_data_i);
     end
   end
-  /*
-  // decelerate
-  reg [3:0] decelerate_reg;
-  always @(posedge clk) begin
-    if (rst) begin
-      decelerate_reg <= 0;
-    end
-    else begin
-      decelerate_reg <= decelerate_reg + 1;
-    end
-  end
-  wire add_ctime = (&decelerate_reg);
-  */
+
   // mtime
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtime <= `ZERO_WORD;
+      csr_mtime <= 64'b0;
     end
     else if (w_hs && mtime_wr_ena) begin
       csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & w_data_i);
     end 
     else begin
-      //csr_mtime <= csr_mtime + add_ctime;
       csr_mtime <= csr_mtime + 1;
     end
   end
