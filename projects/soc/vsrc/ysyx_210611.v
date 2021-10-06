@@ -802,14 +802,14 @@ module ysyx_210611_axi_2x2 # (
   wire                             mid_r_last;
   wire [AXI_ID_WIDTH-1:0]          mid_r_id;
 
-  wire r_finish_0 = mid_r_valid && r_ready_i_0 && mid_r_last && r_state_0;
-  wire r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
-  wire r_finish_cli = mid_r_ready && cli_r_valid_i && cli_r_last_i && r_state_cli;
-  wire r_finish_ram = mid_r_ready && ram_r_valid_i && ram_r_last_i && r_state_ram;
-  wire w_finish_0 = b_valid_o_0 && b_ready_i_0 && w_state_0;
-  wire w_finish_1 = b_valid_o_1 && b_ready_i_1 && w_state_1;
-  wire w_finish_cli = cli_b_ready_o && cli_b_valid_i && w_state_cli;
-  wire w_finish_ram = ram_b_ready_o && ram_b_valid_i && w_state_ram;
+  wire r_finish_0;
+  wire r_finish_1;
+  wire r_finish_cli;
+  wire r_finish_ram;
+  wire w_finish_0;
+  wire w_finish_1;
+  wire w_finish_cli;
+  wire w_finish_ram;
 
   // ------------------State Machine------------------
   parameter [1:0] STATE_IDLE  = 2'b00;
@@ -1016,6 +1016,15 @@ module ysyx_210611_axi_2x2 # (
     end
   end
   
+  assign r_finish_0 = mid_r_valid && r_ready_i_0 && mid_r_last && r_state_0;
+  assign r_finish_1 = mid_r_valid && r_ready_i_1 && mid_r_last && r_state_1;
+  assign r_finish_cli = mid_r_ready && cli_r_valid_i && cli_r_last_i && r_state_cli;
+  assign r_finish_ram = mid_r_ready && ram_r_valid_i && ram_r_last_i && r_state_ram;
+  assign w_finish_0 = b_valid_o_0 && b_ready_i_0 && w_state_0;
+  assign w_finish_1 = b_valid_o_1 && b_ready_i_1 && w_state_1;
+  assign w_finish_cli = cli_b_ready_o && cli_b_valid_i && w_state_cli;
+  assign w_finish_ram = ram_b_ready_o && ram_b_valid_i && w_state_ram;
+
   // Write Output
   
   // master side
@@ -3437,11 +3446,13 @@ module ysyx_210611_if_stage(
   
   // fetch an instruction
   assign if_axi_valid = if_state == ADDR;
-  wire   if_handshake = ~rst && if_axi_valid && if_axi_ready;
+  wire   if_handshake;
+  assign if_handshake = ~rst && if_axi_valid && if_axi_ready;
   
   assign if_axi_size = `SIZE_W;
   assign if_bj_ready = if_state == IDLE;
-  wire bj_handshake = ~rst && if_bj_ready && bj_valid;
+  wire bj_handshake;
+  assign bj_handshake = ~rst && if_bj_ready && bj_valid;
   // State Machine
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] if_state;
