@@ -3338,7 +3338,6 @@ module ysyx_210611_id_stage(
   wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
                  | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
                  | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
-  //               | ({64{inst_t}}       & 64'b0);
   
   // data to wb_stage
   wire csr_to_reg = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
