@@ -3513,6 +3513,7 @@ module ysyx_210611_if_stage(
   always @(posedge clk) begin
     if (rst) begin
       if_pc <= 64'h2ffffffc;
+      if_inst <= 32'b0;
     end
     else if (pre_to_if_valid && if_allowin) begin
       if_pc <= if_axi_addr;
@@ -3565,6 +3566,7 @@ module ysyx_210611_mem_stage(
   always @(posedge clk) begin
     if (rst) begin
       mem_valid <= 1'b0;
+      ex_to_mem_bus_r <= 0;
     end
     else if (mem_allowin) begin
       mem_valid <= ex_to_mem_valid;
@@ -3635,33 +3637,38 @@ module ysyx_210611_mem_stage(
   end
 
   always @(*) begin
-    case (mem_state)
-      IDLE:
-        if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
-          mem_next_state = ADDR;
-        end
-        else begin
-          mem_next_state = mem_state;
-        end
-      ADDR:
-        if (mem_handshake) begin
-          mem_next_state = RETN;
-        end
-        else begin
-          mem_next_state = mem_state;
-        end
-      RETN:
-        if (refresh) begin
-          if (ex_ram_rd_ena || ex_ram_wr_ena) begin
+    if (rst) begin
+      mem_next_state = IDLE;
+    end
+    else begin
+      case (mem_state)
+        IDLE:
+          if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
             mem_next_state = ADDR;
           end
           else begin
-            mem_next_state = IDLE;
+            mem_next_state = mem_state;
           end
-        end
-      default:
-        mem_next_state = IDLE;
-    endcase
+        ADDR:
+          if (mem_handshake) begin
+            mem_next_state = RETN;
+          end
+          else begin
+            mem_next_state = mem_state;
+          end
+        RETN:
+          if (refresh) begin
+            if (ex_ram_rd_ena || ex_ram_wr_ena) begin
+              mem_next_state = ADDR;
+            end
+            else begin
+              mem_next_state = IDLE;
+            end
+          end
+        default:
+          mem_next_state = IDLE;
+      endcase
+    end
   end
 
   assign mem_rw_valid = mem_state == ADDR;
@@ -3683,7 +3690,10 @@ module ysyx_210611_mem_stage(
 
   reg[`REG_BUS] mem_data;
   always @(posedge clk) begin
-    if (mem_handshake) begin
+    if (rst) begin
+      mem_data <= 64'b0;
+    end
+    else if (mem_handshake) begin
       mem_data <= (
           ({64{op_lb}} & {{56{mem_r_data[7 ]}}, mem_r_data[7  : 0]})
         | ({64{op_lh}} & {{48{mem_r_data[15]}}, mem_r_data[15 : 0]})
@@ -3739,8 +3749,7 @@ module ysyx_210611_regfile(
 
 	always @(posedge clk) 
 	begin
-		if ( rst == 1'b1 ) 
-		begin
+		if (rst) begin
 			regs[ 0] <= `ZERO_WORD;
 			regs[ 1] <= `ZERO_WORD;
 			regs[ 2] <= `ZERO_WORD;
@@ -3774,8 +3783,7 @@ module ysyx_210611_regfile(
 			regs[30] <= `ZERO_WORD;
 			regs[31] <= `ZERO_WORD;
 		end
-		else 
-		begin
+		else begin
 			if ((w_ena == 1'b1) && (w_addr != 5'h00))	
 				regs[w_addr] <= w_data;
 		end
@@ -3814,6 +3822,7 @@ module ysyx_210611_wb_stage (
   always @(posedge clk) begin
     if (rst) begin
       wb_valid <= 1'b0;
+      mem_to_wb_bus_r <= 0;
     end
     else if (wb_allowin) begin
       wb_valid <= mem_to_wb_valid;

@@ -139,27 +139,38 @@ module mem_stage(
   end
 
   always @(*) begin
-    case (mem_state)
-      IDLE:
-        if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
-          mem_next_state = ADDR;
-        end
-      ADDR:
-        if (mem_handshake) begin
-          mem_next_state = RETN;
-        end
-      RETN:
-        if (refresh) begin
-          if (ex_ram_rd_ena || ex_ram_wr_ena) begin
+    if (rst) begin
+      mem_next_state = IDLE;
+    end
+    else begin
+      case (mem_state)
+        IDLE:
+          if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
             mem_next_state = ADDR;
           end
           else begin
-            mem_next_state = IDLE;
+            mem_next_state = mem_state;
           end
-        end
-      default:
-        mem_next_state = IDLE;
-    endcase
+        ADDR:
+          if (mem_handshake) begin
+            mem_next_state = RETN;
+          end
+          else begin
+            mem_next_state = mem_state;
+          end
+        RETN:
+          if (refresh) begin
+            if (ex_ram_rd_ena || ex_ram_wr_ena) begin
+              mem_next_state = ADDR;
+            end
+            else begin
+              mem_next_state = IDLE;
+            end
+          end
+        default:
+          mem_next_state = IDLE;
+      endcase
+    end
   end
 
   assign mem_rw_valid = mem_state == ADDR;
