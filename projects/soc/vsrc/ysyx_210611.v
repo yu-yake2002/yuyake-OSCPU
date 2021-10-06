@@ -328,9 +328,7 @@ module ysyx_210611(
     .cli_aw_valid_o                 (cli_aw_valid),
     .cli_aw_addr_o                  (cli_aw_addr),
     .cli_aw_id_o                    (cli_aw_id),
-    .cli_aw_len_o                   (),
     .cli_aw_size_o                  (cli_aw_size),
-    .cli_aw_burst_o                 (),
 
     .cli_w_ready_i                  (cli_w_ready),
     .cli_w_valid_o                  (cli_w_valid),
@@ -347,9 +345,7 @@ module ysyx_210611(
     .cli_ar_valid_o                 (cli_ar_valid),
     .cli_ar_addr_o                  (cli_ar_addr),
     .cli_ar_id_o                    (cli_ar_id),
-    .cli_ar_len_o                   (),
     .cli_ar_size_o                  (cli_ar_size),
-    .cli_ar_burst_o                 (),
   
     .cli_r_ready_o                  (cli_r_ready),
     .cli_r_valid_i                  (cli_r_valid),
@@ -744,9 +740,7 @@ module ysyx_210611_axi_2x2 # (
   output wire                             cli_aw_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        cli_aw_addr_o,
   output wire [AXI_ID_WIDTH-1:0]          cli_aw_id_o,
-  output wire [7:0]                       cli_aw_len_o,
   output wire [2:0]                       cli_aw_size_o,
-  output wire [1:0]                       cli_aw_burst_o,
   
   input  wire                             cli_w_ready_i,
   output wire                             cli_w_valid_o,
@@ -763,9 +757,7 @@ module ysyx_210611_axi_2x2 # (
   output wire                             cli_ar_valid_o,
   output wire [AXI_ADDR_WIDTH-1:0]        cli_ar_addr_o,
   output wire [AXI_ID_WIDTH-1:0]          cli_ar_id_o,
-  output wire [7:0]                       cli_ar_len_o,
   output wire [2:0]                       cli_ar_size_o,
-  output wire [1:0]                       cli_ar_burst_o,
   
   output wire                             cli_r_ready_o,
   input  wire                             cli_r_valid_i,
@@ -1112,9 +1104,7 @@ module ysyx_210611_axi_2x2 # (
   assign cli_aw_valid_o = w_state_cli & mid_aw_valid;
   assign cli_aw_addr_o = {AXI_ADDR_WIDTH{w_state_cli}} & mid_aw_addr;
   assign cli_aw_id_o = {AXI_ID_WIDTH{w_state_cli}} & mid_aw_id;
-  assign cli_aw_len_o = {8{w_state_cli}} & mid_aw_len;
   assign cli_aw_size_o = {3{w_state_cli}} & mid_aw_size;
-  assign cli_aw_burst_o = {2{w_state_cli}} & mid_aw_burst;
   
   assign cli_w_valid_o = w_state_cli & mid_w_valid;
   assign cli_w_data_o = {AXI_DATA_WIDTH{w_state_cli}} & mid_w_data;
@@ -1214,9 +1204,7 @@ module ysyx_210611_axi_2x2 # (
   assign cli_ar_valid_o = r_state_cli & mid_ar_valid;
   assign cli_ar_addr_o = {AXI_ADDR_WIDTH{r_state_cli}} & mid_ar_addr;
   assign cli_ar_id_o = {AXI_ID_WIDTH{r_state_cli}} & mid_ar_id;
-  assign cli_ar_len_o = {8{r_state_cli}} & mid_ar_len;
   assign cli_ar_size_o = {3{r_state_cli}} & mid_ar_size;
-  assign cli_ar_burst_o = {2{r_state_cli}} & mid_ar_burst;
   
   assign cli_r_ready_o = r_state_cli & mid_r_ready;
 endmodule
