@@ -2300,9 +2300,7 @@ module ysyx_210611_csrfile(
 
   // 0x344 Machine Interrupt Pending Register
   wire sel_rd_mip = (csr_rd_addr == 12'h344);
-  wire sel_wr_mip = (csr_wr_addr == 12'h344);
   wire mip_rd_ena = csr_rd_ena && sel_rd_mip;
-  wire mip_wr_ena = csr_wr_ena && sel_wr_mip && csr_wr_clk;
   reg [`REG_BUS] csr_mip;
   /*
   always @(posedge clk) begin
