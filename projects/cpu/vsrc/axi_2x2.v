@@ -348,73 +348,78 @@ module axi_2x2 # (
   // Next Stage
   reg [1:0] master_w_next_state, slave_w_next_state;
   always @(*) begin
-    // master side
-    case (master_w_state)
-      STATE_IDLE: begin
-        if (aw_valid_i_0) begin
-          master_w_next_state = STATE_0;
+    if (reset) begin
+      master_w_next_state = STATE_IDLE;
+      slave_w_next_state  = STATE_IDLE;
+    end
+    else begin
+      // master side
+      case (master_w_state)
+        STATE_IDLE: begin
+          if (aw_valid_i_0) begin
+            master_w_next_state = STATE_0;
+          end
+          else if (aw_valid_i_1) begin
+            master_w_next_state = STATE_1;
+          end
+          else begin
+            master_w_next_state = STATE_IDLE;
+          end
         end
-        else if (aw_valid_i_1) begin
-          master_w_next_state = STATE_1;
+        STATE_0: begin
+          if (w_finish_0) begin
+            master_w_next_state = STATE_IDLE;
+          end
+          else begin
+            master_w_next_state = STATE_0;
+          end
         end
-        else begin
+        STATE_1: begin
+          if (w_finish_1) begin
+            master_w_next_state = STATE_IDLE;
+          end
+          else begin
+            master_w_next_state = STATE_1;
+          end
+        end
+        default: begin
           master_w_next_state = STATE_IDLE;
         end
-      end
-      STATE_0: begin
-        if (w_finish_0) begin
-          master_w_next_state = STATE_IDLE;
+      endcase
+      // slave side
+      case (slave_w_state)
+        STATE_IDLE: begin
+          if ((master_w_next_state == STATE_0) && aw_valid_i_0) begin
+            slave_w_next_state = w_0_to_ram ? STATE_RAM : STATE_CLINT;
+          end
+          else if ((master_w_next_state == STATE_1) && aw_valid_i_1) begin
+            slave_w_next_state = w_1_to_ram ? STATE_RAM : STATE_CLINT;
+          end
+          else begin
+            slave_w_next_state = STATE_IDLE;
+          end
         end
-        else begin
-          master_w_next_state = STATE_0;
+        STATE_CLINT: begin
+          if (w_finish_cli) begin
+            slave_w_next_state = STATE_IDLE;
+          end
+          else begin
+            slave_w_next_state = STATE_CLINT;
+          end
         end
-      end
-      STATE_1: begin
-        if (w_finish_1) begin
-          master_w_next_state = STATE_IDLE;
+        STATE_RAM: begin
+          if (w_finish_ram) begin
+            slave_w_next_state = STATE_IDLE;
+          end
+          else begin
+            slave_w_next_state = STATE_RAM;
+          end
         end
-        else begin
-          master_w_next_state = STATE_1;
-        end
-      end
-      default: begin
-        master_w_next_state = STATE_IDLE;
-      end
-    endcase
-
-    // slave side
-    case (slave_w_state)
-      STATE_IDLE: begin
-        if ((master_w_next_state == STATE_0) && aw_valid_i_0) begin
-          slave_w_next_state = w_0_to_ram ? STATE_RAM : STATE_CLINT;
-        end
-        else if ((master_w_next_state == STATE_1) && aw_valid_i_1) begin
-          slave_w_next_state = w_1_to_ram ? STATE_RAM : STATE_CLINT;
-        end
-        else begin
+        default: begin
           slave_w_next_state = STATE_IDLE;
         end
-      end
-      STATE_CLINT: begin
-        if (w_finish_cli) begin
-          slave_w_next_state = STATE_IDLE;
-        end
-        else begin
-          slave_w_next_state = STATE_CLINT;
-        end
-      end
-      STATE_RAM: begin
-        if (w_finish_ram) begin
-          slave_w_next_state = STATE_IDLE;
-        end
-        else begin
-          slave_w_next_state = STATE_RAM;
-        end
-      end
-      default: begin
-        slave_w_next_state = STATE_IDLE;
-      end
-    endcase
+      endcase
+    end
   end
   
   // Read State Machine
