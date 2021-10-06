@@ -1838,6 +1838,32 @@ module ysyx_210611_cpu(
   wire [`WB_FORWARD_WIDTH-1:0]   wb_forward_bus;
   
   wire if_bj_ready;
+
+  // ex_stage <-> regfile
+  wire rs1_r_ena;
+  wire [4 : 0]rs1_r_addr;
+  wire [`REG_BUS] r_data1;
+  wire rs2_r_ena;
+  wire [4 : 0]rs2_r_addr;
+  wire [`REG_BUS] r_data2;
+  // wb_stage <-> regfile
+  wire reg_wr_ena;
+  wire [4 : 0] reg_wr_addr;
+  wire [`REG_BUS] reg_wr_data;
+
+  // id stage <-> csrfile
+  wire            csr_rd_ena;
+  wire [11 : 0]   csr_rd_addr;
+  wire [`REG_BUS] csr_rd_data;
+  // ex stage <=> csrfile
+  wire            csr_wr_ena;
+  wire [11 : 0]   csr_wr_addr;
+  wire [`REG_BUS] csr_wr_data;
+  // excption control
+  wire                      excp_enter, excp_exit;
+  wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
+  wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
+
   // IF stage
   ysyx_210611_if_stage ysyx_210611_If_stage(
     .clk                       (clock),
@@ -1935,19 +1961,6 @@ module ysyx_210611_cpu(
   );
 
   // CSRs
-  // id stage <-> csrfile
-  wire            csr_rd_ena;
-  wire [11 : 0]   csr_rd_addr;
-  wire [`REG_BUS] csr_rd_data;
-  // ex stage <=> csrfile
-  wire            csr_wr_ena;
-  wire [11 : 0]   csr_wr_addr;
-  wire [`REG_BUS] csr_wr_data;
-  // excption control
-  wire                      excp_enter, excp_exit;
-  wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
-  wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
-
   ysyx_210611_csrfile ysyx_210611_CSRfile(
     .clk                       (clock),
     .rst                       (reset),
@@ -2020,17 +2033,6 @@ module ysyx_210611_cpu(
   );
   
   // General Purpose Registers
-  // id_stage <-> regfile
-  wire rs1_r_ena;
-  wire [4 : 0]rs1_r_addr;
-  wire [`REG_BUS] r_data1;
-  wire rs2_r_ena;
-  wire [4 : 0]rs2_r_addr;
-  wire [`REG_BUS] r_data2;
-  // wb_stage <-> regfile
-  wire reg_wr_ena;
-  wire [4 : 0] reg_wr_addr;
-  wire [`REG_BUS] reg_wr_data;
 
   ysyx_210611_regfile ysyx_210611_Regfile(
     .clk                       (clock),
