@@ -3048,11 +3048,16 @@ module ysyx_210611_id_stage(
   wire id_flush;
   reg [`REG_BUS] if_to_id_pc_r;
   reg [`INST_BUS] if_to_id_inst_r;
+  
+  wire [`REG_BUS]  id_pc;
+  wire [`INST_BUS] id_inst;
 
   wire            rs1_r_ena;
   wire [4 : 0]    rs1_addr;
   wire            rs2_r_ena;
   wire [4 : 0]    rs2_addr;
+  wire [11 : 0] id_csr_addr;
+  wire [4  : 0] rd_addr;
 
   wire            bj_ena, bj_valid;
 
@@ -3087,21 +3092,21 @@ module ysyx_210611_id_stage(
     end
   end
   
-  wire [`REG_BUS]  id_pc   = if_to_id_pc_r;
-  wire [`INST_BUS] id_inst = if_to_id_inst_r;
+  assign id_pc = if_to_id_pc_r;
+  assign id_inst = if_to_id_inst_r;
   
   // decode
   wire [6  : 0] opcode = id_inst[6 : 0];
   wire [2  : 0] func3  = id_inst[14 : 12];
   wire [5  : 0] func6  = id_inst[31 : 26];
   wire [6  : 0] func7  = id_inst[31 : 25];
-  wire [4  : 0] zimm = id_inst[19 : 15];
+  wire [4  : 0] zimm   = id_inst[19 : 15];
   
   assign rs1_addr = {5{rs1_r_ena}} & id_inst[19 : 15];
   assign rs2_addr = {5{rs2_r_ena}} & id_inst[24 : 20];
-  wire [11 : 0] id_csr_addr = id_inst[31 : 20];
+  assign id_csr_addr = id_inst[31 : 20];
   assign csr_rd_addr = id_csr_addr;
-  wire [4  : 0] rd_addr = id_inst[11 : 7];
+  assign rd_addr = id_inst[11 : 7];
   
   wire [11 : 0] immI = id_csr_addr;
   wire [11 : 0] immS = {func7, id_inst[11 :  7]};
