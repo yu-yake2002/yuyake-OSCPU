@@ -1,0 +1,30 @@
+
+[verilator] Generating C++ files...
+Tue, 27 Jul 2021 23:55:34 +0800
+0.05user 0.02system 0:00.08elapsed 94%CPU (0avgtext+0avgdata 18924maxresident)k
+0inputs+592outputs (0major+5139minor)pagefaults 0swaps
+
+[g++] Compiling C++ files...
+Tue, 27 Jul 2021 23:55:34 +0800
+11.57user 1.72system 0:13.75elapsed 96%CPU (0avgtext+0avgdata 181376maxresident)k
+2568inputs+65624outputs (6major+508318minor)pagefaults 0swaps
+
+[verilator] Generating C++ files...
+Wed, 28 Jul 2021 19:53:05 +0800
+0.07user 0.01system 0:00.09elapsed 86%CPU (0avgtext+0avgdata 18904maxresident)k
+448inputs+600outputs (2major+5171minor)pagefaults 0swaps
+
+[g++] Compiling C++ files...
+Wed, 28 Jul 2021 19:53:05 +0800
+0.72user 0.29system 0:01.33elapsed 76%CPU (0avgtext+0avgdata 98548maxresident)k
+69264inputs+4656outputs (227major+38518minor)pagefaults 0swaps
+
+[verilator] Generating C++ files...
+Sat, 31 Jul 2021 13:56:20 +0800
+0.06user 0.02system 0:00.10elapsed 85%CPU (0avgtext+0avgdata 19240maxresident)k
+24inputs+656outputs (1major+5223minor)pagefaults 0swaps
+
+[g++] Compiling C++ files...
+Sat, 31 Jul 2021 13:56:20 +0800
+5.57user 0.89system 0:11.09elapsed 58%CPU (0avgtext+0avgdata 104692maxresident)k
+27968inputs+35480outputs (98major+256512minor)pagefaults 0swaps
