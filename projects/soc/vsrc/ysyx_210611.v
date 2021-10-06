@@ -3042,6 +3042,12 @@ module ysyx_210611_id_stage(
 
   input wire [`BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus
 );
+  
+  reg id_valid;
+  wire id_ready_go;
+  wire id_flush;
+  reg [`REG_BUS] if_to_id_pc_r;
+  reg [`INST_BUS] if_to_id_inst_r;
 
   wire            rs1_r_ena;
   wire [4 : 0]    rs1_addr;
@@ -3049,17 +3055,14 @@ module ysyx_210611_id_stage(
   wire [4 : 0]    rs2_addr;
 
   wire            bj_ena, bj_valid;
+
   assign {
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
   } = bj_ctrl_bus[1:0];
 
   // pipeline control
-  reg id_valid;
-  wire id_ready_go;
-  wire id_flush = bj_ena && bj_valid;
-  reg [`REG_BUS] if_to_id_pc_r;
-  reg [`INST_BUS] if_to_id_inst_r;
+  assign id_flush = bj_ena && bj_valid;
 
   assign id_ready_go = 1'b1;
   assign id_allowin = !id_valid || id_ready_go && ex_allowin;
