@@ -203,18 +203,28 @@ module clint # (
     end
   end
 
+  wire wr_size_b = wr_size_reg == 3'b000;
+  wire wr_size_h = wr_size_reg == 3'b001;
+  wire wr_size_w = wr_size_reg == 3'b010;
+  wire wr_size_d = wr_size_reg == 3'b011;
   // w bus
   assign w_ready_o = W_STATE_WRITE && w_valid_i;
-  
+  wire [7:0] mask_size  = (
+      ({8{wr_size_b}} & 8'b00000001)
+    | ({8{wr_size_h}} & 8'b00000011)
+    | ({8{wr_size_w}} & 8'b00001111)
+    | ({8{wr_size_d}} & 8'b11111111)
+  ) << wr_addr_reg[2:0];
+  wire [7:0] mask_8bits = w_strb_i & mask_size;
   wire [`REG_BUS] wr_mask = {
-    {8{w_strb_i[7]}},
-    {8{w_strb_i[6]}},
-    {8{w_strb_i[5]}},
-    {8{w_strb_i[4]}},
-    {8{w_strb_i[3]}},
-    {8{w_strb_i[2]}},
-    {8{w_strb_i[1]}},
-    {8{w_strb_i[0]}}
+    {8{mask_8bits[7]}},
+    {8{mask_8bits[6]}},
+    {8{mask_8bits[5]}},
+    {8{mask_8bits[4]}},
+    {8{mask_8bits[3]}},
+    {8{mask_8bits[2]}},
+    {8{mask_8bits[1]}},
+    {8{mask_8bits[0]}}
   };
   wire msip_wr_ena     = (wr_addr_reg == 64'h00000000_02000000);
   wire mtimecmp_wr_ena = (wr_addr_reg == 64'h00000000_02004000);
