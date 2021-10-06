@@ -2560,6 +2560,43 @@ module ysyx_210611_ex_stage(
   input wire [`REG_BUS]                   rs1_data,
   input wire [`REG_BUS]                   rs2_data
   );
+  
+  reg itrp_valid;
+  wire ex_done;
+  wire bj_handshake;
+  wire hazard;
+
+  wire [`INST_BUS]       ex_inst;
+  wire [`REG_BUS]        ex_pc;
+  wire [`REG_BUS]        ex_op1, ex_op2;
+  wire                   ex_use_rs1, ex_use_rs2;
+  wire                   ex_is_word_opt;
+  wire [`ALU_BUS]        ex_alu_info;
+  wire [`BJ_BUS]         ex_bj_info;
+  wire [`REG_BUS]        ex_jmp_imm;
+
+  wire [`LOAD_BUS]       ex_load_info;
+  wire [`SAVE_BUS]       ex_save_info;
+  wire                   ex_ram_rd_ena, ex_ram_wr_ena;
+  
+  wire [`REG_CTRL_BUS]   ex_reg_wr_ctrl;
+  wire                   ex_reg_wr_ena, ex_csr_wr_ena;
+  wire [4 : 0]           ex_reg_wr_addr;
+  wire [11: 0]           ex_csr_wr_addr;
+  wire [`REG_BUS]        ex_csr_rd_data;
+  
+  wire [`EXCP_BUS]       ex_excp_bus;
+  wire                   itrp_allowin;
+  wire                   ex_excp_exit, ex_excp_enter;
+
+  wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
+
+  wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;
+  wire               ex_bj_ena, excp_jmp_ena;
+  wire               ex_bj_valid; // 1: not finish the computation of branch
+  
+  wire [`REG_BUS] ex_ram_wr_src;
+  wire [`REG_BUS] ex_data;
 
   // read GPRs
   assign ex_rs1_r_ena = 1'b1;
@@ -2573,15 +2610,13 @@ module ysyx_210611_ex_stage(
   reg [`INST_BUS] id_to_ex_inst_r;
   reg [`ID_TO_EX_WIDTH-1:0] id_to_ex_bus_r;
   
-  reg itrp_valid;
-  wire ex_done = ~hazard;
-  wire bj_handshake = ex_bj_valid && if_bj_ready;
+  assign ex_done = ~hazard;
+  assign bj_handshake = ex_bj_valid && if_bj_ready;
   assign ex_ready_go = ((~(|ex_bj_info) && ~excp_jmp_ena)|| bj_handshake) && ex_done;
   assign ex_allowin = !ex_valid || ex_ready_go && mem_allowin;
   //assign ex_to_mem_valid = ex_valid && ex_ready_go && ~ex_flush;
   assign ex_to_mem_valid = (ex_valid || itrp_valid) && ex_ready_go;
-
-
+  
   always @(posedge clk) begin
     if (rst) begin
       ex_valid <= 1'b0;
@@ -2649,27 +2684,7 @@ module ysyx_210611_ex_stage(
     ex_csr_wr_addr, // 75 :64
     ex_csr_rd_data  // 63 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~itrp_valid}};
-
-  wire [`INST_BUS]       ex_inst;
-  wire [`REG_BUS]        ex_pc;
-  wire [`REG_BUS]        ex_op1, ex_op2;
-  wire                   ex_use_rs1, ex_use_rs2;
-  wire                   ex_is_word_opt;
-  wire [`ALU_BUS]        ex_alu_info;
-  wire [`BJ_BUS]         ex_bj_info;
-  wire [`REG_BUS]        ex_jmp_imm;
-
-  wire [`LOAD_BUS]       ex_load_info;
-  wire [`SAVE_BUS]       ex_save_info;
-  wire                   ex_ram_rd_ena, ex_ram_wr_ena;
   
-  wire [`REG_CTRL_BUS]   ex_reg_wr_ctrl;
-  wire                   ex_reg_wr_ena, ex_csr_wr_ena;
-  wire [4 : 0]           ex_reg_wr_addr;
-  wire [11: 0]           ex_csr_wr_addr;
-  wire [`REG_BUS]        ex_csr_rd_data;
-  
-  wire hazard;
   ysyx_210611_forward ysyx_210611_Forward(
     .ex_rs1_addr         (ex_rs1_addr),
     .ex_rs2_addr         (ex_rs2_addr),
@@ -2687,10 +2702,6 @@ module ysyx_210611_ex_stage(
   
   assign                 excp_exit = ex_excp_exit;
   assign                 excp_enter = ex_excp_enter;
-
-  wire [`EXCP_BUS]       ex_excp_bus;
-  wire                   itrp_allowin;
-  wire                   ex_excp_exit, ex_excp_enter;
   
   ysyx_210611_excp_handler ysyx_210611_Excp_handler(
     .excp_info           (ex_excp_bus),
@@ -2714,7 +2725,6 @@ module ysyx_210611_ex_stage(
     .itrp_valid          (itrp_valid)
   );
   
-  wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
   assign true_op1 = ex_use_rs1 ? rs1_forward : ex_op1;
   assign true_op2 = ex_use_rs2 ? rs2_forward : ex_op2;
   wire [`REG_BUS] op1 = {{32{~ex_is_word_opt}} & true_op1[63 : 32], true_op1[31 : 0]};
@@ -2747,8 +2757,8 @@ module ysyx_210611_ex_stage(
     .new_pc              (ex_bj_pc)
   );
   
-  wire [`REG_BUS] ex_ram_wr_src = rs2_forward;
-  wire [`REG_BUS] ex_data;
+  assign ex_ram_wr_src = rs2_forward;
+  
   assign ex_to_mem_bus = {
     // mem
     ex_load_info,   // 214:208
@@ -2764,10 +2774,6 @@ module ysyx_210611_ex_stage(
     ex_reg_wr_addr, // 6  :2
     ex_reg_wr_ena   // 1  :1
   };
-
-  wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;
-  wire               ex_bj_ena, excp_jmp_ena;
-  wire               ex_bj_valid; // 1: not finish the computation of branch
   
   assign ex_bj_valid = ~(|ex_bj_info) || ex_done;
   assign bj_ctrl_bus = {
