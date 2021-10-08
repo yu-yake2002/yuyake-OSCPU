@@ -247,6 +247,26 @@ module ysyx_210611(
   wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
   wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
   
+  wire if_rw_valid;
+  wire if_rw_ready;
+  wire if_rw_req = `REQ_READ;
+  wire [`REG_BUS] if_r_data;
+  wire [`REG_BUS] if_w_data = 64'h0;
+  wire [`REG_BUS] if_rw_addr;
+  wire [1:0] if_rw_size;
+  wire [1:0] if_rw_resp;
+  
+  wire mem_rw_valid;
+  wire mem_rw_ready;
+  wire mem_rw_req;
+  wire [`REG_BUS] mem_r_data;
+  wire [`REG_BUS] mem_w_data;
+  wire [`REG_BUS] mem_rw_addr;
+  wire [1:0] mem_rw_size;
+  wire [1:0] mem_rw_resp;
+
+  wire [`ITRP_BUS] clint_interupt_bus;
+
   ysyx_210611_axi_2x2 ysyx_210611_axi_2x2(
     .clock                          (clock),
     .reset                          (reset),
@@ -486,26 +506,6 @@ module ysyx_210611(
     .axi_r_last_i                   (if_axi_r_last),
     .axi_r_id_i                     (if_axi_r_id)
   );
-
-  wire if_rw_valid;
-  wire if_rw_ready;
-  wire if_rw_req = `REQ_READ;
-  wire [`REG_BUS] if_r_data;
-  wire [`REG_BUS] if_w_data = 64'h0;
-  wire [`REG_BUS] if_rw_addr;
-  wire [1:0] if_rw_size;
-  wire [1:0] if_rw_resp;
-  
-  wire mem_rw_valid;
-  wire mem_rw_ready;
-  wire mem_rw_req;
-  wire [`REG_BUS] mem_r_data;
-  wire [`REG_BUS] mem_w_data;
-  wire [`REG_BUS] mem_rw_addr;
-  wire [1:0] mem_rw_size;
-  wire [1:0] mem_rw_resp;
-
-  wire [`ITRP_BUS] clint_interupt_bus;
 
   ysyx_210611_cpu ysyx_210611_u_cpu(
     .clock                         (clock),
@@ -3058,8 +3058,8 @@ module ysyx_210611_id_stage(
   wire [4 : 0]    rs1_addr;
   wire            rs2_r_ena;
   wire [4 : 0]    rs2_addr;
-  wire [11 : 0] id_csr_addr;
-  wire [4  : 0] rd_addr;
+  wire [11 : 0]   id_csr_addr;
+  wire [4  : 0]   rd_addr;
 
   wire            bj_ena, bj_valid;
 
@@ -3367,7 +3367,6 @@ module ysyx_210611_id_stage(
     | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
     | inst_i_csr_imm | inst_i_csr_reg
   );
-  wire [4 : 0] reg_wr_addr = id_inst[11 :  7];
   wire csr_wr_ena  = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   wire [11: 0] csr_wr_addr = id_inst[31 : 20];
   
