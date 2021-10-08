@@ -247,6 +247,26 @@ module ysyx_210611(
   wire                        mem_axi_r_last,   if_axi_r_last,   cli_r_last;
   wire [3:0]                  mem_axi_r_id,     if_axi_r_id,     cli_r_id;
   
+  wire if_rw_valid;
+  wire if_rw_ready;
+  wire if_rw_req = `REQ_READ;
+  wire [`REG_BUS] if_r_data;
+  wire [`REG_BUS] if_w_data = 64'h0;
+  wire [`REG_BUS] if_rw_addr;
+  wire [1:0] if_rw_size;
+  wire [1:0] if_rw_resp;
+  
+  wire mem_rw_valid;
+  wire mem_rw_ready;
+  wire mem_rw_req;
+  wire [`REG_BUS] mem_r_data;
+  wire [`REG_BUS] mem_w_data;
+  wire [`REG_BUS] mem_rw_addr;
+  wire [1:0] mem_rw_size;
+  wire [1:0] mem_rw_resp;
+
+  wire [`ITRP_BUS] clint_interupt_bus;
+
   ysyx_210611_axi_2x2 ysyx_210611_axi_2x2(
     .clock                          (clock),
     .reset                          (reset),
@@ -486,26 +506,6 @@ module ysyx_210611(
     .axi_r_last_i                   (if_axi_r_last),
     .axi_r_id_i                     (if_axi_r_id)
   );
-
-  wire if_rw_valid;
-  wire if_rw_ready;
-  wire if_rw_req = `REQ_READ;
-  wire [`REG_BUS] if_r_data;
-  wire [`REG_BUS] if_w_data = 64'h0;
-  wire [`REG_BUS] if_rw_addr;
-  wire [1:0] if_rw_size;
-  wire [1:0] if_rw_resp;
-  
-  wire mem_rw_valid;
-  wire mem_rw_ready;
-  wire mem_rw_req;
-  wire [`REG_BUS] mem_r_data;
-  wire [`REG_BUS] mem_w_data;
-  wire [`REG_BUS] mem_rw_addr;
-  wire [1:0] mem_rw_size;
-  wire [1:0] mem_rw_resp;
-
-  wire [`ITRP_BUS] clint_interupt_bus;
 
   ysyx_210611_cpu ysyx_210611_u_cpu(
     .clock                         (clock),
@@ -1392,19 +1392,6 @@ module ysyx_210611_axi_rw # (
       end
     end
   end
-  
-  // ------------------Number of transmission------------------
-  reg [7:0] len;
-  wire len_reset      = reset | (w_trans & w_state_idle) | (r_trans & r_state_idle);
-  wire len_incr_en    = (len != axi_len) & (w_hs | r_hs);
-  always @(posedge clock) begin
-    if (len_reset) begin
-      len <= 0;
-    end
-    else if (len_incr_en) begin
-      len <= len + 1;
-    end
-  end
 
   // ------------------Process Data------------------
   parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
@@ -1443,6 +1430,19 @@ module ysyx_210611_axi_rw # (
   
   wire [AXI_ID_WIDTH-1:0] axi_id        = device_id;
   
+  // ------------------Number of transmission------------------
+  reg [7:0] len;
+  wire len_reset      = reset | (w_trans & w_state_idle) | (r_trans & r_state_idle);
+  wire len_incr_en    = (len != axi_len) & (w_hs | r_hs);
+  always @(posedge clock) begin
+    if (len_reset) begin
+      len <= 0;
+    end
+    else if (len_incr_en) begin
+      len <= len + 1;
+    end
+  end
+
   reg rw_ready;
   wire rw_ready_nxt = trans_done;
   wire rw_ready_en      = trans_done | rw_ready;
@@ -3058,8 +3058,8 @@ module ysyx_210611_id_stage(
   wire [4 : 0]    rs1_addr;
   wire            rs2_r_ena;
   wire [4 : 0]    rs2_addr;
-  wire [11 : 0] id_csr_addr;
-  wire [4  : 0] rd_addr;
+  wire [11 : 0]   id_csr_addr;
+  wire [4  : 0]   rd_addr;
 
   wire            bj_ena, bj_valid;
 
@@ -3312,7 +3312,7 @@ module ysyx_210611_id_stage(
   assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
   assign csr_rd_ena = csr_vld;
   
-  wire [4 : 0] reg_wr_addr = (reg_wr_ena == 1'b1) ? rd_addr : 0;
+  wire [4 : 0] reg_wr_addr;
   
   wire mem_wr_ena = ~rst & inst_s;
   wire mem_rd_ena = ~rst & inst_i_load;
@@ -3367,7 +3367,8 @@ module ysyx_210611_id_stage(
     | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
     | inst_i_csr_imm | inst_i_csr_reg
   );
-  wire [4 : 0] reg_wr_addr = id_inst[11 :  7];
+  assign reg_wr_addr = (reg_wr_ena == 1'b1) ? rd_addr : 0;
+
   wire csr_wr_ena  = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   wire [11: 0] csr_wr_addr = id_inst[31 : 20];
   
@@ -3592,6 +3593,19 @@ module ysyx_210611_mem_stage(
   wire mem_ready_go;
   reg [`EX_TO_MEM_WIDTH-1:0] ex_to_mem_bus_r;
   
+  // ram control
+  wire [`LOAD_BUS] mem_load_info;
+  wire [`SAVE_BUS] mem_save_info;
+  wire [`REG_BUS]  mem_ram_wr_src;
+  wire [`REG_BUS]  mem_addr, mem_csr_rd_data;
+  wire             mem_ram_rd_ena;
+  wire             mem_ram_wr_ena;
+  
+  // wb stage
+  wire [2  : 0]    mem_reg_wr_ctrl;
+  wire [4  : 0]    mem_reg_wr_addr;
+  wire             mem_reg_wr_ena;
+
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
@@ -3611,18 +3625,7 @@ module ysyx_210611_mem_stage(
     end
   end
   
-  // ram control
-  wire [`LOAD_BUS] mem_load_info;
-  wire [`SAVE_BUS] mem_save_info;
-  wire [`REG_BUS]  mem_ram_wr_src;
-  wire [`REG_BUS]  mem_addr, mem_csr_rd_data;
-  wire             mem_ram_rd_ena;
-  wire             mem_ram_wr_ena;
   
-  // wb stage
-  wire [2  : 0]    mem_reg_wr_ctrl;
-  wire [4  : 0]    mem_reg_wr_addr;
-  wire             mem_reg_wr_ena;
   
   assign {
     // mem
@@ -3867,9 +3870,14 @@ module ysyx_210611_wb_stage (
     end
   end
   
+  // write in
   wire            wb_wen;
   wire [4  : 0]   wb_wdest;
-  
+  assign reg_wr_ena = wb_wen && wb_valid;
+  assign reg_wr_addr = wb_wdest;
+  wire [`REG_CTRL_BUS] wb_reg_wr_ctrl;
+  wire [`REG_BUS] wb_ex_data, wb_mem_rd_data, wb_csr_rd_data;
+
   assign {
     wb_wen,         // 200:200
     wb_wdest,       // 199:195
@@ -3878,13 +3886,7 @@ module ysyx_210611_wb_stage (
     wb_mem_rd_data,    // 127:0
     wb_csr_rd_data     // 63 :0
   } = mem_to_wb_bus_r & {`MEM_TO_WB_WIDTH{wb_valid}};
-
-  // write in
-  assign reg_wr_ena = wb_wen && wb_valid;
-  assign reg_wr_addr = wb_wdest;
-  wire [`REG_CTRL_BUS] wb_reg_wr_ctrl;
-  wire [`REG_BUS] wb_ex_data, wb_mem_rd_data, wb_csr_rd_data;
-
+  
   wire mem_to_reg = wb_reg_wr_ctrl[`MEM_TO_REG];
   wire ex_to_reg  = wb_reg_wr_ctrl[`EXE_TO_REG];
   wire csr_to_reg = wb_reg_wr_ctrl[`CSR_TO_REG];
