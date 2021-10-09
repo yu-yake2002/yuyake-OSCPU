@@ -3606,6 +3606,9 @@ module ysyx_210611_mem_stage(
   wire [4  : 0]    mem_reg_wr_addr;
   wire             mem_reg_wr_ena;
 
+  wire mem_finish;
+  wire [`REG_BUS] mem_ex_data;
+
   assign mem_ready_go = mem_finish || (~mem_ram_rd_ena && ~mem_ram_wr_ena);
   assign mem_allowin = !mem_valid || mem_ready_go && wb_allowin;
   assign mem_to_wb_valid = mem_valid && mem_ready_go;
@@ -3742,9 +3745,9 @@ module ysyx_210611_mem_stage(
       );
     end
   end
-
-  wire mem_finish = mem_state == RETN;
-  wire [`REG_BUS] mem_ex_data = mem_addr;
+  
+  assign mem_finish = mem_state == RETN;
+  assign mem_ex_data = mem_addr;
 
   assign mem_to_wb_bus = {
     // wb stage
