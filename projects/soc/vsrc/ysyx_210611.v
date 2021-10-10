@@ -1526,7 +1526,7 @@ module ysyx_210611_axi_rw # (
   
   genvar i;
   generate
-    for (i = 0; i < TRANS_LEN; i = i + 1) begin
+    for (i = 0; i < TRANS_LEN; i = i + 1) begin:gen
       always @(posedge clock) begin
         if (reset) begin
           data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= 0;
