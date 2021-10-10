@@ -3676,10 +3676,11 @@ module ysyx_210611_mem_stage(
   end
 
   always @(*) begin
+    /*
     if (rst) begin
       mem_next_state = IDLE;
     end
-    else begin
+    else begin*/
       case (mem_state)
         IDLE: begin
           if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
@@ -3711,7 +3712,7 @@ module ysyx_210611_mem_stage(
           mem_next_state = IDLE;
         end
       endcase
-    end
+    //end
   end
 
   assign mem_rw_valid = mem_state == ADDR;
