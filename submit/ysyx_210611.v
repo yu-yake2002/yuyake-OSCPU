@@ -1307,8 +1307,8 @@ module ysyx_210611_axi_rw # (
   
   input  wire                              axi_w_ready_i,
   output wire                              axi_w_valid_o,
-  output wire [AXI_DATA_WIDTH-1:0]         axi_w_data_o,
-  output wire [AXI_DATA_WIDTH/8-1:0]       axi_w_strb_o,
+  output reg [AXI_DATA_WIDTH-1:0]          axi_w_data_o,
+  output reg [AXI_DATA_WIDTH/8-1:0]        axi_w_strb_o,
   output wire                              axi_w_last_o,
   
   output wire                              axi_b_ready_o,
