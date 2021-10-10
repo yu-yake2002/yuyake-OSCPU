@@ -812,11 +812,11 @@ module ysyx_210611_axi_2x2 # (
   wire w_finish_ram;
 
   // ------------------State Machine------------------
-  parameter [1:0] STATE_IDLE  = 2'b00;
+  wire [1:0] STATE_IDLE  = 2'b00;
   // master state
-  parameter [1:0] STATE_0 = 2'b01, STATE_1 = 2'b10;
+  wire [1:0] STATE_0 = 2'b01, STATE_1 = 2'b10;
   // slave state
-  parameter [1:0] STATE_CLINT = 2'b01, STATE_RAM = 2'b10;
+  wire [1:0] STATE_CLINT = 2'b01, STATE_RAM = 2'b10;
   
   // Write State Machine
   // Master
