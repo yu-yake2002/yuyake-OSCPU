@@ -3681,21 +3681,23 @@ module ysyx_210611_mem_stage(
     end
     else begin
       case (mem_state)
-        IDLE:
+        IDLE: begin
           if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
             mem_next_state = ADDR;
           end
           else begin
             mem_next_state = mem_state;
           end
-        ADDR:
+        end
+        ADDR: begin
           if (mem_handshake) begin
             mem_next_state = RETN;
           end
           else begin
             mem_next_state = mem_state;
           end
-        RETN:
+        end
+        RETN: begin
           if (refresh) begin
             if (ex_ram_rd_ena || ex_ram_wr_ena) begin
               mem_next_state = ADDR;
@@ -3704,8 +3706,10 @@ module ysyx_210611_mem_stage(
               mem_next_state = IDLE;
             end
           end
-        default:
+        end
+        default: begin
           mem_next_state = IDLE;
+        end
       endcase
     end
   end
