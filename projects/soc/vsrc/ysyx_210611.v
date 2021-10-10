@@ -3629,8 +3629,6 @@ module ysyx_210611_mem_stage(
     end
   end
   
-  
-  
   assign {
     // mem
     mem_load_info,   // 214:208
@@ -3664,7 +3662,7 @@ module ysyx_210611_mem_stage(
   wire op_lhu = mem_load_info[`LOAD_LHU];
   wire op_lwu = mem_load_info[`LOAD_LWU];
   
-  parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
+  wire [1:0] IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] mem_state;
   reg [1:0] mem_next_state;
   
