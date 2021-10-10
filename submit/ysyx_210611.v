@@ -812,11 +812,11 @@ module ysyx_210611_axi_2x2 # (
   wire w_finish_ram;
 
   // ------------------State Machine------------------
-  parameter [1:0] STATE_IDLE  = 2'b00;
+  wire [1:0] STATE_IDLE  = 2'b00;
   // master state
-  parameter [1:0] STATE_0 = 2'b01, STATE_1 = 2'b10;
+  wire [1:0] STATE_0 = 2'b01, STATE_1 = 2'b10;
   // slave state
-  parameter [1:0] STATE_CLINT = 2'b01, STATE_RAM = 2'b10;
+  wire [1:0] STATE_CLINT = 2'b01, STATE_RAM = 2'b10;
   
   // Write State Machine
   // Master
@@ -3629,8 +3629,6 @@ module ysyx_210611_mem_stage(
     end
   end
   
-  
-  
   assign {
     // mem
     mem_load_info,   // 214:208
@@ -3664,7 +3662,7 @@ module ysyx_210611_mem_stage(
   wire op_lhu = mem_load_info[`LOAD_LHU];
   wire op_lwu = mem_load_info[`LOAD_LWU];
   
-  parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
+  wire [1:0] IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] mem_state;
   reg [1:0] mem_next_state;
   
@@ -3678,26 +3676,29 @@ module ysyx_210611_mem_stage(
   end
 
   always @(*) begin
+    /*
     if (rst) begin
       mem_next_state = IDLE;
     end
-    else begin
+    else begin*/
       case (mem_state)
-        IDLE:
+        IDLE: begin
           if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
             mem_next_state = ADDR;
           end
           else begin
             mem_next_state = mem_state;
           end
-        ADDR:
+        end
+        ADDR: begin
           if (mem_handshake) begin
             mem_next_state = RETN;
           end
           else begin
             mem_next_state = mem_state;
           end
-        RETN:
+        end
+        RETN: begin
           if (refresh) begin
             if (ex_ram_rd_ena || ex_ram_wr_ena) begin
               mem_next_state = ADDR;
@@ -3706,10 +3707,12 @@ module ysyx_210611_mem_stage(
               mem_next_state = IDLE;
             end
           end
-        default:
+        end
+        default: begin
           mem_next_state = IDLE;
+        end
       endcase
-    end
+    //end
   end
 
   assign mem_rw_valid = mem_state == ADDR;
