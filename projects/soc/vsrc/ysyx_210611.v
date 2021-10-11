@@ -1672,7 +1672,7 @@ module ysyx_210611_clint # (
   /* ------Write Bus------ */
 
   // Write State Machine
-  parameter [1:0] W_STATE_IDLE = 2'b00, W_STATE_WRITE = 2'b01, W_STATE_RESP = 2'b10;
+  wire [1:0] W_STATE_IDLE = 2'b00, W_STATE_WRITE = 2'b01, W_STATE_RESP = 2'b10;
   reg [1 : 0] w_state;
   wire w_state_idle  = w_state == W_STATE_IDLE;
   wire w_state_write = w_state == W_STATE_WRITE;
