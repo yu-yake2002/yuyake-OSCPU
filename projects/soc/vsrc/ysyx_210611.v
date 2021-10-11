@@ -3707,6 +3707,9 @@ module ysyx_210611_mem_stage(
               mem_next_state = IDLE;
             end
           end
+          else begin
+            mem_next_state = RETN;
+          end
         end
         default: begin
           mem_next_state = IDLE;
