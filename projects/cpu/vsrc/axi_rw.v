@@ -197,32 +197,28 @@ module axi_rw # (
   
   
   // ------------------Process Data------------------
-  parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
-  parameter OFFSET_WIDTH  = $clog2(AXI_DATA_WIDTH);
   parameter AXI_SIZE      = $clog2(AXI_DATA_WIDTH / 8);
-  parameter MASK_WIDTH    = AXI_DATA_WIDTH * 2;
-  parameter TRANS_LEN     = RW_DATA_WIDTH / AXI_DATA_WIDTH;
   
-  wire aligned            = rw_addr_i[ALIGNED_WIDTH-1:0] == 0;
+  wire aligned            = rw_addr_i[3-1:0] == 0;
   wire size_b             = rw_size_i == `SIZE_B;
   wire size_h             = rw_size_i == `SIZE_H;
   wire size_w             = rw_size_i == `SIZE_W;
   wire size_d             = rw_size_i == `SIZE_D;
-  wire [3:0] addr_op1     = {{4-ALIGNED_WIDTH{1'b0}}, rw_addr_i[ALIGNED_WIDTH-1:0]};
+  wire [3:0] addr_op1     = {{4-3{1'b0}}, rw_addr_i[3-1:0]};
   wire [3:0] addr_op2     = ({4{size_b}} & {4'b0})
                           | ({4{size_h}} & {4'b1})
                           | ({4{size_w}} & {4'b11})
                           | ({4{size_d}} & {4'b111})
                             ;
   wire [3:0] addr_end     = addr_op1 + addr_op2;
-  wire overstep           = addr_end[3:ALIGNED_WIDTH] != 0;
+  wire overstep           = addr_end[3:3] != 0;
   
   wire [7:0] axi_len      = aligned ? 0 : {{7{1'b0}}, overstep};
   wire [2:0] axi_size     = AXI_SIZE[2:0];
   //wire [2:0] axi_size     = 3'b011;
-  wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
-  wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
-  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = AXI_DATA_WIDTH - aligned_offset_l;
+  wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:3], {3{1'b0}}};
+  wire [6-1:0] aligned_offset_l    = {{6-3{1'b0}}, {rw_addr_i[3-1:0]}} << 3;
+  wire [6-1:0] aligned_offset_h    = AXI_DATA_WIDTH - aligned_offset_l;
   wire [127:0] mask                          = (({128{size_b}} & {{128-8{1'b0}}, 8'hff})
                                               | ({128{size_h}} & {{128-16{1'b0}}, 16'hffff})
                                               | ({128{size_w}} & {{128-32{1'b0}}, 32'hffffffff})
