@@ -1394,39 +1394,33 @@ module ysyx_210611_axi_rw # (
   end
 
   // ------------------Process Data------------------
-  parameter ALIGNED_WIDTH = $clog2(AXI_DATA_WIDTH / 8);
-  parameter OFFSET_WIDTH  = $clog2(AXI_DATA_WIDTH);
-  parameter MASK_WIDTH    = AXI_DATA_WIDTH * 2;
-  parameter TRANS_LEN     = RW_DATA_WIDTH / AXI_DATA_WIDTH;
   
-  wire aligned            = TRANS_LEN != 1 | rw_addr_i[ALIGNED_WIDTH-1:0] == 0;
+  wire aligned            = rw_addr_i[3-1:0] == 0;
   wire size_b             = rw_size_i == `SIZE_B;
   wire size_h             = rw_size_i == `SIZE_H;
   wire size_w             = rw_size_i == `SIZE_W;
   wire size_d             = rw_size_i == `SIZE_D;
-  wire [3:0] addr_op1     = {{4-ALIGNED_WIDTH{1'b0}}, rw_addr_i[ALIGNED_WIDTH-1:0]};
+  wire [3:0] addr_op1     = {{1{1'b0}}, rw_addr_i[2:0]};
   wire [3:0] addr_op2     = ({4{size_b}} & {4'b0})
                           | ({4{size_h}} & {4'b1})
                           | ({4{size_w}} & {4'b11})
                           | ({4{size_d}} & {4'b111})
                             ;
   wire [3:0] addr_end     = addr_op1 + addr_op2;
-  wire overstep           = addr_end[3:ALIGNED_WIDTH] != 0;
+  wire overstep           = addr_end[3] != 0;
   
-  wire [7:0] axi_len      = aligned ? TRANS_LEN - 1 : {{7{1'b0}}, overstep};
-  //wire [2:0] axi_size     = AXI_SIZE[2:0];
+  wire [7:0] axi_len      = aligned ? 0 : {{7{1'b0}}, overstep};
   wire [2:0] axi_size     = {1'b0, rw_size_i};
-  //wire [AXI_ADDR_WIDTH-1:0] axi_addr    = {rw_addr_i[AXI_ADDR_WIDTH-1:ALIGNED_WIDTH], {ALIGNED_WIDTH{1'b0}}};
   wire [AXI_ADDR_WIDTH-1:0] axi_addr          = rw_addr_i[31:0];
-  wire [OFFSET_WIDTH-1:0] aligned_offset_l    = {{OFFSET_WIDTH-ALIGNED_WIDTH{1'b0}}, {rw_addr_i[ALIGNED_WIDTH-1:0]}} << 3;
-  wire [OFFSET_WIDTH-1:0] aligned_offset_h    = -aligned_offset_l;
-  wire [MASK_WIDTH-1:0] mask                  = (({MASK_WIDTH{size_b}} & {{MASK_WIDTH-8{1'b0}}, 8'hff})
-                                              | ({MASK_WIDTH{size_h}} & {{MASK_WIDTH-16{1'b0}}, 16'hffff})
-                                              | ({MASK_WIDTH{size_w}} & {{MASK_WIDTH-32{1'b0}}, 32'hffffffff})
-                                              | ({MASK_WIDTH{size_d}} & {{MASK_WIDTH-64{1'b0}}, 64'hffffffff_ffffffff})
+  wire [5:0] aligned_offset_l    = {{3{1'b0}}, {rw_addr_i[2:0]}} << 3;
+  wire [5:0] aligned_offset_h    = -aligned_offset_l;
+  wire [127:0] mask                          = (({128{size_b}} & {{128-8{1'b0}}, 8'hff})
+                                              | ({128{size_h}} & {{128-16{1'b0}}, 16'hffff})
+                                              | ({128{size_w}} & {{128-32{1'b0}}, 32'hffffffff})
+                                              | ({128{size_d}} & {{128-64{1'b0}}, 64'hffffffff_ffffffff})
                                                 ) << aligned_offset_l;
   wire [AXI_DATA_WIDTH-1:0] mask_l      = mask[AXI_DATA_WIDTH-1:0];
-  wire [AXI_DATA_WIDTH-1:0] mask_h      = mask[MASK_WIDTH-1:AXI_DATA_WIDTH];
+  wire [AXI_DATA_WIDTH-1:0] mask_h      = mask[127:AXI_DATA_WIDTH];
   
   wire [AXI_ID_WIDTH-1:0] axi_id        = device_id;
   
@@ -1526,7 +1520,7 @@ module ysyx_210611_axi_rw # (
   
   genvar i;
   generate
-    for (i = 0; i < TRANS_LEN; i = i + 1) begin:gen
+    for (i = 0; i < 1; i = i + 1) begin:gen
       always @(posedge clock) begin
         if (reset) begin
           data_read_o[i*AXI_DATA_WIDTH+:AXI_DATA_WIDTH] <= 0;
@@ -1672,7 +1666,7 @@ module ysyx_210611_clint # (
   /* ------Write Bus------ */
 
   // Write State Machine
-  parameter [1:0] W_STATE_IDLE = 2'b00, W_STATE_WRITE = 2'b01, W_STATE_RESP = 2'b10;
+  wire [1:0] W_STATE_IDLE = 2'b00, W_STATE_WRITE = 2'b01, W_STATE_RESP = 2'b10;
   reg [1 : 0] w_state;
   wire w_state_idle  = w_state == W_STATE_IDLE;
   wire w_state_write = w_state == W_STATE_WRITE;
