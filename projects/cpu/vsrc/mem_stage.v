@@ -138,7 +138,7 @@ module mem_stage(
     end
   end
 
-//`define LATCH_ENA
+`define LATCH_ENA
 
 `ifdef LATCH_ENA
   reg [1:0] mem_next_state;
