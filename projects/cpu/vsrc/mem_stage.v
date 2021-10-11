@@ -127,7 +127,7 @@ module mem_stage(
   
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] mem_state;
-  wire [1:0] mem_next_state;
+  
   
   always @(posedge clk) begin
     if (rst) begin
@@ -138,18 +138,10 @@ module mem_stage(
     end
   end
 
-  assign mem_next_state = (
-      ({2{mem_state == IDLE}} & (
-        (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) ? ADDR : mem_state
-      ))
-    | ({2{mem_state == ADDR}} & (
-        mem_handshake ? RETN : mem_state
-      ))
-    | ({2{mem_state == RETN}} & (
-        (ex_ram_rd_ena || ex_ram_wr_ena) ? ADDR : IDLE
-      ))
-  );
-/*
+`define LATCH_ENA
+
+`ifdef LATCH_ENA
+  reg [1:0] mem_next_state;
   always @(*) begin
     case (mem_state)
       IDLE:
@@ -179,7 +171,21 @@ module mem_stage(
         mem_next_state = IDLE;
     endcase
   end
-*/
+`else
+  wire [1:0] mem_next_state;
+  assign mem_next_state = (
+      ({2{mem_state == IDLE}} & (
+        (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) ? ADDR : mem_state
+      ))
+    | ({2{mem_state == ADDR}} & (
+        mem_handshake ? RETN : mem_state
+      ))
+    | ({2{mem_state == RETN}} & (
+        (ex_ram_rd_ena || ex_ram_wr_ena) ? ADDR : IDLE
+      ))
+  );
+`endif
+
   assign mem_rw_valid = mem_state == ADDR;
   assign mem_rw_req = mem_ram_wr_ena;
   assign mem_w_data = mem_ram_wr_src & (
