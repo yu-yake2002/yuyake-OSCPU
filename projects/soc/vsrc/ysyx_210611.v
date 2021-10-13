@@ -2365,7 +2365,6 @@ module ysyx_210611_csrfile(
 endmodule
 
 module ysyx_210611_ex_stage_alu(
-  input wire rst,
   input wire [`REG_BUS] op1,
   input wire [`REG_BUS] op2,
   input wire [`ALU_BUS] alu_info,
@@ -2492,7 +2491,6 @@ module ysyx_210611_ex_stage_alu(
 endmodule
 
 module ysyx_210611_ex_stage_bj (
-  input wire rst,
   input wire ex_valid,
   input wire [`BJ_BUS] bj_info,
   input wire [`BJ_BUS] bj_data,
@@ -2723,7 +2721,6 @@ module ysyx_210611_ex_stage(
   wire [`BJ_BUS] ex_bj_data;
   
   ysyx_210611_ex_stage_alu ysyx_210611_Exe_stage_alu(
-    .rst                 (rst),
     .op1                 (op1),
     .op2                 (op2),
     .alu_info            (ex_alu_info),
@@ -2734,7 +2731,6 @@ module ysyx_210611_ex_stage(
   );
   
   ysyx_210611_ex_stage_bj ysyx_210611_Exe_stage_bj(
-    .rst                 (rst),
     .ex_valid            (ex_valid),
     .bj_info             (ex_bj_info),
     .bj_data             (ex_bj_data),
