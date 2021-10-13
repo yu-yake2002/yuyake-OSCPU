@@ -843,11 +843,7 @@ module ysyx_210611_axi_2x2 # (
   
   // Next Stage
   always @(*) begin
-    if (reset) begin
-      master_w_next_state = STATE_IDLE;
-      slave_w_next_state  = STATE_IDLE;
-    end
-    else begin
+    begin
       // master side
       case (master_w_state)
         STATE_IDLE: begin
@@ -941,11 +937,7 @@ module ysyx_210611_axi_2x2 # (
   
   // Next Stage
   always @(*) begin
-    if (reset) begin
-      master_r_next_state = STATE_IDLE;
-      slave_r_next_state  = STATE_IDLE;
-    end
-    else begin
+    begin
       // master side
       case (master_r_state)
         STATE_IDLE: begin
@@ -3480,21 +3472,16 @@ module ysyx_210611_if_stage(
   end
   
   always @(*) begin
-    if (rst) begin
-      if_next_state = IDLE;
-    end
-    else begin
-      case (if_state)
-        IDLE:
-          if_next_state = bj_handshake ? ADDR : IDLE;
-        ADDR:
-          if_next_state = if_handshake ? RETN : ADDR;
-        RETN:
-          if_next_state = (pre_to_if_valid && if_allowin) ? IDLE : RETN;
-        default:
-          if_next_state = IDLE;
-      endcase
-    end
+    case (if_state)
+      IDLE:
+        if_next_state = bj_handshake ? ADDR : IDLE;
+      ADDR:
+        if_next_state = if_handshake ? RETN : ADDR;
+      RETN:
+        if_next_state = (pre_to_if_valid && if_allowin) ? IDLE : RETN;
+      default:
+        if_next_state = IDLE;
+    endcase
   end
   
   always @(posedge clk) begin
@@ -3670,46 +3657,40 @@ module ysyx_210611_mem_stage(
   end
 
   always @(*) begin
-    /*
-    if (rst) begin
-      mem_next_state = IDLE;
-    end
-    else begin*/
-      case (mem_state)
-        IDLE: begin
-          if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
+    case (mem_state)
+      IDLE: begin
+        if (refresh && (ex_ram_rd_ena || ex_ram_wr_ena)) begin
+          mem_next_state = ADDR;
+        end
+        else begin
+          mem_next_state = mem_state;
+        end
+      end
+      ADDR: begin
+        if (mem_handshake) begin
+          mem_next_state = RETN;
+        end
+        else begin
+          mem_next_state = mem_state;
+        end
+      end
+      RETN: begin
+        if (refresh) begin
+          if (ex_ram_rd_ena || ex_ram_wr_ena) begin
             mem_next_state = ADDR;
           end
           else begin
-            mem_next_state = mem_state;
+            mem_next_state = IDLE;
           end
         end
-        ADDR: begin
-          if (mem_handshake) begin
-            mem_next_state = RETN;
-          end
-          else begin
-            mem_next_state = mem_state;
-          end
+        else begin
+          mem_next_state = RETN;
         end
-        RETN: begin
-          if (refresh) begin
-            if (ex_ram_rd_ena || ex_ram_wr_ena) begin
-              mem_next_state = ADDR;
-            end
-            else begin
-              mem_next_state = IDLE;
-            end
-          end
-          else begin
-            mem_next_state = RETN;
-          end
-        end
-        default: begin
-          mem_next_state = IDLE;
-        end
-      endcase
-    //end
+      end
+      default: begin
+        mem_next_state = IDLE;
+      end
+    endcase
   end
 
   assign mem_rw_valid = mem_state == ADDR;
