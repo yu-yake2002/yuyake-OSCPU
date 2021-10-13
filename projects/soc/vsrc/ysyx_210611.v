@@ -2329,7 +2329,7 @@ module ysyx_210611_csrfile(
   wire [`REG_BUS] csr_mhartid = `ZERO_WORD;
   wire [`REG_BUS] mhartid_rd_data = csr_mhartid;
 
-  assign csr_rd_data = {64{~rst}} & (
+  assign csr_rd_data = (
       ({64{mstatus_rd_ena}}   & mstatus_rd_data)
     | ({64{misa_rd_ena}}      & misa_rd_data)
     | ({64{mie_rd_ena}}       & mie_rd_data)
@@ -2465,7 +2465,7 @@ module ysyx_210611_ex_stage_alu(
   wire [`REG_BUS] andn_res = ~op1 & op2;
   wire [`REG_BUS] wri_res = op1;
 
-  wire [`REG_BUS] temp_output = {64{~rst}} & ( 
+  wire [`REG_BUS] temp_output = ( 
                       ({64{op_sll}}    & sll_res)
                     | ({64{op_srl}}    & srl_res)
                     | ({64{op_sra}}    & sra_res)
@@ -2505,7 +2505,7 @@ module ysyx_210611_ex_stage_bj (
   );
   
   assign new_pc = jmp_imm + (bj_info[`BJ_JALR] ? rs1_data : ex_pc);
-  assign bj_ena = ~rst & ex_valid & (|(bj_info & bj_data));
+  assign bj_ena = ex_valid & (|(bj_info & bj_data));
 endmodule
 
 module ysyx_210611_ex_stage(
@@ -3293,18 +3293,18 @@ module ysyx_210611_id_stage(
     inst_sd, inst_sw, inst_sh, inst_sb
   };
   
-  assign rs1_r_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
+  assign rs1_r_ena  = (inst_i_load | inst_i_fence | inst_i_arith_dword 
                             | inst_i_arith_word | inst_s | inst_r_dword 
                             | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg);
-  assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
+  assign rs2_r_ena  = (inst_r_dword | inst_r_word | inst_s | inst_b);
   assign csr_rd_ena = csr_vld;
   
   wire [4 : 0] reg_wr_addr;
   
-  wire mem_wr_ena = ~rst & inst_s;
-  wire mem_rd_ena = ~rst & inst_i_load;
+  wire mem_wr_ena = inst_s;
+  wire mem_rd_ena = inst_i_load;
   
-  wire [`REG_BUS] id_op1 = {64{~rst}} & (
+  wire [`REG_BUS] id_op1 = (
                   ({64{inst_u_auipc}}       & id_pc)
                 | ({64{inst_u_lui}}         & 64'b0)
                 | ({64{inst_i_jalr}}        & id_pc)
@@ -3315,7 +3315,7 @@ module ysyx_210611_id_stage(
                   | inst_i_arith_word | inst_s | inst_r_dword
                   | inst_r_word | inst_b | inst_i_csr_reg;
   
-  wire [`REG_BUS] id_op2 = {64{~rst}} & (
+  wire [`REG_BUS] id_op2 = (
                   ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
                 | ({64{inst_i_fence}}       & {{52{immI[11]}}, immI})
                 | ({64{inst_i_arith_dword}} & {{52{immI[11]}}, immI})
@@ -3335,9 +3335,9 @@ module ysyx_210611_id_stage(
                  | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
   
   // data to wb_stage
-  wire csr_to_reg = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
-  wire mem_to_reg = ~rst & inst_i_load;
-  wire exe_to_reg = ~rst & (
+  wire csr_to_reg = (inst_i_csr_imm | inst_i_csr_reg);
+  wire mem_to_reg = inst_i_load;
+  wire exe_to_reg = (
       inst_i_fence | inst_i_arith_dword | inst_u_auipc 
     | inst_i_arith_word | inst_r_dword | inst_u_lui
     | inst_r_word | inst_jal | inst_i_jalr
@@ -3348,7 +3348,7 @@ module ysyx_210611_id_stage(
     exe_to_reg
   };
   
-  wire reg_wr_ena  = ~rst & (
+  wire reg_wr_ena  = (
       inst_i_load | inst_i_fence | inst_i_arith_dword
     | inst_u_auipc | inst_i_arith_word | inst_r_dword
     | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
@@ -3356,7 +3356,7 @@ module ysyx_210611_id_stage(
   );
   assign reg_wr_addr = (reg_wr_ena == 1'b1) ? rd_addr : 0;
 
-  wire csr_wr_ena  = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
+  wire csr_wr_ena  = (inst_i_csr_imm | inst_i_csr_reg);
   wire [11: 0] csr_wr_addr = id_inst[31 : 20];
   
   wire [`EXCP_BUS] id_excp_bus;
@@ -3502,11 +3502,11 @@ module ysyx_210611_if_stage(
   
   // fetch an instruction
   assign if_axi_valid = if_state == ADDR;
-  assign if_handshake = ~rst && if_axi_valid && if_axi_ready;
+  assign if_handshake = if_axi_valid && if_axi_ready;
   
   assign if_axi_size = `SIZE_W;
   assign if_bj_ready = if_state == IDLE;
-  assign bj_handshake = ~rst && if_bj_ready && bj_valid;
+  assign bj_handshake = if_bj_ready && bj_valid;
   
   // IF stage
   
@@ -3811,10 +3811,10 @@ module ysyx_210611_regfile(
 		end
 	end
 	
-	assign r_data1 = {64{~rst & r_ena1}} & (
+	assign r_data1 = {64{r_ena1}} & (
     (r_addr1 == w_addr && (|r_addr1)) ? w_data : regs[r_addr1]
 	);
-	assign r_data2 = {64{~rst & r_ena2}} & (
+	assign r_data2 = {64{r_ena2}} & (
     (r_addr2 == w_addr && (|r_addr2)) ? w_data : regs[r_addr2]
 	);
 endmodule
@@ -3876,7 +3876,7 @@ module ysyx_210611_wb_stage (
   wire ex_to_reg  = wb_reg_wr_ctrl[`EXE_TO_REG];
   wire csr_to_reg = wb_reg_wr_ctrl[`CSR_TO_REG];
   
-  assign reg_wr_data = {64{~rst}} & (
+  assign reg_wr_data = (
       ({64{mem_to_reg}} & wb_mem_rd_data)
     | ({64{ex_to_reg}}  & wb_ex_data)
     | ({64{csr_to_reg}} & wb_csr_rd_data)
