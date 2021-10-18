@@ -1574,7 +1574,7 @@ module ysyx_210611_clint # (
   output wire [3:0]                       r_id_o,
 
   // interupt bus to core
-  output wire [`YSYX210611_ITRP_BUS]                 clint_interupt_bus
+  output wire [`YSYX210611_ITRP_BUS]      clint_interupt_bus
 );
 
   // CLINT CSRs
@@ -1781,28 +1781,28 @@ module ysyx_210611_clint # (
 endmodule
 
 module ysyx_210611_cpu(
-  input wire                 clock,
-  input wire                 reset,
+  input wire                            clock,
+  input wire                            reset,
   
   // Custom interface
 
   // if stage
-  output wire                if_rw_valid,
-  input wire                 if_rw_ready,
+  output wire                           if_rw_valid,
+  input wire                            if_rw_ready,
   input wire [`YSYX210611_REG_BUS]      if_r_data,
   output wire [`YSYX210611_REG_BUS]     if_rw_addr,
-  output wire [1 : 0]        if_rw_size,
-  input wire [1 : 0]         if_rw_resp,
+  output wire [1 : 0]                   if_rw_size,
+  input wire [1 : 0]                    if_rw_resp,
   
   // mem stage
-  output wire                mem_rw_valid,
-  input wire                 mem_rw_ready,
-  output wire                mem_rw_req,
+  output wire                           mem_rw_valid,
+  input wire                            mem_rw_ready,
+  output wire                           mem_rw_req,
   input wire [`YSYX210611_REG_BUS]      mem_r_data,
   output wire [`YSYX210611_REG_BUS]     mem_w_data,
   output wire [`YSYX210611_REG_BUS]     mem_rw_addr,
-  output wire [1 : 0]        mem_rw_size,
-  input wire [1 : 0]         mem_rw_resp,
+  output wire [1 : 0]                   mem_rw_size,
+  input wire [1 : 0]                    mem_rw_resp,
 
   input wire [`YSYX210611_ITRP_BUS]     clint_interupt_bus
 );
@@ -1811,8 +1811,8 @@ module ysyx_210611_cpu(
   wire if_to_id_valid, id_to_ex_valid, ex_to_mem_valid, mem_to_wb_valid;
   wire id_allowin, ex_allowin, mem_allowin, wb_allowin;
   wire ex_to_mem_handshake;
-  wire [`YSYX210611_REG_BUS] if_to_id_pc, id_to_ex_pc;
-  wire [`YSYX210611_INST_BUS] if_to_id_inst, id_to_ex_inst;
+  wire [`YSYX210611_REG_BUS]                if_to_id_pc, id_to_ex_pc;
+  wire [`YSYX210611_INST_BUS]               if_to_id_inst, id_to_ex_inst;
   wire [`YSYX210611_ID_TO_EX_WIDTH-1:0]     id_to_ex_bus;
   wire [`YSYX210611_EX_TO_MEM_WIDTH-1:0]    ex_to_mem_bus;
   wire [`YSYX210611_MEM_TO_WB_WIDTH-1:0]    mem_to_wb_bus;
@@ -2038,19 +2038,19 @@ module ysyx_210611_cpu(
 endmodule
 
 module ysyx_210611_csrfile(
-  input wire                              clk,
-  input wire                              rst,
+  input wire                                         clk,
+  input wire                                         rst,
   
-  input wire                              csr_wr_clk,
+  input wire                                         csr_wr_clk,
   
   // id stage
-  input wire                              csr_rd_ena,
-  input wire [11 : 0]                     csr_rd_addr,
+  input wire                                         csr_rd_ena,
+  input wire [11 : 0]                                csr_rd_addr,
   output wire [`YSYX210611_REG_BUS]                  csr_rd_data,
   
   // wb stage
-  input wire                              csr_wr_ena,
-  input wire [11 : 0]                     csr_wr_addr,
+  input wire                                         csr_wr_ena,
+  input wire [11 : 0]                                csr_wr_addr,
   input wire [`YSYX210611_REG_BUS]                   csr_wr_data,
   
   // exception
@@ -2058,12 +2058,12 @@ module ysyx_210611_csrfile(
   input wire [`YSYX210611_EXCP_WR_WIDTH-1:0]         csr_excp_wr_bus,
   
   // exception read and write
-  input wire                              excp_enter,
-  input wire                              excp_exit
+  input wire                                         excp_enter,
+  input wire                                         excp_exit
   );
   
   wire [`YSYX210611_REG_BUS] mip_wr_data, mstatus_wr_data, mepc_wr_data,
-                  mcause_wr_data, mtval_wr_data;
+                             mcause_wr_data, mtval_wr_data;
   
   wire excp_enter_wr = excp_enter && csr_wr_clk;
   wire excp_exit_wr  = excp_exit  && csr_wr_clk;
@@ -2465,18 +2465,18 @@ module ysyx_210611_ex_stage_alu(
   wire [`YSYX210611_REG_BUS] wri_res = op1;
 
   wire [`YSYX210611_REG_BUS] temp_output = ( 
-                      ({64{op_sll}}    & sll_res)
-                    | ({64{op_srl}}    & srl_res)
-                    | ({64{op_sra}}    & sra_res)
-                    | ({64{op_slt}}    & slt_res)
-                    | ({64{op_sltu}}   & sltu_res)
-                    | ({64{op_add | op_sub}} & add_res[63 : 0])
-                    | ({64{op_xor}}    & xor_res)
-                    | ({64{op_or}}     & or_res)
-                    | ({64{op_and}}    & and_res)
-                    | ({64{op_andn}}  & andn_res)
-                    | ({64{op_wri}}   & wri_res)
-                      );
+                                 ({64{op_sll}}    & sll_res)
+                               | ({64{op_srl}}    & srl_res)
+                               | ({64{op_sra}}    & sra_res)
+                               | ({64{op_slt}}    & slt_res)
+                               | ({64{op_sltu}}   & sltu_res)
+                               | ({64{op_add | op_sub}} & add_res[63 : 0])
+                               | ({64{op_xor}}    & xor_res)
+                               | ({64{op_or}}     & or_res)
+                               | ({64{op_and}}    & and_res)
+                               | ({64{op_andn}}  & andn_res)
+                               | ({64{op_wri}}   & wri_res)
+                                 );
   assign alu_output = {is_word_opt ? {32{temp_output[31]}} : temp_output[63 : 32], temp_output[31 : 0]};
   
   wire eq_res = ~(|xor_res);
@@ -2507,43 +2507,43 @@ module ysyx_210611_ex_stage_bj (
 endmodule
 
 module ysyx_210611_ex_stage(
-  input wire                              clk,
-  input wire                              rst,
+  input wire                                         clk,
+  input wire                                         rst,
   
   // pipeline control
-  input wire                              id_to_ex_valid,
+  input wire                                         id_to_ex_valid,
   input wire [`YSYX210611_REG_BUS]                   id_to_ex_pc,
   input wire [`YSYX210611_INST_BUS]                  id_to_ex_inst,
   input wire [`YSYX210611_ID_TO_EX_WIDTH-1:0]        id_to_ex_bus,
-  output wire                             ex_allowin,
+  output wire                                        ex_allowin,
 
-  output wire                             ex_to_mem_valid,
+  output wire                                        ex_to_mem_valid,
   output wire [`YSYX210611_EX_TO_MEM_WIDTH-1:0]      ex_to_mem_bus,
-  input wire                              mem_allowin,
+  input wire                                         mem_allowin,
   
   input wire [`YSYX210611_MEM_FORWARD_WIDTH-1:0]     mem_forward_bus,
   input wire [`YSYX210611_WB_FORWARD_WIDTH-1:0]      wb_forward_bus,
   
-  input wire                              if_bj_ready,
+  input wire                                         if_bj_ready,
   output wire [`YSYX210611_BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus,
 
   // csr control
-  input wire                              csr_wr_clk,
-  output wire                             csr_wr_ena,
-  output wire [11 : 0]                    csr_wr_addr,
+  input wire                                         csr_wr_clk,
+  output wire                                        csr_wr_ena,
+  output wire [11 : 0]                               csr_wr_addr,
   output wire [`YSYX210611_REG_BUS]                  csr_wr_data,
 
   // exception
-  output wire                             excp_enter,
-  output wire                             excp_exit,
+  output wire                                        excp_enter,
+  output wire                                        excp_exit,
   input wire [`YSYX210611_EXCP_RD_WIDTH-1:0]         csr_excp_rd_bus,
   output wire [`YSYX210611_EXCP_WR_WIDTH-1:0]        csr_excp_wr_bus,
   input wire [`YSYX210611_ITRP_BUS]                  clint_interupt_bus,
 
-  output wire                             ex_rs1_r_ena,
-  output wire [4 : 0]                     ex_rs1_addr,
-  output wire                             ex_rs2_r_ena,
-  output wire [4 : 0]                     ex_rs2_addr,
+  output wire                                        ex_rs1_r_ena,
+  output wire [4 : 0]                                ex_rs1_addr,
+  output wire                                        ex_rs2_r_ena,
+  output wire [4 : 0]                                ex_rs2_addr,
   input wire [`YSYX210611_REG_BUS]                   rs1_data,
   input wire [`YSYX210611_REG_BUS]                   rs2_data
   );
@@ -2556,34 +2556,34 @@ module ysyx_210611_ex_stage(
   wire [`YSYX210611_INST_BUS]       ex_inst;
   wire [`YSYX210611_REG_BUS]        ex_pc;
   wire [`YSYX210611_REG_BUS]        ex_op1, ex_op2;
-  wire                   ex_use_rs1, ex_use_rs2;
-  wire                   ex_is_word_opt;
+  wire                              ex_use_rs1, ex_use_rs2;
+  wire                              ex_is_word_opt;
   wire [`YSYX210611_ALU_BUS]        ex_alu_info;
   wire [`YSYX210611_BJ_BUS]         ex_bj_info;
   wire [`YSYX210611_REG_BUS]        ex_jmp_imm;
 
   wire [`YSYX210611_LOAD_BUS]       ex_load_info;
   wire [`YSYX210611_SAVE_BUS]       ex_save_info;
-  wire                   ex_ram_rd_ena, ex_ram_wr_ena;
+  wire                              ex_ram_rd_ena, ex_ram_wr_ena;
   
   wire [`YSYX210611_REG_CTRL_BUS]   ex_reg_wr_ctrl;
-  wire                   ex_reg_wr_ena, ex_csr_wr_ena;
-  wire [4 : 0]           ex_reg_wr_addr;
-  wire [11: 0]           ex_csr_wr_addr;
+  wire                              ex_reg_wr_ena, ex_csr_wr_ena;
+  wire [4 : 0]                      ex_reg_wr_addr;
+  wire [11: 0]                      ex_csr_wr_addr;
   wire [`YSYX210611_REG_BUS]        ex_csr_rd_data;
   
   wire [`YSYX210611_EXCP_BUS]       ex_excp_bus;
-  wire                   itrp_allowin;
-  wire                   ex_excp_exit, ex_excp_enter;
+  wire                              itrp_allowin;
+  wire                              ex_excp_exit, ex_excp_enter;
 
-  wire [`YSYX210611_REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
+  wire [`YSYX210611_REG_BUS]        rs1_forward, rs2_forward, true_op1, true_op2;
 
-  wire [`YSYX210611_REG_BUS]    ex_bj_pc, excp_jmp_pc;
-  wire               ex_bj_ena, excp_jmp_ena;
-  wire               ex_bj_valid; // 1: not finish the computation of branch
+  wire [`YSYX210611_REG_BUS]        ex_bj_pc, excp_jmp_pc;
+  wire                              ex_bj_ena, excp_jmp_ena;
+  wire                              ex_bj_valid; // 1: not finish the computation of branch
   
-  wire [`YSYX210611_REG_BUS] ex_ram_wr_src;
-  wire [`YSYX210611_REG_BUS] ex_data;
+  wire [`YSYX210611_REG_BUS]        ex_ram_wr_src;
+  wire [`YSYX210611_REG_BUS]        ex_data;
 
   // read GPRs
   assign ex_rs1_r_ena = 1'b1;
@@ -2922,8 +2922,8 @@ endmodule
 
 module ysyx_210611_forward (
   // forward control
-  input wire [4 : 0]                  ex_rs1_addr,
-  input wire [4 : 0]                  ex_rs2_addr,
+  input wire [4 : 0]                             ex_rs1_addr,
+  input wire [4 : 0]                             ex_rs2_addr,
   //input wire [12: 0] csr_addr,
   input wire [`YSYX210611_REG_BUS]               ex_rs1_data,
   input wire [`YSYX210611_REG_BUS]               ex_rs2_data,
@@ -2934,7 +2934,7 @@ module ysyx_210611_forward (
   output wire [`YSYX210611_REG_BUS]              rs1_forward,
   output wire [`YSYX210611_REG_BUS]              rs2_forward,
 
-  output wire                         hazard
+  output wire                                    hazard
 );
   
   wire [4:0] mem_reg_wr_addr, wb_reg_wr_addr;
@@ -3003,27 +3003,27 @@ module ysyx_210611_forward (
 endmodule
 
 module ysyx_210611_id_stage(
-  input wire                             rst,
-  input wire                             clk,
+  input wire                                        rst,
+  input wire                                        clk,
 
   // pipeline control
-  input wire                             if_to_id_valid,
+  input wire                                        if_to_id_valid,
   input wire [`YSYX210611_REG_BUS]                  if_to_id_pc,
   input wire [`YSYX210611_INST_BUS]                 if_to_id_inst,
-  output wire                            id_allowin,
+  output wire                                       id_allowin,
 
-  output wire                            id_to_ex_valid,
+  output wire                                       id_to_ex_valid,
   output wire [`YSYX210611_REG_BUS]                 id_to_ex_pc,
   output wire [`YSYX210611_INST_BUS]                id_to_ex_inst,
   output wire [`YSYX210611_ID_TO_EX_WIDTH-1:0]      id_to_ex_bus,
-  input wire                             ex_allowin,
+  input wire                                        ex_allowin,
 
   // data from regfile and CSRs
   input wire [`YSYX210611_REG_BUS]                  csr_data,
   
   // control csr
-  output wire                            csr_rd_ena,
-  output wire [11: 0]                    csr_rd_addr,
+  output wire                                       csr_rd_ena,
+  output wire [11: 0]                               csr_rd_addr,
 
   input wire [`YSYX210611_BJ_CTRL_WIDTH-1:0]        bj_ctrl_bus
 );
@@ -3405,28 +3405,26 @@ module ysyx_210611_id_stage(
 endmodule
 
 module ysyx_210611_if_stage(
-  input wire                          clk,
-  input wire                          rst,
+  input wire                                     clk,
+  input wire                                     rst,
   
   // pipeline control
-  output wire                         if_to_id_valid,
+  output wire                                    if_to_id_valid,
   output wire [`YSYX210611_REG_BUS]              if_to_id_pc,
   output wire [`YSYX210611_INST_BUS]             if_to_id_inst,
-  input wire                          id_allowin,
+  input wire                                     id_allowin,
   
   // branch and jump control
-  output wire                         if_bj_ready,
+  output wire                                    if_bj_ready,
   input wire [`YSYX210611_BJ_CTRL_WIDTH-1:0]     bj_ctrl_bus,
-  //input wire                          excp_jmp_ena,
-  //input wire [`YSYX210611_REG_BUS]               excp_pc,
 
   // AXI4
-  output wire                         if_axi_valid, // master is valid
-  input wire                          if_axi_ready, // slave is ready
+  output wire                                    if_axi_valid, // master is valid
+  input wire                                     if_axi_ready, // slave is ready
   input wire [`YSYX210611_REG_BUS]               if_axi_data_read,
   output reg [`YSYX210611_REG_BUS]               if_axi_addr,
-  output wire [1:0]                   if_axi_size,
-  input wire [1:0]                    if_axi_resp
+  output wire [1:0]                              if_axi_size,
+  input wire [1:0]                               if_axi_resp
   );
   
   wire [`YSYX210611_REG_BUS] bj_pc;
@@ -3539,31 +3537,31 @@ module ysyx_210611_if_stage(
 endmodule
 
 module ysyx_210611_mem_stage(
-  input  wire                              clk,
-  input  wire                              rst,
+  input  wire                                         clk,
+  input  wire                                         rst,
   
   // pipeline control
-  input wire                               ex_to_mem_valid,
+  input wire                                          ex_to_mem_valid,
   input wire [`YSYX210611_EX_TO_MEM_WIDTH-1:0]        ex_to_mem_bus,
-  output wire                              mem_allowin,
-  output wire                              ex_to_mem_handshake,
+  output wire                                         mem_allowin,
+  output wire                                         ex_to_mem_handshake,
 
-  output wire                              mem_to_wb_valid,
+  output wire                                         mem_to_wb_valid,
   output wire [`YSYX210611_MEM_TO_WB_WIDTH-1:0]       mem_to_wb_bus,
-  input wire                               wb_allowin,
+  input wire                                          wb_allowin,
   
   // pipeline forward control
   output wire [`YSYX210611_MEM_FORWARD_WIDTH-1:0]     mem_forward_bus,
 
   // custom interface
-  output wire                              mem_rw_valid,
-  input  wire                              mem_rw_ready,
-  output wire                              mem_rw_req,
+  output wire                                         mem_rw_valid,
+  input  wire                                         mem_rw_ready,
+  output wire                                         mem_rw_req,
   input  wire [`YSYX210611_REG_BUS]                   mem_r_data,
   output wire [`YSYX210611_REG_BUS]                   mem_w_data,
   output wire [`YSYX210611_REG_BUS]                   mem_rw_addr,
-  output wire [1 : 0]                      mem_rw_size,
-  input  wire [1 : 0]                      mem_rw_resp
+  output wire [1 : 0]                                 mem_rw_size,
+  input  wire [1 : 0]                                 mem_rw_resp
   );
 
   // pipeline control
@@ -3576,8 +3574,8 @@ module ysyx_210611_mem_stage(
   wire [`YSYX210611_SAVE_BUS] mem_save_info;
   wire [`YSYX210611_REG_BUS]  mem_ram_wr_src;
   wire [`YSYX210611_REG_BUS]  mem_addr, mem_csr_rd_data;
-  wire             mem_ram_rd_ena;
-  wire             mem_ram_wr_ena;
+  wire                        mem_ram_rd_ena;
+  wire                        mem_ram_wr_ena;
   
   // wb stage
   wire [2  : 0]    mem_reg_wr_ctrl;
