@@ -34,9 +34,10 @@ module cpu(
   output wire                uart_out_valid,
   output wire [7 : 0]        uart_out_char,
 
-  input wire [`ITRP_BUS]     clint_interupt_bus,
+  input wire [`ITRP_BUS]     clint_interupt_bus
 
-  output wire [`REG_BUS]     dbgregs_0,   //直接接到RegFile中去
+`ifdef DLCOENV
+  ,output wire [`REG_BUS]     dbgregs_0,   //直接接到RegFile中去
 	output wire [`REG_BUS]     dbgregs_1,
 	output wire [`REG_BUS]     dbgregs_2,
 	output wire [`REG_BUS]     dbgregs_3,
@@ -72,6 +73,7 @@ module cpu(
   output wire                done,
   output wire                wb,
   output wire [`REG_BUS]     dbg_pc
+`endif
 );
 
   // pipeline control
@@ -522,7 +524,7 @@ module cpu(
     .coreid             (0),
     .priviledgeMode     (`RISCV_PRIV_MODE_M),
     .mstatus            (cmt_mstatus),
-    .sstatus            (cmt_mstatus & 64'h80000003000de122),
+    .sstatus            (0),
     .mepc               (cmt_mepc),
     .sepc               (0),
     .mtval              (cmt_mtval),
@@ -533,7 +535,7 @@ module cpu(
     .scause             (0),
     .satp               (0),
     .mip                (0),
-    .mie                (cmt_mie),
+    .mie                (0),
     .mscratch           (cmt_mscratch),
     .sscratch           (0),
     .mideleg            (0),
@@ -609,9 +611,10 @@ module cpu(
     .storeData          (cmt_w_data),
     .storeMask          (cmt_w_mask)
   );
-
+  
 `endif
 
+`ifdef DLCOENV
   assign dbgregs_0 = regs[0];
 	assign dbgregs_1 = regs[1];
 	assign dbgregs_2 = regs[2];
@@ -648,5 +651,6 @@ module cpu(
   assign dbg_pc = wb_pc;
   assign done   = wb_inst == 32'hdead10cc;
   assign wb     = wb_commit;
-  
+`endif
+
 endmodule
