@@ -54,24 +54,24 @@ module wb_stage (
     end
   end
   
-  wire [`REG_BUS] wb_pc;
-  wire [31 : 0]   wb_inst;
-  wire            wb_wen;
-  wire [4  : 0]   wb_wdest;
+  wire [`REG_BUS]  wb_pc;
+  wire [`INST_BUS] wb_inst;
+  wire             wb_wen;
+  wire [4 : 0]     wb_wdest;
   
   assign wb_pc = mem_to_wb_pc_r;
   assign wb_inst = mem_to_wb_inst_r;
   assign {
     // serial port output
-    wb_uart_out_valid, // 305:305
-    wb_uart_out_char,  // 304:297
+    wb_uart_out_valid, // 113:113
+    wb_uart_out_char,  // 112:105
     
-    wb_wen,         // 200:200
-    wb_wdest,       // 199:195
-    wb_reg_wr_ctrl, // 194:192
-    wb_ex_data,     // 191:0
-    wb_mem_rd_data,    // 127:0
-    wb_csr_rd_data     // 63 :0
+    wb_wen,            // 104:104
+    wb_wdest,          // 103:99
+    wb_reg_wr_ctrl,    // 98 :96
+    wb_ex_data,        // 95 :64
+    wb_mem_rd_data,    // 63 :32
+    wb_csr_rd_data     // 31 :0
   } = mem_to_wb_bus_r & {`MEM_TO_WB_WIDTH{wb_valid}};
 
   // write in
@@ -85,25 +85,25 @@ module wb_stage (
   wire csr_to_reg = wb_reg_wr_ctrl[`CSR_TO_REG];
   
   wire [`EXCP_BUS] wb_excp_bus;
-  assign reg_wr_data = {64{~rst}} & (
-      ({64{mem_to_reg}} & wb_mem_rd_data)
-    | ({64{ex_to_reg}}  & wb_ex_data)
-    | ({64{csr_to_reg}} & wb_csr_rd_data)
+  assign reg_wr_data = {32{~rst}} & (
+      ({32{mem_to_reg}} & wb_mem_rd_data)
+    | ({32{ex_to_reg}}  & wb_ex_data)
+    | ({32{csr_to_reg}} & wb_csr_rd_data)
   );
   
   wire wb_commit = wb_valid;
   assign difftest_bus = {
     mem_to_wb_diffbus_r,
-    wb_pc,       // 96 :33
+    wb_pc,       // 64 :33
     wb_inst,     // 32 :1
     wb_commit    // 0  :0
   };
 
   assign wb_forward_bus = {
-    reg_wr_addr,       // 136:132
-    reg_wr_ena,        // 131:131
-    wb_ex_data,        // 130:67
-    wb_mem_rd_data,    // 66 :3
+    reg_wr_addr,       // 72 :68
+    reg_wr_ena,        // 67 :67
+    wb_ex_data,        // 66 :35
+    wb_mem_rd_data,    // 34 :3
     wb_reg_wr_ctrl     // 2  :0
   };
 endmodule

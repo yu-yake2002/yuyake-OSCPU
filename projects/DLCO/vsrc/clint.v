@@ -4,10 +4,10 @@
 `include "defines.v"
 
 module clint # (
-  parameter RW_DATA_WIDTH     = 64,
-  parameter RW_ADDR_WIDTH     = 64,
-  parameter AXI_DATA_WIDTH    = 64,
-  parameter AXI_ADDR_WIDTH    = 64,
+  parameter RW_DATA_WIDTH     = 32,
+  parameter RW_ADDR_WIDTH     = 32,
+  parameter AXI_DATA_WIDTH    = 32,
+  parameter AXI_ADDR_WIDTH    = 32,
   parameter AXI_ID_WIDTH      = 4,
   parameter AXI_USER_WIDTH    = 1
 )(
@@ -71,7 +71,7 @@ module clint # (
 
   // CLINT CSRs
   reg [31 : 0]   csr_msip;
-  reg [`REG_BUS] csr_mtime, csr_mtimecmp;
+  reg [63 : 0] csr_mtime, csr_mtimecmp;
 
   wire ar_hs  = ar_valid_i && ar_ready_o;
   wire r_hs   = r_valid_o  && r_ready_i;
@@ -101,16 +101,13 @@ module clint # (
   
   // ar bus
   assign ar_ready_o = r_state_idle && ar_valid_i;
-  reg [63:0] rd_addr_reg;
-  reg [3:0]  rd_id_reg;
-  reg        rd_user_reg;
-  reg [2:0]  rd_size_reg;
+  reg [`REG_BUS]           rd_addr_reg;
+  reg [AXI_ID_WIDTH-1:0]   rd_id_reg;
+  reg [AXI_USER_WIDTH-1:0] rd_user_reg;
+  reg [2:0]                rd_size_reg;
   always @(posedge clk) begin
     if (rst) begin
-      rd_addr_reg <= 63'b0; 
-      rd_id_reg   <= 4'b0;
-      rd_user_reg <= 1'b0;
-      rd_size_reg <= 3'b0;
+      {rd_addr_reg, rd_id_reg, rd_user_reg, rd_size_reg} <= 0; 
     end
     else if (ar_hs) begin
       rd_addr_reg <= ar_addr_i;
@@ -126,28 +123,26 @@ module clint # (
   wire rd_size_b = rd_size_reg == 3'b000;
   wire rd_size_h = rd_size_reg == 3'b001;
   wire rd_size_w = rd_size_reg == 3'b010;
-  wire rd_size_d = rd_size_reg == 3'b011;
 
   // r bus
-  assign r_valid_o = R_STATE_READ;
+  assign r_valid_o = r_state_read;
   assign r_resp_o  = 2'b0;
-
-  wire msip_rd_ena     = (rd_addr_reg == 64'h00000000_02000000);
-  wire mtimecmp_rd_ena = (rd_addr_reg == 64'h00000000_02004000);
-  wire mtime_rd_ena    = (rd_addr_reg == 64'h00000000_0200BFF8);
+  
+  wire msip_rd_ena     = (rd_addr_reg[31:2] == 30'h800000);
+  wire mtimecmp_rd_ena = (rd_addr_reg[31:3] == 29'h400800);
+  wire mtime_rd_ena    = (rd_addr_reg[31:3] == 29'h4017FF);
   wire [63:0] clint_val = (
       ({64{msip_rd_ena}}     & {{32{csr_msip[31]}}, csr_msip})
     | ({64{mtimecmp_rd_ena}} & csr_mtimecmp)
     | ({64{mtime_rd_ena}}    & csr_mtime)
   ) >> rd_addr_reg[2:0];
   assign r_data_o  = (
-      ({64{rd_size_b}} & {8{clint_val[7:0]}})
-    | ({64{rd_size_h}} & {4{clint_val[15:0]}})
-    | ({64{rd_size_w}} & {2{clint_val[31:0]}})
-    | ({64{rd_size_d}} & {1{clint_val[63:0]}})
+      ({32{rd_size_b}} & {4{clint_val[7:0]}})
+    | ({32{rd_size_h}} & {2{clint_val[15:0]}})
+    | ({32{rd_size_w}} & {1{clint_val[31:0]}})
   );
 
-  assign r_last_o  = R_STATE_READ;
+  assign r_last_o  = r_state_read;
   assign r_id_o    = rd_id_reg;
   assign r_user_o  = rd_user_reg;
   
@@ -189,7 +184,7 @@ module clint # (
   reg [2:0]                wr_size_reg;
   always @(posedge clk) begin
     if (rst) begin
-      {wr_addr_reg, wr_id_reg, wr_user_reg} <= `ZERO_WORD;
+      {wr_addr_reg, wr_id_reg, wr_user_reg} <= 0;
       wr_size_reg <= 3'b0;
     end
     else if (aw_hs) begin
@@ -206,17 +201,15 @@ module clint # (
   wire wr_size_b = wr_size_reg == 3'b000;
   wire wr_size_h = wr_size_reg == 3'b001;
   wire wr_size_w = wr_size_reg == 3'b010;
-  wire wr_size_d = wr_size_reg == 3'b011;
   // w bus
-  assign w_ready_o = W_STATE_WRITE && w_valid_i;
+  assign w_ready_o = w_state_write && w_valid_i;
   wire [7:0] mask_size  = (
-      ({8{wr_size_b}} & 8'b00000001)
-    | ({8{wr_size_h}} & 8'b00000011)
-    | ({8{wr_size_w}} & 8'b00001111)
-    | ({8{wr_size_d}} & 8'b11111111)
+      ({8{wr_size_b}} & 8'b0001)
+    | ({8{wr_size_h}} & 8'b0011)
+    | ({8{wr_size_w}} & 8'b1111)
   ) << wr_addr_reg[2:0];
-  wire [7:0] mask_8bits = w_strb_i & mask_size;
-  wire [`REG_BUS] wr_mask = {
+  wire [7:0] mask_8bits = ({4'b0, w_strb_i} << wr_addr_reg[2:0]) & mask_size;
+  wire [63:0] wr_mask = {
     {8{mask_8bits[7]}},
     {8{mask_8bits[6]}},
     {8{mask_8bits[5]}},
@@ -226,9 +219,9 @@ module clint # (
     {8{mask_8bits[1]}},
     {8{mask_8bits[0]}}
   };
-  wire msip_wr_ena     = (wr_addr_reg == 64'h00000000_02000000);
-  wire mtimecmp_wr_ena = (wr_addr_reg == 64'h00000000_02004000);
-  wire mtime_wr_ena    = (wr_addr_reg == 64'h00000000_0200BFF8);
+  wire msip_wr_ena     = (wr_addr_reg[31:2] == 30'h800000);
+  wire mtimecmp_wr_ena = (wr_addr_reg[31:3] == 29'h400800);
+  wire mtime_wr_ena    = (wr_addr_reg[31:3] == 29'h4017FF);
   // msip
   always @(posedge clk) begin
     if (rst) begin
@@ -242,10 +235,10 @@ module clint # (
   // mtimecmp
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtimecmp <= `ZERO_WORD;
+      csr_mtimecmp <= 64'b0;
     end
     else if (w_hs && mtimecmp_wr_ena) begin
-        csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & w_data_i);
+        csr_mtimecmp <= (~wr_mask & csr_mtimecmp) | (wr_mask & (wr_addr_reg[2] ? {w_data_i, 32'b0} : {32'b0, w_data_i}));
     end
   end
   /*
@@ -264,10 +257,10 @@ module clint # (
   // mtime
   always @(posedge clk) begin
     if (rst) begin
-      csr_mtime <= `ZERO_WORD;
+      csr_mtime <= 64'b0;
     end
     else if (w_hs && mtime_wr_ena) begin
-      csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & w_data_i);
+      csr_mtime <= (~wr_mask & csr_mtime) | (wr_mask & (wr_addr_reg[2] ? {w_data_i, 32'b0} : {32'b0, w_data_i}));
     end 
     else begin
       //csr_mtime <= csr_mtime + add_ctime;

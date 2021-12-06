@@ -7,38 +7,37 @@
 `define RISCV_PRIV_MODE_S   1
 `define RISCV_PRIV_MODE_M   3
 
-`define ZERO_WORD  64'h00000000_00000000
-`define PC_START   64'h00000000_80000000
-`define REG_BUS    63 : 0
+`define ZERO_WORD  32'h00000000
+`define PC_START   32'h80000000
+`define REG_BUS    31 : 0
 `define INST_BUS   31 : 0
 
-`define ID_TO_EX_WIDTH        344
-`define EX_TO_MEM_WIDTH       223
-`define MEM_TO_WB_WIDTH       210
+`define ID_TO_EX_WIDTH        210
+`define EX_TO_MEM_WIDTH       124
+`define MEM_TO_WB_WIDTH       114
 
-`define BJ_CTRL_WIDTH         66
-`define MEM_FORWARD_WIDTH     73
-`define WB_FORWARD_WIDTH      137
+`define BJ_CTRL_WIDTH         34
+`define MEM_FORWARD_WIDTH     41
+`define WB_FORWARD_WIDTH      73
 
 `define ID_TO_EX_DIFF_WIDTH   1
-`define CSR_TO_EX_DIFF_WIDTH  512
+`define CSR_TO_EX_DIFF_WIDTH  256
 `define EX_TO_MEM_DIFF_WIDTH  64+`CSR_TO_EX_DIFF_WIDTH+`ID_TO_EX_DIFF_WIDTH
-`define MEM_TO_WB_DIFF_WIDTH  138+`EX_TO_MEM_DIFF_WIDTH
-`define WB_DIFFTEST_WIDTH     97+`MEM_TO_WB_DIFF_WIDTH
+`define MEM_TO_WB_DIFF_WIDTH  70+`EX_TO_MEM_DIFF_WIDTH
+`define WB_DIFFTEST_WIDTH     65+`MEM_TO_WB_DIFF_WIDTH
 
 
-`define EXCP_RD_WIDTH       320
-`define EXCP_WR_WIDTH       320
+`define EXCP_RD_WIDTH       160
+`define EXCP_WR_WIDTH       160
 
-`define AXI_ADDR_WIDTH      64
-`define AXI_DATA_WIDTH      64
+`define AXI_ADDR_WIDTH      32
+`define AXI_DATA_WIDTH      32
 `define AXI_ID_WIDTH        4
 `define AXI_USER_WIDTH      1
 
 `define SIZE_B              2'b00
 `define SIZE_H              2'b01
 `define SIZE_W              2'b10
-`define SIZE_D              2'b11
 
 `define REQ_READ            1'b0
 `define REQ_WRITE           1'b1
@@ -65,22 +64,20 @@
 `define BJ_BGEU 5
 `define BJ_JALR 6
 `define BJ_JAL  7
-`define BJ_BUS  7 : 0
+`define BJ_HALT 8
+`define BJ_BUS  8 : 0
 
 `define LOAD_LB  0
 `define LOAD_LH  1
 `define LOAD_LW  2
-`define LOAD_LD  3
-`define LOAD_LBU 4
-`define LOAD_LHU 5
-`define LOAD_LWU 6
-`define LOAD_BUS 6 : 0
+`define LOAD_LBU 3
+`define LOAD_LHU 4
+`define LOAD_BUS 4 : 0
 
 `define SAVE_SB  0
 `define SAVE_SH  1
 `define SAVE_SW  2
-`define SAVE_SD  3
-`define SAVE_BUS 3 : 0
+`define SAVE_BUS 2 : 0
 
 `define INST_I_LOAD        0
 `define INST_I_FENCE       1

@@ -60,24 +60,24 @@ module csrfile(
   wire mstatus_wr_ena = sel_wr_mstatus && csr_wr_ena && csr_wr_clk;
   wire [`REG_BUS] mstatus_wr_data_full = {
     (mstatus_wr_data[14:13] == 2'b11) || (mstatus_wr_data[16:15] == 2'b11),
-    mstatus_wr_data[62:0]
+    mstatus_wr_data[30:0]
   };
   wire [`REG_BUS] csr_wr_data_full = {
     (csr_wr_data[14:13] == 2'b11) || (csr_wr_data[16:15] == 2'b11),
-    csr_wr_data[62:0]
+    csr_wr_data[30:0]
   };
 
   reg [`REG_BUS] csr_mstatus;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mstatus <= 64'h1880;
+      csr_mstatus <= 32'h1880;
     end
     else if (excp_wr) begin
-      csr_mstatus <= 64'h80000000_0001F888 & mstatus_wr_data_full;
+      csr_mstatus <= 32'h8001F888 & mstatus_wr_data_full;
     end
     else if (mstatus_wr_ena) begin
-      csr_mstatus <= 64'h80000000_0001F888 & csr_wr_data_full;
+      csr_mstatus <= 32'h8001F888 & csr_wr_data_full;
     end
   end
 
@@ -132,7 +132,7 @@ module csrfile(
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mie <= 64'h888;  // only for machine mode
+      csr_mie <= 32'h888;  // only for machine mode
     end
     else if (mie_wr_ena) begin
       csr_mie <= csr_wr_data;
@@ -236,7 +236,7 @@ module csrfile(
   
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mtval <= 64'b0;
+      csr_mtval <= `ZERO_WORD;
     end
     else if (excp_enter_wr) begin
       csr_mtval <= mtval_wr_data;
@@ -271,7 +271,7 @@ module csrfile(
   */
   always @(posedge clk) begin
     if (rst == 1'b1) begin
-      csr_mip <= 64'h80;
+      csr_mip <= 32'h80;
     end
     else begin
       csr_mip <= mip_wr_data;
@@ -295,11 +295,11 @@ module csrfile(
       csr_mcycle <= csr_wr_data;
     end
     else begin
-      csr_mcycle <= csr_mcycle + 64'b1;
+      csr_mcycle <= csr_mcycle + 32'b1;
     end
   end
 
-  wire [`REG_BUS] mcycle_rd_data = mcycle_wr_ena ? csr_wr_data : (csr_mcycle + 64'b1);
+  wire [`REG_BUS] mcycle_rd_data = mcycle_wr_ena ? csr_wr_data : (csr_mcycle + 32'b1);
 
   // 0xF11 Machine Vendor ID Register
   wire sel_mvendorid = (csr_rd_addr == 12'hf11);
@@ -325,21 +325,21 @@ module csrfile(
   wire [`REG_BUS] csr_mhartid = `ZERO_WORD;
   wire [`REG_BUS] mhartid_rd_data = csr_mhartid;
 
-  assign csr_rd_data = {64{~rst}} & (
-      ({64{mstatus_rd_ena}}   & mstatus_rd_data)
-    | ({64{misa_rd_ena}}      & misa_rd_data)
-    | ({64{mie_rd_ena}}       & mie_rd_data)
-    | ({64{mtvec_rd_ena}}     & mtvec_rd_data)
-    | ({64{mscratch_rd_ena}}  & mscratch_rd_data)
-    | ({64{mepc_rd_ena}}      & mepc_rd_data)
-    | ({64{mcause_rd_ena}}    & mcause_rd_data)
-    | ({64{mtval_rd_ena}}     & mtval_rd_data)
-    | ({64{mip_rd_ena}}       & mip_rd_data)
-    | ({64{mcycle_rd_ena}}    & mcycle_rd_data)
-    | ({64{mvendorid_rd_ena}} & mvendorid_rd_data)
-    | ({64{marchid_rd_ena}}   & marchid_rd_data)
-    | ({64{mimpid_rd_ena}}    & mimpid_rd_data)
-    | ({64{mhartid_rd_ena}}   & mhartid_rd_data)
+  assign csr_rd_data = {32{~rst}} & (
+      ({32{mstatus_rd_ena}}   & mstatus_rd_data)
+    | ({32{misa_rd_ena}}      & misa_rd_data)
+    | ({32{mie_rd_ena}}       & mie_rd_data)
+    | ({32{mtvec_rd_ena}}     & mtvec_rd_data)
+    | ({32{mscratch_rd_ena}}  & mscratch_rd_data)
+    | ({32{mepc_rd_ena}}      & mepc_rd_data)
+    | ({32{mcause_rd_ena}}    & mcause_rd_data)
+    | ({32{mtval_rd_ena}}     & mtval_rd_data)
+    | ({32{mip_rd_ena}}       & mip_rd_data)
+    | ({32{mcycle_rd_ena}}    & mcycle_rd_data)
+    | ({32{mvendorid_rd_ena}} & mvendorid_rd_data)
+    | ({32{marchid_rd_ena}}   & marchid_rd_data)
+    | ({32{mimpid_rd_ena}}    & mimpid_rd_data)
+    | ({32{mhartid_rd_ena}}   & mhartid_rd_data)
   );
 
   assign csr_to_ex_diffbus = {

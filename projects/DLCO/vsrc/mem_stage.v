@@ -35,8 +35,6 @@ module mem_stage(
   output wire [1 : 0]                      mem_rw_size,
   input  wire [1 : 0]                      mem_rw_resp
   );
-  
-  wire debug = mem_rw_addr[63:4] == 56'h00000000_801cc68;
 
   // pipeline control
   reg mem_valid;
@@ -90,22 +88,22 @@ module mem_stage(
   assign mem_pc = ex_to_mem_pc_r;
   assign mem_inst = ex_to_mem_inst_r;
   assign {
-    mem_uart_out_valid, // 319:319
-    mem_uart_out_char,  // 318:311
+    mem_uart_out_valid, // 123:123
+    mem_uart_out_char,  // 122:115
 
     // mem
-    mem_load_info,   // 214:208
-    mem_save_info,   // 207:204
-    mem_ram_wr_src,  // 203:140
-    mem_addr,        // 139:76
-    mem_csr_rd_data,    // 75 :12
-    mem_ram_rd_ena,  // 11 :11
-    mem_ram_wr_ena,  // 10 :10
+    mem_load_info,   // 114:110
+    mem_save_info,   // 109:107
+    mem_ram_wr_src,  // 106:75
+    mem_addr,        // 74 :43
+    mem_csr_rd_data, // 42 :11
+    mem_ram_rd_ena,  // 10 :10
+    mem_ram_wr_ena,  // 9  :9
     
     // wb
-    mem_reg_wr_ctrl, // 9  :7
-    mem_reg_wr_addr, // 6  :2
-    mem_reg_wr_ena   // 1  :1
+    mem_reg_wr_ctrl, // 8  :6
+    mem_reg_wr_addr, // 5  :1
+    mem_reg_wr_ena   // 0  :0
   } = ex_to_mem_bus_r & {`EX_TO_MEM_WIDTH{mem_valid}};
   wire ex_ram_rd_ena = ex_to_mem_bus[10];
   wire ex_ram_wr_ena = ex_to_mem_bus[9];
@@ -115,15 +113,12 @@ module mem_stage(
   wire op_sb = mem_save_info[`SAVE_SB];
   wire op_sh = mem_save_info[`SAVE_SH];
   wire op_sw = mem_save_info[`SAVE_SW];
-  wire op_sd = mem_save_info[`SAVE_SD];
 
   wire op_lb  = mem_load_info[`LOAD_LB];
   wire op_lh  = mem_load_info[`LOAD_LH];
   wire op_lw  = mem_load_info[`LOAD_LW];
-  wire op_ld  = mem_load_info[`LOAD_LD];
   wire op_lbu = mem_load_info[`LOAD_LBU];
   wire op_lhu = mem_load_info[`LOAD_LHU];
-  wire op_lwu = mem_load_info[`LOAD_LWU];
   
   parameter IDLE = 2'b00, ADDR = 2'b01, RETN = 2'b10;
   reg [1:0] mem_state;
@@ -174,17 +169,15 @@ module mem_stage(
   assign mem_rw_valid = mem_state == ADDR;
   assign mem_rw_req = mem_ram_wr_ena;
   assign mem_w_data = mem_ram_wr_src & (
-      ({64{op_sb}} & 64'hff)
-    | ({64{op_sh}} & 64'hffff)
-    | ({64{op_sw}} & 64'hffffffff)
-    | ({64{op_sd}} & 64'hffffffffffffffff)
+      ({32{op_sb}} & 32'hff)
+    | ({32{op_sh}} & 32'hffff)
+    | ({32{op_sw}} & 32'hffffffff)
   );
   assign mem_rw_addr = mem_addr;
   assign mem_rw_size = (
       ({2{op_sb || op_lb || op_lbu}} & `SIZE_B)
     | ({2{op_sh || op_lh || op_lhu}} & `SIZE_H)
-    | ({2{op_sw || op_lw || op_lwu}} & `SIZE_W)
-    | ({2{op_sd || op_ld          }} & `SIZE_D)
+    | ({2{op_sw || op_lw          }} & `SIZE_W)
   );
   
 
@@ -192,13 +185,11 @@ module mem_stage(
   always @(posedge clk) begin
     if (mem_handshake) begin
       mem_data <= (
-          ({64{op_lb}} & {{56{mem_r_data[7 ]}}, mem_r_data[7  : 0]})
-        | ({64{op_lh}} & {{48{mem_r_data[15]}}, mem_r_data[15 : 0]})
-        | ({64{op_lw}} & {{32{mem_r_data[31]}}, mem_r_data[31 : 0]})
-        | ({64{op_ld}} & mem_r_data)
-        | ({64{op_lbu}} & {56'b0, mem_r_data[7  : 0]})
-        | ({64{op_lhu}} & {48'b0, mem_r_data[15 : 0]})
-        | ({64{op_lwu}} & {32'b0, mem_r_data[31 : 0]})
+          ({32{op_lb}} & {{24{mem_r_data[7 ]}}, mem_r_data[7  : 0]})
+        | ({32{op_lh}} & {{16{mem_r_data[15]}}, mem_r_data[15 : 0]})
+        | ({32{op_lw}} & mem_r_data[31 : 0])
+        | ({32{op_lbu}} & {24'b0, mem_r_data[7  : 0]})
+        | ({32{op_lhu}} & {16'b0, mem_r_data[15 : 0]})
       );
     end
   end
@@ -210,52 +201,37 @@ module mem_stage(
   wire size_b = mem_rw_size == `SIZE_B;
   wire size_h = mem_rw_size == `SIZE_H;
   wire size_w = mem_rw_size == `SIZE_W;
-  wire size_d = mem_rw_size == `SIZE_D;
-  wire addr0 = mem_rw_addr[2:0] == 3'b000;
-  wire addr1 = mem_rw_addr[2:0] == 3'b001;
-  wire addr2 = mem_rw_addr[2:0] == 3'b010;
-  wire addr3 = mem_rw_addr[2:0] == 3'b011;
-  wire addr4 = mem_rw_addr[2:0] == 3'b100;
-  wire addr5 = mem_rw_addr[2:0] == 3'b101;
-  wire addr6 = mem_rw_addr[2:0] == 3'b110;
-  wire addr7 = mem_rw_addr[2:0] == 3'b111;
+  wire addr0 = mem_rw_addr[1:0] == 2'b00;
+  wire addr1 = mem_rw_addr[1:0] == 2'b01;
+  wire addr2 = mem_rw_addr[1:0] == 2'b10;
+  wire addr3 = mem_rw_addr[1:0] == 2'b11;
   wire            difftest_s_valid = |mem_save_info;
   wire            difftest_l_valid = |mem_load_info;
-  wire [`REG_BUS] difftest_addr = {mem_addr[63:3], 3'b0};
+  wire [`REG_BUS] difftest_addr = {mem_addr[31:2], 2'b0};
   wire [`REG_BUS] difftest_data = (
-      ({64{size_b}} & {8{mem_w_data[7 :0]}})
-    | ({64{size_h}} & {4{mem_w_data[15:0]}})
-    | ({64{size_w}} & {2{mem_w_data[31:0]}})
-    | ({64{size_d}} & {1{mem_w_data[63:0]}})
+      ({32{size_b}} & {4{mem_w_data[7 :0]}})
+    | ({32{size_h}} & {2{mem_w_data[15:0]}})
+    | ({32{size_w}} & {1{mem_w_data[31:0]}})
   ) & (
-      {64{addr0 && size_d}} & 64'hffffffffffffffff
-    | {64{addr0 && size_w}} & 64'h00000000ffffffff
-    | {64{addr0 && size_h}} & 64'h000000000000ffff
-    | {64{addr0 && size_b}} & 64'h00000000000000ff
-    | {64{addr1 && size_b}} & 64'h000000000000ff00
-    | {64{addr2 && size_h}} & 64'h00000000ffff0000
-    | {64{addr2 && size_b}} & 64'h0000000000ff0000
-    | {64{addr3 && size_b}} & 64'h00000000ff000000
-    | {64{addr4 && size_w}} & 64'hffffffff00000000
-    | {64{addr4 && size_h}} & 64'h0000ffff00000000
-    | {64{addr4 && size_b}} & 64'h000000ff00000000
-    | {64{addr5 && size_b}} & 64'h0000ff0000000000
-    | {64{addr6 && size_h}} & 64'hffff000000000000
-    | {64{addr6 && size_b}} & 64'h00ff000000000000
-    | {64{addr7 && size_b}} & 64'hff00000000000000
+      ({32{addr0 && size_w}} & 32'hffffffff)
+    | ({32{addr0 && size_h}} & 32'h0000ffff)
+    | ({32{addr0 && size_b}} & 32'h000000ff)
+    | ({32{addr1 && size_b}} & 32'h0000ff00)
+    | ({32{addr2 && size_h}} & 32'hffff0000)
+    | ({32{addr2 && size_b}} & 32'h00ff0000)
+    | ({32{addr3 && size_b}} & 32'hff000000)
   );
-  wire [7:0]      difftest_mask = (
-      ({8{size_b}} & 8'b00000001)
-    | ({8{size_h}} & 8'b00000011)
-    | ({8{size_w}} & 8'b00001111)
-    | ({8{size_d}} & 8'b11111111)
+  wire [3:0] difftest_mask = (
+      ({4{size_b}} & 4'b0001)
+    | ({4{size_h}} & 4'b0011)
+    | ({4{size_w}} & 4'b1111)
   ) << mem_addr[2:0];
   assign mem_to_wb_diffbus = {
     ex_to_mem_diffbus_r,
 
-    difftest_addr,      // 137:74
-    difftest_data,      // 73 :10
-    difftest_mask,      // 9  :2
+    difftest_addr,      // 69 :38
+    difftest_data,      // 37 :6
+    difftest_mask,      // 5  :2
     difftest_s_valid,   // 1  :1
     difftest_l_valid    // 0  :0
   };
@@ -264,22 +240,22 @@ module mem_stage(
   assign mem_to_wb_inst = mem_inst;
   assign mem_to_wb_bus = {
     // serial port output
-    mem_uart_out_valid, // 305:305
-    mem_uart_out_char,  // 304:297
+    mem_uart_out_valid, // 113:113
+    mem_uart_out_char,  // 112:105
 
     // wb stage
-    mem_reg_wr_ena,  // 200:200
-    mem_reg_wr_addr, // 199:195
-    mem_reg_wr_ctrl, // 194:192
-    mem_ex_data,     // 191:0
-    mem_data,        // 127:0
-    mem_csr_rd_data  // 63 :0
+    mem_reg_wr_ena,  // 104:104
+    mem_reg_wr_addr, // 103:99
+    mem_reg_wr_ctrl, // 98 :96
+    mem_ex_data,     // 95 :64
+    mem_data,        // 63 :32
+    mem_csr_rd_data  // 31 :0
   };
 
   assign mem_forward_bus = {
-    mem_reg_wr_addr, // 72 :68
-    mem_reg_wr_ena,  // 67 :67
-    mem_ex_data,     // 66 :3
+    mem_reg_wr_addr, // 40 :35
+    mem_reg_wr_ena,  // 35 :35
+    mem_ex_data,     // 34 :3
     mem_reg_wr_ctrl  // 2  :0
   };
 endmodule

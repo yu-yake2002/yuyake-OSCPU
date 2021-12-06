@@ -107,40 +107,34 @@ module ex_stage(
   assign ex_pc = id_to_ex_pc_r;
   assign ex_inst = id_to_ex_inst_r;
   assign {
-    // serial port output
-    ex_uart_out_valid, // 575:575
-    
     // exception
-    ex_excp_exit,   // 566:566
-    ex_excp_bus,    // 565:550
+    ex_excp_exit,   // 209:208
+    ex_excp_bus,    // 208:193
 
     // -> ex
-    ex_rs1_addr,    // 451:447
-    ex_rs2_addr,    // 446:442
-    ex_op1,         // 441:378
-    ex_op2,         // 377:314
-    ex_use_rs1,     // 313:313
-    ex_use_rs2,     // 312:312
-    ex_is_word_opt, // 183:183
-    ex_alu_info,    // 182:171
-    ex_bj_info,     // 170:163
-    ex_jmp_imm,     // 162:99
+    ex_rs1_addr,    // 192:188
+    ex_rs2_addr,    // 187:183
+    ex_op1,         // 182:151
+    ex_op2,         // 150:119
+    ex_use_rs1,     // 118:118
+    ex_use_rs2,     // 117:117
+    ex_alu_info,    // 116:105
+    ex_bj_info,     // 104:96
+    ex_jmp_imm,     // 95 :64
     
     // -> mem
-    ex_load_info,   // 98 :92
-    ex_save_info,   // 91 :88
-    ex_ram_rd_ena,  // 87 :87
-    ex_ram_wr_ena,  // 86 :86
+    ex_load_info,   // 63 :59
+    ex_save_info,   // 58 :56
+    ex_ram_rd_ena,  // 55 :55
+    ex_ram_wr_ena,  // 54 :54
     
-    // -> reg
-    ex_reg_wr_ctrl, // 85: 83
-    ex_reg_wr_ena,  // 82: 82
-    ex_reg_wr_addr, // 81 :77
-
-    // -> csr
-    ex_csr_wr_ena,  // 76 :76
-    ex_csr_wr_addr, // 75 :64
-    ex_csr_rd_data  // 64 :0
+    // -> wb
+    ex_reg_wr_ctrl, // 53: 51
+    ex_reg_wr_ena,  // 50: 50
+    ex_reg_wr_addr, // 49 :45
+    ex_csr_wr_ena,  // 44 :44
+    ex_csr_wr_addr, // 43 :32
+    ex_csr_rd_data  // 31 :0
   } = id_to_ex_bus_r & {`ID_TO_EX_WIDTH{ex_valid & ~itrp_valid}};
   
   wire                   ex_uart_out_valid;
@@ -149,7 +143,6 @@ module ex_stage(
   wire [`REG_BUS]        ex_pc;
   wire [`REG_BUS]        ex_op1, ex_op2;
   wire                   ex_use_rs1, ex_use_rs2;
-  wire                   ex_is_word_opt;
   wire [`ALU_BUS]        ex_alu_info;
   wire [`BJ_BUS]         ex_bj_info;
   wire [`REG_BUS]        ex_jmp_imm;
@@ -218,8 +211,8 @@ module ex_stage(
   wire [`REG_BUS] rs1_forward, rs2_forward, true_op1, true_op2;
   assign true_op1 = ex_use_rs1 ? rs1_forward : ex_op1;
   assign true_op2 = ex_use_rs2 ? rs2_forward : ex_op2;
-  wire [`REG_BUS] op1 = {{32{~ex_is_word_opt}} & true_op1[63 : 32], true_op1[31 : 0]};
-  wire [`REG_BUS] op2 = {{32{~ex_is_word_opt}} & true_op2[63 : 32], true_op2[31 : 0]};
+  wire [`REG_BUS] op1 = true_op1;
+  wire [`REG_BUS] op2 = true_op2;
   
   // alu -> bj
   wire [`BJ_BUS] ex_bj_data;
@@ -229,7 +222,6 @@ module ex_stage(
     .op1                 (op1),
     .op2                 (op2),
     .alu_info            (ex_alu_info),
-    .is_word_opt         (ex_is_word_opt),
     
     .alu_output          (ex_data),
     .bj_data             (ex_bj_data)
@@ -254,22 +246,22 @@ module ex_stage(
   assign ex_to_mem_inst = ex_inst;
   assign ex_to_mem_bus = {
     // serial port output
-    ex_uart_out_valid, // 319:319
-    ex_uart_out_char,  // 318:311
+    ex_uart_out_valid, // 123:123
+    ex_uart_out_char,  // 122:115
 
     // mem
-    ex_load_info,   // 214:208
-    ex_save_info,   // 207:204
-    ex_ram_wr_src,  // 203:140
-    ex_data,        // 139:76
-    ex_csr_rd_data, // 75 :12
-    ex_ram_rd_ena,  // 11 :11
-    ex_ram_wr_ena,  // 10 :10
+    ex_load_info,   // 114:110
+    ex_save_info,   // 109:107
+    ex_ram_wr_src,  // 106:75
+    ex_data,        // 74 :43
+    ex_csr_rd_data, // 42 :11
+    ex_ram_rd_ena,  // 10 :10
+    ex_ram_wr_ena,  // 9  :9
     
     // wb
-    ex_reg_wr_ctrl, // 9  :7
-    ex_reg_wr_addr, // 6  :2
-    ex_reg_wr_ena  // 1  :1
+    ex_reg_wr_ctrl, // 8  :6
+    ex_reg_wr_addr, // 5  :1
+    ex_reg_wr_ena   // 0  :0
   };
 
   wire [`REG_BUS]    ex_bj_pc, excp_jmp_pc;
@@ -295,5 +287,10 @@ module ex_stage(
     itrp_NO,
     excp_NO
   };
-
+  
+  always @(posedge clk) begin
+    if (ex_valid && (ex_pc == 32'h80000274)) begin
+      $display("op1 = 0x%x, op2 = 0x%x\n", op1, op2);
+    end
+  end
 endmodule

@@ -34,7 +34,44 @@ module cpu(
   output wire                uart_out_valid,
   output wire [7 : 0]        uart_out_char,
 
-  input wire [`ITRP_BUS]     clint_interupt_bus
+  input wire [`ITRP_BUS]     clint_interupt_bus,
+
+  output wire [`REG_BUS]     dbgregs_0,   //直接接到RegFile中去
+	output wire [`REG_BUS]     dbgregs_1,
+	output wire [`REG_BUS]     dbgregs_2,
+	output wire [`REG_BUS]     dbgregs_3,
+	output wire [`REG_BUS]     dbgregs_4,
+	output wire [`REG_BUS]     dbgregs_5,
+	output wire [`REG_BUS]     dbgregs_6,
+	output wire [`REG_BUS]     dbgregs_7,
+	output wire [`REG_BUS]     dbgregs_8,
+	output wire [`REG_BUS]     dbgregs_9,
+	output wire [`REG_BUS]     dbgregs_10,
+	output wire [`REG_BUS]     dbgregs_11,
+	output wire [`REG_BUS]     dbgregs_12,
+	output wire [`REG_BUS]     dbgregs_13,
+	output wire [`REG_BUS]     dbgregs_14,
+	output wire [`REG_BUS]     dbgregs_15,
+	output wire [`REG_BUS]     dbgregs_16,
+	output wire [`REG_BUS]     dbgregs_17,
+	output wire [`REG_BUS]     dbgregs_18,
+	output wire [`REG_BUS]     dbgregs_19,
+	output wire [`REG_BUS]     dbgregs_20,
+	output wire [`REG_BUS]     dbgregs_21,
+	output wire [`REG_BUS]     dbgregs_22,
+	output wire [`REG_BUS]     dbgregs_23,
+	output wire [`REG_BUS]     dbgregs_24,
+	output wire [`REG_BUS]     dbgregs_25,
+	output wire [`REG_BUS]     dbgregs_26,
+	output wire [`REG_BUS]     dbgregs_27,
+	output wire [`REG_BUS]     dbgregs_28,
+	output wire [`REG_BUS]     dbgregs_29,
+	output wire [`REG_BUS]     dbgregs_30,
+	output wire [`REG_BUS]     dbgregs_31,
+
+  output wire                done,
+  output wire                wb,
+  output wire [`REG_BUS]     dbg_pc
 );
 
   // pipeline control
@@ -189,9 +226,6 @@ module cpu(
   wire [`EXCP_RD_WIDTH-1:0] csr_excp_rd_bus;
   wire [`EXCP_WR_WIDTH-1:0] csr_excp_wr_bus;
 
-  // direct read and write
-  wire [`CSR_TO_EX_DIFF_WIDTH-1:0] csr_to_ex_diffbus;
-
   csrfile CSRfile(
     .clk                       (clock),
     .rst                       (reset),
@@ -315,21 +349,11 @@ module cpu(
   
     .regs_o                    (regs)
   );
-  
-  // Difftest
-  reg              cmt_wen;
-  reg [7:0]        cmt_wdest;
-  reg [`REG_BUS]   cmt_wdata;
-  reg [`REG_BUS]   cmt_pc;
-  reg [`INST_BUS]  cmt_inst;
-  reg              cmt_valid, cmt_skip;
-  reg [`INST_BUS]  cmt_itrp_NO, cmt_excp_NO;
-  reg [`REG_BUS]   cycleCnt, instrCnt;
-  
+
   wire [`REG_BUS]  wb_pc, wb_rw_addr, wb_w_data;
   wire [`INST_BUS] wb_inst;
   wire             wb_commit, wb_w_ena, wb_r_ena, wb_skip;
-  wire [7 : 0]     wb_w_mask;
+  wire [3 : 0]     wb_w_mask;
   wire [`INST_BUS] wb_itrp_NO, wb_excp_NO;
   wire [`CSR_TO_EX_DIFF_WIDTH-1:0] wb_csr_diff;
   assign {
@@ -341,17 +365,30 @@ module cpu(
     wb_excp_NO,
     
     // mem stage
-    wb_rw_addr,
+    wb_rw_addr, 
     wb_w_data,
     wb_w_mask,
     wb_w_ena,
     wb_r_ena,
 
     // wb stage 
-    wb_pc,       // 96 :33
+    wb_pc,       // 64 :33
     wb_inst,     // 32 :1
     wb_commit    // 0  :0
   } = difftest_bus;
+
+`ifdef DIFFTEST_ENABLED
+  // Difftest
+  reg              cmt_wen;
+  reg [7:0]        cmt_wdest;
+  reg [`REG_BUS]   cmt_wdata;
+  reg [`REG_BUS]   cmt_pc;
+  reg [`INST_BUS]  cmt_inst;
+  reg              cmt_valid, cmt_skip;
+  reg [`INST_BUS]  cmt_itrp_NO, cmt_excp_NO;
+  reg [`REG_BUS]   cycleCnt, instrCnt;
+  
+  
 
   always @(posedge clock) begin
     if (reset) begin
@@ -572,4 +609,44 @@ module cpu(
     .storeData          (cmt_w_data),
     .storeMask          (cmt_w_mask)
   );
+
+`endif
+
+  assign dbgregs_0 = regs[0];
+	assign dbgregs_1 = regs[1];
+	assign dbgregs_2 = regs[2];
+	assign dbgregs_3 = regs[3];
+	assign dbgregs_4 = regs[4];
+	assign dbgregs_5 = regs[5];
+	assign dbgregs_6 = regs[6];
+	assign dbgregs_7 = regs[7];
+	assign dbgregs_8 = regs[8];
+	assign dbgregs_9 = regs[9];
+	assign dbgregs_10 = regs[10];
+	assign dbgregs_11 = regs[11];
+	assign dbgregs_12 = regs[12];
+	assign dbgregs_13 = regs[13];
+	assign dbgregs_14 = regs[14];
+	assign dbgregs_15 = regs[15];
+	assign dbgregs_16 = regs[16];
+	assign dbgregs_17 = regs[17];
+	assign dbgregs_18 = regs[18];
+	assign dbgregs_19 = regs[19];
+	assign dbgregs_20 = regs[20];
+	assign dbgregs_21 = regs[21];
+	assign dbgregs_22 = regs[22];
+	assign dbgregs_23 = regs[23];
+	assign dbgregs_24 = regs[24];
+	assign dbgregs_25 = regs[25];
+	assign dbgregs_26 = regs[26];
+	assign dbgregs_27 = regs[27];
+	assign dbgregs_28 = regs[28];
+	assign dbgregs_29 = regs[29];
+	assign dbgregs_30 = regs[30];
+	assign dbgregs_31 = regs[31];
+
+  assign dbg_pc = wb_pc;
+  assign done   = wb_inst == 32'hdead10cc;
+  assign wb     = wb_commit;
+  
 endmodule

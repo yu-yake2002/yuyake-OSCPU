@@ -32,7 +32,7 @@ module if_stage(
   wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;
   assign {
-    bj_pc,    // 65:2
+    bj_pc,    // 33:2
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
   } = bj_ctrl_bus;
@@ -86,7 +86,7 @@ module if_stage(
   
   always @(posedge clk) begin
     if (rst) begin
-      if_axi_addr <= 64'b0;
+      if_axi_addr <= 32'b0;
     end
     else if (if_state == IDLE) begin
       if_axi_addr <= next_pc;
@@ -122,7 +122,7 @@ module if_stage(
   
   always @(posedge clk) begin
     if (rst) begin
-      if_pc <= 64'h7ffffffc;
+      if_pc <= (`PC_START - 32'h4);
     end
     else if (pre_to_if_valid && if_allowin) begin
       if_pc <= if_axi_addr;

@@ -21,16 +21,7 @@ module id_stage(
   output wire [`ID_TO_EX_WIDTH-1:0]      id_to_ex_bus,
   input wire                             ex_allowin,
 
-  // data from regfile and CSRs
-//  input wire [`REG_BUS]             r_data1,
-//  input wire [`REG_BUS]             r_data2,
   input wire [`REG_BUS]                  csr_data,
-  
-  // control reg
-//  output wire                       rs1_r_ena,
-//  output wire [4 : 0]               rs1_addr,
-//  output wire                       rs2_r_ena,
-//  output wire [4 : 0]               rs2_addr,
 
   // control csr
   output wire                            csr_rd_ena,
@@ -49,7 +40,7 @@ module id_stage(
   wire [`REG_BUS] bj_pc;
   wire            bj_ena, bj_valid;
   assign {
-    bj_pc,    // 65:2
+    bj_pc,    // 33:2
     bj_ena,   // 1 :1
     bj_valid  // 0 :0
   } = bj_ctrl_bus;
@@ -133,11 +124,9 @@ module id_stage(
   wire inst_i_fence       = (opcode == 7'h0f);
   wire inst_i_arith_dword = (opcode == 7'h13);
   wire inst_u_auipc       = (opcode == 7'h17);
-  wire inst_i_arith_word  = (opcode == 7'h1b);
   wire inst_s             = (opcode == 7'h23);
   wire inst_r_dword       = (opcode == 7'h33);
   wire inst_u_lui         = (opcode == 7'h37);
-  wire inst_r_word        = (opcode == 7'h3b);
   wire inst_b             = (opcode == 7'h63);
   wire inst_i_jalr        = (opcode == 7'h67);
   wire inst_j             = (opcode == 7'h6f);
@@ -148,19 +137,14 @@ module id_stage(
   //wire inst_t             = (opcode == 7'h6b); // signal of termination
   wire inst_putch         = (opcode == 7'h7b); //signal of putch
 
-  wire is_word_opt = inst_r_word | inst_i_arith_word;
-
   // decode arithmetic
   // load
   wire inst_lb      = inst_i_load & func3_0;
   wire inst_lh      = inst_i_load & func3_1;
   wire inst_lw      = inst_i_load & func3_2;
-  wire inst_ld      = inst_i_load & func3_3;
   wire inst_lbu     = inst_i_load & func3_4;
   wire inst_lhu     = inst_i_load & func3_5;
-  wire inst_lwu     = inst_i_load & func3_6;
-  wire load_vld     = inst_lb | inst_lh | inst_lw | inst_ld 
-                    | inst_lbu | inst_lhu | inst_lwu;
+  wire load_vld     = inst_lb | inst_lh | inst_lw | inst_lbu | inst_lhu;
   
   // fence
   wire inst_fence   = inst_i_fence & func3_0;
@@ -185,19 +169,11 @@ module id_stage(
   wire inst_auipc   = inst_u_auipc;
   wire auipc_vld    = inst_auipc;
   
-  // arith-i-word
-  wire inst_addiw   = inst_i_arith_word & func3_0;
-  wire inst_slliw   = inst_i_arith_word & func3_1;
-  wire inst_srliw   = inst_i_arith_word & func3_5 & func6_00;
-  wire inst_sraiw   = inst_i_arith_word & func3_5 & func6_10;
-  wire arith_iw_vld = inst_addiw | inst_slliw | inst_srliw | inst_sraiw;
-  
   // store
   wire inst_sb      = inst_s & func3_0;
   wire inst_sh      = inst_s & func3_1;
   wire inst_sw      = inst_s & func3_2;
-  wire inst_sd      = inst_s & func3_3;
-  wire store_vld    = inst_sb | inst_sh | inst_sw | inst_sd;
+  wire store_vld    = inst_sb | inst_sh | inst_sw;
   
   // arith-r-dword
   wire inst_add     = inst_r_dword & func3_0 & func7_00;
@@ -217,15 +193,6 @@ module id_stage(
   // lui
   wire inst_lui     = inst_u_lui;
   wire lui_vld      = inst_lui;
-  
-  // arith-r-word
-  wire inst_addw    = inst_r_word & func3_0 & func7_00;
-  wire inst_subw    = inst_r_word & func3_0 & func7_20;
-  wire inst_sllw    = inst_r_word & func3_1;
-  wire inst_srlw    = inst_r_word & func3_5 & func7_00;
-  wire inst_sraw    = inst_r_word & func3_5 & func7_20;
-  wire arith_rw_vld = inst_addw | inst_subw | inst_sllw 
-                    | inst_srlw | inst_sraw;
 
   // branch
   wire inst_beq     = inst_b & func3_0;
@@ -258,24 +225,27 @@ module id_stage(
   wire csr_vld      = inst_csrrw  | inst_csrrs  | inst_csrrc
                     | inst_csrrwi | inst_csrrsi | inst_csrrci;
   
+  // halt
+  wire inst_halt    = id_inst == 32'hdead10cc;
+
   wire inst_vld     = load_vld | fence_vld | arith_id_vld | auipc_vld
-                    | arith_iw_vld | store_vld | arith_rd_vld | lui_vld
-                    | arith_rw_vld | branch_vld | jump_vld | excp_vld
-                    | csr_vld;
+                    | store_vld | arith_rd_vld | lui_vld
+                    | branch_vld | jump_vld | excp_vld
+                    | csr_vld | inst_halt;
 
   wire [`ALU_BUS] id_alu_info;
-  assign id_alu_info[`ALU_ADD]  = inst_add   | inst_addi   | inst_addw  | inst_addiw 
+  assign id_alu_info[`ALU_ADD]  = inst_add   | inst_addi 
                              | inst_auipc | inst_lui    | inst_i_load | inst_s 
                              | inst_jal   | inst_jalr;
-  assign id_alu_info[`ALU_SUB]  = inst_sub   | inst_subw   | inst_b;
+  assign id_alu_info[`ALU_SUB]  = inst_sub   | inst_b;
   assign id_alu_info[`ALU_SLT]  = inst_slt   | inst_slti   | inst_blt   | inst_bge;
   assign id_alu_info[`ALU_SLTU] = inst_sltu  | inst_sltiu  | inst_bltu  | inst_bgeu;
   assign id_alu_info[`ALU_XOR]  = inst_xor   | inst_xori   | inst_beq   | inst_bne;
   assign id_alu_info[`ALU_OR]   = inst_or    | inst_ori    | inst_csrrs | inst_csrrsi;
   assign id_alu_info[`ALU_AND]  = inst_and   | inst_andi;
-  assign id_alu_info[`ALU_SLL]  = inst_sll   | inst_slli   | inst_sllw  | inst_slliw;
-  assign id_alu_info[`ALU_SRL]  = inst_srl   | inst_srli   | inst_srlw  | inst_srliw;
-  assign id_alu_info[`ALU_SRA]  = inst_sra   | inst_srai   | inst_sraw  | inst_sraiw;
+  assign id_alu_info[`ALU_SLL]  = inst_sll   | inst_slli;
+  assign id_alu_info[`ALU_SRL]  = inst_srl   | inst_srli;
+  assign id_alu_info[`ALU_SRA]  = inst_sra   | inst_srai;
   assign id_alu_info[`ALU_ANDN] = inst_csrrc | inst_csrrci;
   assign id_alu_info[`ALU_WRI]  = inst_csrrw | inst_csrrwi;
   
@@ -288,20 +258,21 @@ module id_stage(
   assign id_bj_info[`BJ_BGEU] = inst_bgeu;
   assign id_bj_info[`BJ_JALR] = inst_jalr;
   assign id_bj_info[`BJ_JAL]  = inst_jal;
+  assign id_bj_info[`BJ_HALT] = inst_halt;
   
   wire [`LOAD_BUS] id_load_info = {
-    inst_lwu, inst_lhu, inst_lbu, inst_ld, inst_lw, inst_lh, inst_lb
+    inst_lhu, inst_lbu, inst_lw, inst_lh, inst_lb
   };
   
   wire [`SAVE_BUS] id_save_info = {
-    inst_sd, inst_sw, inst_sh, inst_sb
+    inst_sw, inst_sh, inst_sb
   };
   
   assign rs1_r_ena  = ~rst & (inst_i_load | inst_i_fence | inst_i_arith_dword 
-                            | inst_i_arith_word | inst_s | inst_r_dword 
-                            | inst_r_word | inst_b | inst_i_jalr | inst_i_csr_reg
+                            | inst_s | inst_r_dword 
+                            | inst_b | inst_i_jalr | inst_i_csr_reg
                             | inst_putch);
-  assign rs2_r_ena  = ~rst & (inst_r_dword | inst_r_word | inst_s | inst_b);
+  assign rs2_r_ena  = ~rst & (inst_r_dword | inst_s | inst_b);
   assign csr_rd_ena = csr_vld;
   
   wire [4 : 0] reg_wr_addr = (reg_wr_ena == 1'b1) ? rd_addr : 0;
@@ -309,45 +280,43 @@ module id_stage(
   wire mem_wr_ena = ~rst & inst_s;
   wire mem_rd_ena = ~rst & inst_i_load;
   
-  wire [`REG_BUS] id_op1 = {64{~rst}} & (
-                  ({64{inst_u_auipc}}       & id_pc)
-                | ({64{inst_u_lui}}         & 64'b0)
-                | ({64{inst_i_jalr}}        & id_pc)
-                | ({64{inst_jal}}           & id_pc)
-                | ({64{inst_i_csr_imm}}     & {59'b0, zimm})
+  wire [`REG_BUS] id_op1 = {32{~rst}} & (
+                  ({32{inst_u_auipc}}       & id_pc)
+                | ({32{inst_u_lui}}         & 32'b0)
+                | ({32{inst_i_jalr}}        & id_pc)
+                | ({32{inst_jal}}           & id_pc)
+                | ({32{inst_i_csr_imm}}     & {27'b0, zimm})
                );
   wire id_use_rs1 = inst_i_load | inst_i_fence | inst_i_arith_dword
-                  | inst_i_arith_word | inst_s | inst_r_dword
-                  | inst_r_word | inst_b | inst_i_csr_reg;
+                  | inst_s | inst_r_dword
+                  | inst_b | inst_i_csr_reg;
   
-  wire [`REG_BUS] id_op2 = {64{~rst}} & (
-                  ({64{inst_i_load}}        & {{52{immI[11]}}, immI})
-                | ({64{inst_i_fence}}       & {{52{immI[11]}}, immI})
-                | ({64{inst_i_arith_dword}} & {{52{immI[11]}}, immI})
-                | ({64{inst_u_auipc}}       & {{32{immU[19]}}, immU, 12'b0})
-                | ({64{inst_i_arith_word}}  & {{52{immI[11]}}, immI})
-                | ({64{inst_s}}             & {{52{immS[11]}}, immS})
-                | ({64{inst_u_lui}}         & {{32{immU[19]}}, immU, 12'b0})
-                | ({64{inst_i_jalr}}        & 64'h4)
-                | ({64{inst_jal}}           & 64'h4)
-                | ({64{inst_i_csr_imm}}     & csr_data)
-                | ({64{inst_i_csr_reg}}     & csr_data)
+  wire [`REG_BUS] id_op2 = {32{~rst}} & (
+                  ({32{inst_i_load}}        & {{20{immI[11]}}, immI})
+                | ({32{inst_i_fence}}       & {{20{immI[11]}}, immI})
+                | ({32{inst_i_arith_dword}} & {{20{immI[11]}}, immI})
+                | ({32{inst_u_auipc}}       & {immU, 12'b0})
+                | ({32{inst_s}}             & {{20{immS[11]}}, immS})
+                | ({32{inst_u_lui}}         & {immU, 12'b0})
+                | ({32{inst_i_jalr}}        & 32'h4)
+                | ({32{inst_jal}}           & 32'h4)
+                | ({32{inst_i_csr_imm}}     & csr_data)
+                | ({32{inst_i_csr_reg}}     & csr_data)
                );
-  wire id_use_rs2 = inst_r_dword | inst_r_word | inst_b;
+  wire id_use_rs2 = inst_r_dword | inst_b;
   wire id_use_csr = inst_i_csr_imm | inst_i_csr_reg;
   
-  wire [`REG_BUS] id_jmp_imm = ({64{inst_b}}      & {{51{immB[12]}}, immB})
-                 | ({64{inst_j}}       & {{43{immJ[20]}}, immJ})
-                 | ({64{inst_i_jalr}}  & {{52{immI[11]}}, immI});
-  //               | ({64{inst_t}}       & 64'b0);
+  wire [`REG_BUS] id_jmp_imm = ({32{inst_b}}      & {{19{immB[12]}}, immB})
+                 | ({32{inst_j}}       & {{11{immJ[20]}}, immJ})
+                 | ({32{inst_i_jalr}}  & {{20{immI[11]}}, immI});
   
   // data to wb_stage
   wire csr_to_reg = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   wire mem_to_reg = ~rst & inst_i_load;
   wire exe_to_reg = ~rst & (
       inst_i_fence | inst_i_arith_dword | inst_u_auipc 
-    | inst_i_arith_word | inst_r_dword | inst_u_lui
-    | inst_r_word | inst_jal | inst_i_jalr
+    | inst_r_dword | inst_u_lui
+    | inst_jal | inst_i_jalr
   );
   wire [`REG_CTRL_BUS] reg_wr_ctrl = {
     csr_to_reg,
@@ -357,11 +326,11 @@ module id_stage(
   
   wire reg_wr_ena  = ~rst & (
       inst_i_load | inst_i_fence | inst_i_arith_dword
-    | inst_u_auipc | inst_i_arith_word | inst_r_dword
-    | inst_u_lui | inst_r_word | inst_i_jalr | inst_j
+    | inst_u_auipc | inst_r_dword
+    | inst_u_lui | inst_i_jalr | inst_j
     | inst_i_csr_imm | inst_i_csr_reg
   );
-  wire [4 : 0] reg_wr_addr = id_inst[11 :  7];
+  
   wire csr_wr_ena  = ~rst & (inst_i_csr_imm | inst_i_csr_reg);
   wire [11: 0] csr_wr_addr = id_inst[31 : 20];
   
@@ -375,38 +344,34 @@ module id_stage(
   assign id_to_ex_pc = id_pc;
   assign id_to_ex_inst = id_inst;
   assign id_to_ex_bus = {
-    // serial port output
-    id_uart_out_valid, // 567:567
-    
     // exception
-    id_excp_exit,      // 566:566
-    id_excp_bus,       // 565:550
+    id_excp_exit,      // 208:208
+    id_excp_bus,       // 207:192
 
     // -> ex
-    rs1_addr,          // 451:447
-    rs2_addr,          // 446:442
-    id_op1,            // 441:378
-    id_op2,            // 377:314
-    id_use_rs1,        // 313:313
-    id_use_rs2,        // 312:312
-    is_word_opt,       // 183:183
-    id_alu_info,       // 182:171
-    id_bj_info,        // 170:163
-    id_jmp_imm,        // 162:99
+    rs1_addr,          // 191:187
+    rs2_addr,          // 186:182
+    id_op1,            // 181:150
+    id_op2,            // 149:118
+    id_use_rs1,        // 117:117
+    id_use_rs2,        // 116:116
+    id_alu_info,       // 115:104
+    id_bj_info,        // 103:95
+    id_jmp_imm,        // 94 :63
     
     // -> mem
-    id_load_info,      // 98 :92
-    id_save_info,      // 91 :88
-    mem_rd_ena,        // 87 :87
-    mem_wr_ena,        // 86 :86
+    id_load_info,      // 62 :58
+    id_save_info,      // 57 :55
+    mem_rd_ena,        // 54 :54
+    mem_wr_ena,        // 53 :53
     
     // -> wb
-    reg_wr_ctrl,       // 85: 83
-    reg_wr_ena,        // 82: 82
-    reg_wr_addr,       // 81 :77
-    csr_wr_ena,        // 76 :76
-    csr_wr_addr,       // 75 :64
-    csr_data           // 64 :0
+    reg_wr_ctrl,       // 52: 50
+    reg_wr_ena,        // 49: 49
+    reg_wr_addr,       // 48 :45
+    csr_wr_ena,        // 44 :44
+    csr_wr_addr,       // 43 :32
+    csr_data           // 31 :0
   };
   
   wire id_skip_instr = inst_putch || (csr_vld && (csr_rd_addr == 12'hB00 || csr_rd_addr == 12'h344));
