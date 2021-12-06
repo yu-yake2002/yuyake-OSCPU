@@ -51,5 +51,6 @@ int main(int argc, char **argv) {
       break;
     }
   }
+  delete dut_ptr;
   return 0;
 }
