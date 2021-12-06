@@ -38,7 +38,8 @@ uint64_t char2int(char *argv){
 int main(int argc, char **argv) {
   Verilated::traceEverOn(true);
   printf("Enabling waves ...\n");
-  fp = new VerilatedVcdC; 
+  fp = new VerilatedVcdC;
+  dut_ptr->trace(fp, 99);
   fp->open("vlt_dump.vcd");
   dut_ptr = new Vtop;
   dut_ptr->reset = 0;
