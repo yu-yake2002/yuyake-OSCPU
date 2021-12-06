@@ -36,11 +36,6 @@ uint64_t char2int(char *argv){
 }
 
 int main(int argc, char **argv) {
-  Verilated::traceEverOn(true);
-  printf("Enabling waves ...\n");
-  fp = new VerilatedVcdC;
-  dut_ptr->trace(fp, 99);
-  fp->open("vlt_dump.vcd");
   dut_ptr = new Vtop;
   dut_ptr->reset = 0;
   dut_ptr->clk = 0;
@@ -50,6 +45,15 @@ int main(int argc, char **argv) {
   // initial， reset的时候imem读取对应的testbench。
   dut_ptr->reset = 1;
   dut_ptr->testcase = testcase;
+
+#ifdef VM_TRACE
+  Verilated::traceEverOn(true);
+  printf("Enabling waves ...\n");
+  fp = new VerilatedVcdC;
+  dut_ptr->trace(fp, 99);
+  fp->open("vlt_dump.vcd");
+  fp->dump(0);
+#endif
   next_cycle(0);
   next_cycle(1);
   dut_ptr->reset = 0;
