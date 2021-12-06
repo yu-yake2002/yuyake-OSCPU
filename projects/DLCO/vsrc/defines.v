@@ -9,6 +9,7 @@
 
 `define ZERO_WORD  32'h00000000
 `define PC_START   32'h80000000
+//`define PC_START   32'h00000000
 `define REG_BUS    31 : 0
 `define INST_BUS   31 : 0
 
